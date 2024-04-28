@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "198042443744",
+    "project_id": "musicboxd-80d64",
+    "storage_bucket": "musicboxd-80d64.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:198042443744:android:7c6c989e2b6b7273eb1585",
+        "android_client_info": {
+          "package_name": "musicboxd.android"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCAPCV1XjTRFi9USNWR03NImYf8HAGOUeU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:198042443744:android:1bc8a05fb071ebb2eb1585",
+        "android_client_info": {
+          "package_name": "musicboxd.android.debug"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCAPCV1XjTRFi9USNWR03NImYf8HAGOUeU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
