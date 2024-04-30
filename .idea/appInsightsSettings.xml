@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="AppInsightsSettings">
+    <option name="selectedTabId" value="Firebase Crashlytics" />
     <option name="tabSettings">
       <map>
         <entry key="Firebase Crashlytics">
@@ -8,14 +9,14 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="musicboxd.android" />
+                  <option name="mobileSdkAppId" value="1:198042443744:android:7c6c989e2b6b7273eb1585" />
+                  <option name="projectId" value="musicboxd-80d64" />
+                  <option name="projectNumber" value="198042443744" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
-              <option name="timeIntervalDays" value="THIRTY_DAYS" />
+              <option name="timeIntervalDays" value="ONE_DAY" />
               <option name="visibilityType" value="ALL" />
             </InsightsFilterSettings>
           </value>
