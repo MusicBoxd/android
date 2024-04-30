@@ -1,6 +1,8 @@
 package musicboxd.android.data.remote.api.spotify
 
-import musicboxd.android.data.remote.api.spotify.model.artists.SpotifyArtistSearchData
+import musicboxd.android.data.remote.api.spotify.model.album.SpotifyAlbumSearchDTO
+import musicboxd.android.data.remote.api.spotify.model.artist.SpotifyArtistSearchDTO
+import musicboxd.android.data.remote.api.spotify.model.track.SpotifyTrackSearchDTO
 import javax.inject.Inject
 
 class SpotifyAPIImpl @Inject constructor(private val spotifyAPIService: SpotifyAPIService) :
@@ -9,9 +11,33 @@ class SpotifyAPIImpl @Inject constructor(private val spotifyAPIService: SpotifyA
         artistName: String,
         limit: String,
         authorizationToken: String
-    ): SpotifyArtistSearchData {
+    ): SpotifyArtistSearchDTO {
         return spotifyAPIService.searchArtists(
             artistName,
+            limit,
+            "Bearer ".plus(authorizationToken)
+        )
+    }
+
+    override suspend fun searchAlbums(
+        albumName: String,
+        limit: String,
+        authorizationToken: String
+    ): SpotifyAlbumSearchDTO {
+        return spotifyAPIService.searchAlbums(
+            albumName,
+            limit,
+            "Bearer ".plus(authorizationToken)
+        )
+    }
+
+    override suspend fun searchTracks(
+        trackName: String,
+        limit: String,
+        authorizationToken: String
+    ): SpotifyTrackSearchDTO {
+        return spotifyAPIService.searchTracks(
+            trackName,
             limit,
             "Bearer ".plus(authorizationToken)
         )

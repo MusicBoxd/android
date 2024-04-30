@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 data class Artist(
     @SerialName("listeners")
     val listenersCount: String,
-    val name: String,
+    var name: String,
     val mbid: String,
     @SerialName("url")
     val lastFMURL: String

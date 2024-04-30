@@ -1,6 +1,6 @@
 package musicboxd.android.data.remote.api.lastfm
 
-import musicboxd.android.data.remote.api.lastfm.model.searchAlbums.SearchAlbums
+import musicboxd.android.data.remote.api.lastfm.model.searchAlbums.SearchAlbumsFromLastFm
 import musicboxd.android.data.remote.api.lastfm.model.searchArtists.SearchArtists
 import musicboxd.android.data.remote.api.lastfm.model.searchTracks.SearchTracks
 import javax.inject.Inject
@@ -15,7 +15,7 @@ class LastFMAPIImpl @Inject constructor(private val lastFMAPIService: LastFMAPIS
         return lastFMAPIService.searchTracks(trackName, apiKey)
     }
 
-    override suspend fun searchAlbums(albumName: String, apiKey: String): SearchAlbums {
+    override suspend fun searchAlbums(albumName: String, apiKey: String): SearchAlbumsFromLastFm {
         return lastFMAPIService.searchAlbums(albumName, apiKey)
     }
 }

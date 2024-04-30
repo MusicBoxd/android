@@ -15,16 +15,11 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import musicboxd.android.API_KEY
 import musicboxd.android.data.remote.api.lastfm.LastFMAPIRepo
-import musicboxd.android.data.remote.api.lastfm.model.searchAlbums.AlbumMatches
-import musicboxd.android.data.remote.api.lastfm.model.searchAlbums.SearchAlbums
-import musicboxd.android.data.remote.api.lastfm.model.searchTracks.SearchTracks
-import musicboxd.android.data.remote.api.lastfm.model.searchTracks.TrackMatches
 import musicboxd.android.data.remote.api.musicbrainz.MusicBrainzAPIRepo
 import musicboxd.android.data.remote.api.spotify.SpotifyAPIRepo
+import musicboxd.android.data.remote.api.spotify.model.artist.Item
 import musicboxd.android.data.remote.api.spotify.model.token.SpotifyToken
-import musicboxd.android.ui.search.model.ArtistSearchResults
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import javax.inject.Inject
@@ -36,9 +31,7 @@ class SearchScreenViewModel @Inject constructor(
     private val spotifyAPIRepo: SpotifyAPIRepo
 ) :
     ViewModel() {
-    private val _searchArtistsResult = MutableStateFlow(
-        ArtistSearchResults(emptyList(), emptyList())
-    )
+    private val _searchArtistsResult = MutableStateFlow(emptyList<Item>())
     val searchArtistsResult = _searchArtistsResult.asStateFlow()
 
     private var spotifyToken: SpotifyToken? = SpotifyToken(
@@ -77,25 +70,12 @@ class SearchScreenViewModel @Inject constructor(
     }
 
     private val _searchTracksResult = MutableStateFlow(
-        SearchTracks(
-            musicboxd.android.data.remote.api.lastfm.model.searchTracks.Results(
-                "", TrackMatches(
-                    emptyList()
-                )
-            )
-        )
+        emptyList<musicboxd.android.data.remote.api.spotify.model.track.Item>()
     )
     val searchTracksResult = _searchTracksResult.asStateFlow()
 
-    private val _searchAlbumsResult = MutableStateFlow(
-        SearchAlbums(
-            musicboxd.android.data.remote.api.lastfm.model.searchAlbums.Results(
-                AlbumMatches(
-                    emptyList()
-                ), ""
-            )
-        )
-    )
+    private val _searchAlbumsResult =
+        MutableStateFlow(emptyList<musicboxd.android.data.remote.api.spotify.model.album.Item>())
     val searchAlbumsResult = _searchAlbumsResult.asStateFlow()
 
     private val _searchQuery = MutableStateFlow("")
@@ -108,55 +88,33 @@ class SearchScreenViewModel @Inject constructor(
                 viewModelScope.launch {
                     _searchQuery.emit(searchScreenUiEvent.query)
                     _searchQuery.debounce(150L).collectLatest { query ->
-                        if (query.isNotEmpty()) {
+                        if (query.isNotEmpty() && spotifyToken != null) {
                             awaitAll(async {
-                                val artistImages = mutableListOf<String>()
-                                val queriedArtistsFromSpotify =
-                                    spotifyToken?.let {
-                                        spotifyAPIRepo.searchArtists(
-                                            query,
-                                            "5",
-                                            it.accessToken
-                                        )
-                                    }
-                                val queriedArtistsFromLastFM = lastFMAPIRepo.searchArtists(
-                                    query,
-                                    API_KEY
-                                ).results.artistMatches.artists.take(5).filter {
-                                    queriedArtistsFromSpotify?.artists?.items?.map { it.name }
-                                        ?.contains(it.name) == true
-                                }
-                                spotifyToken?.let { token ->
-                                    queriedArtistsFromLastFM.forEach {
-                                        artistImages.add(
-                                            spotifyAPIRepo.searchArtists(
-                                                it.name,
-                                                "5",
-                                                token.accessToken
-                                            ).bestMatch.items.first().images[2].url
-                                        )
-                                    }
-                                }
-                                _searchArtistsResult.emit(
-                                    ArtistSearchResults(
-                                        queriedArtistsFromLastFM,
-                                        artistImages
-                                    )
+                                _searchTracksResult.emit(
+                                    spotifyAPIRepo.searchTracks(
+                                        query,
+                                        "10",
+                                        spotifyToken!!.accessToken
+                                    ).tracks.items
                                 )
                             }, async {
-                                /*_searchAlbumsResult.emit(
-                                    lastFMAPIRepo.searchAlbums(
+                                _searchAlbumsResult.emit(
+                                    spotifyAPIRepo.searchAlbums(
                                         query,
-                                        API_KEY
-                                    )
-                                )*/
+                                        "10",
+                                        spotifyToken!!.accessToken
+                                    ).albums.items
+                                )
                             }, async {
-                                /*_searchTracksResult.emit(
-                                    lastFMAPIRepo.searchTracks(
+                                _searchArtistsResult.emit(
+                                    spotifyAPIRepo.searchArtists(
                                         query,
-                                        API_KEY
-                                    )
-                                )*/
+                                        "10",
+                                        spotifyToken!!.accessToken
+                                    ).artists.items.sortedByDescending {
+                                        it.popularity
+                                    }
+                                )
                             })
                         }
                     }

@@ -1,6 +1,6 @@
 package musicboxd.android.data.remote.api.lastfm
 
-import musicboxd.android.data.remote.api.lastfm.model.searchAlbums.SearchAlbums
+import musicboxd.android.data.remote.api.lastfm.model.searchAlbums.SearchAlbumsFromLastFm
 import musicboxd.android.data.remote.api.lastfm.model.searchArtists.SearchArtists
 import musicboxd.android.data.remote.api.lastfm.model.searchTracks.SearchTracks
 import retrofit2.http.GET
@@ -24,5 +24,5 @@ interface LastFMAPIService {
     suspend fun searchAlbums(
         @Query("album") albumName: String,
         @Query("api_key") apiKey: String
-    ): SearchAlbums
+    ): SearchAlbumsFromLastFm
 }
