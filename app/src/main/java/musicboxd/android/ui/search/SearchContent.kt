@@ -22,14 +22,21 @@ import androidx.navigation.NavController
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import musicboxd.android.ui.common.AlbumxTrackHorizontalPreview
 import musicboxd.android.ui.common.ArtistHorizontalPreview
+import musicboxd.android.ui.details.DetailsViewModel
+import musicboxd.android.ui.details.album.AlbumDetailScreenState
 import musicboxd.android.ui.navigation.NavigationRoutes
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalPagerApi::class)
 @Composable
-fun SearchContent(searchScreenViewModel: SearchScreenViewModel, navController: NavController) {
+fun SearchContent(
+    searchScreenViewModel: SearchScreenViewModel,
+    navController: NavController,
+    detailsViewModel: DetailsViewModel
+) {
     val searchArtistsResult =
         searchScreenViewModel.searchArtistsResult.collectAsStateWithLifecycle()
     val searchTracksResult = searchScreenViewModel.searchTracksResult.collectAsStateWithLifecycle()
@@ -80,6 +87,17 @@ fun SearchContent(searchScreenViewModel: SearchScreenViewModel, navController: N
                     }) { index, it ->
                         AlbumxTrackHorizontalPreview(
                             onClick = {
+                                detailsViewModel.albumScreenState = AlbumDetailScreenState(
+                                    covertArtImgUrl = flowOf(),
+                                    albumImgUrl = it.images.first().url,
+                                    albumTitle = it.name,
+                                    artists = it.artists.map { it.name },
+                                    wikipediaExtractText = flowOf(),
+                                    releaseDate = it.release_date
+                                )
+                                detailsViewModel.loadAlbumInfo(
+                                    albumName = it.name,
+                                    artistName = it.artists.joinToString { it.name })
                                 navController.navigate(NavigationRoutes.ALBUM_DETAILS.name)
                             },
                             isExplicit = false,

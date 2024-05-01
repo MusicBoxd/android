@@ -24,13 +24,15 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import musicboxd.android.ui.details.DetailsViewModel
 import musicboxd.android.ui.theme.MusicBoxdTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
     searchScreenViewModel: SearchScreenViewModel = hiltViewModel(),
-    navController: NavController
+    navController: NavController,
+    detailsViewModel: DetailsViewModel
 ) {
     val searchQuery = searchScreenViewModel.searchQuery.collectAsStateWithLifecycle()
     val isSearchActive = rememberSaveable {
@@ -90,7 +92,8 @@ fun SearchScreen(
                 content = {
                     SearchContent(
                         searchScreenViewModel = searchScreenViewModel,
-                        navController
+                        navController,
+                        detailsViewModel
                     )
                 }
             )

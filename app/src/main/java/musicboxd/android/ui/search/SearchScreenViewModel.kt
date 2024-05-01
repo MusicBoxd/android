@@ -15,8 +15,6 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import musicboxd.android.data.remote.api.lastfm.LastFMAPIRepo
-import musicboxd.android.data.remote.api.musicbrainz.MusicBrainzAPIRepo
 import musicboxd.android.data.remote.api.spotify.SpotifyAPIRepo
 import musicboxd.android.data.remote.api.spotify.model.artist.Item
 import musicboxd.android.data.remote.api.spotify.model.token.SpotifyToken
@@ -25,16 +23,14 @@ import okhttp3.Request
 import javax.inject.Inject
 
 @HiltViewModel
-class SearchScreenViewModel @Inject constructor(
-    private val lastFMAPIRepo: LastFMAPIRepo,
-    private val musicBrainzAPIRepo: MusicBrainzAPIRepo,
+open class SearchScreenViewModel @Inject constructor(
     private val spotifyAPIRepo: SpotifyAPIRepo
 ) :
     ViewModel() {
     private val _searchArtistsResult = MutableStateFlow(emptyList<Item>())
     val searchArtistsResult = _searchArtistsResult.asStateFlow()
 
-    private var spotifyToken: SpotifyToken? = SpotifyToken(
+    protected var spotifyToken: SpotifyToken? = SpotifyToken(
         accessToken = "",
         accessTokenExpirationTimestampMs = 0L,
         clientId = "",

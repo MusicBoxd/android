@@ -5,8 +5,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.Scaffold
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
+import musicboxd.android.ui.details.DetailsViewModel
 import musicboxd.android.ui.navigation.BottomNavigationBar
 import musicboxd.android.ui.navigation.MainNavigation
 import musicboxd.android.ui.theme.MusicBoxdTheme
@@ -19,10 +21,14 @@ class MainActivity : ComponentActivity() {
         setContent {
             val navController = rememberNavController()
             MusicBoxdTheme {
+                /*Surface {
+                    AlbumDetailScreen()
+                }*/
+                val detailsViewModel: DetailsViewModel = hiltViewModel()
                 Scaffold(bottomBar = {
                     BottomNavigationBar(navController = navController)
                 }) {
-                    MainNavigation(navController = navController)
+                    MainNavigation(navController = navController, detailsViewModel)
                 }
             }
         }

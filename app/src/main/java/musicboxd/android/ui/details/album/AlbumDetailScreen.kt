@@ -1,4 +1,4 @@
-package musicboxd.android.ui.details
+package musicboxd.android.ui.details.album
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -44,6 +44,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -58,20 +59,24 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import musicboxd.android.R
 import musicboxd.android.ui.common.AlbumxTrackCover
+import musicboxd.android.ui.common.AlbumxTrackCoverState
 import musicboxd.android.ui.common.fadedBottomEdges
 import musicboxd.android.ui.theme.MusicBoxdTheme
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun AlbumDetailScreen() {
+fun AlbumDetailScreen(albumDetailScreenState: AlbumDetailScreenState) {
     val modalBottomSheetState = rememberModalBottomSheetState()
     val coroutineScope = rememberCoroutineScope()
     val isBtmSheetVisible = rememberSaveable {
         mutableStateOf(false)
     }
+    val wikipediaExtractText =
+        albumDetailScreenState.wikipediaExtractText.collectAsState(initial = "")
     MusicBoxdTheme {
         val colorScheme = MaterialTheme.colorScheme
         LazyColumn(
@@ -80,39 +85,52 @@ fun AlbumDetailScreen() {
                 .background(MaterialTheme.colorScheme.surface)
         ) {
             item {
-                AlbumxTrackCover()
+                AlbumxTrackCover(
+                    albumxTrackCoverState = AlbumxTrackCoverState(
+                        covertImgUrl = albumDetailScreenState.covertArtImgUrl.collectAsStateWithLifecycle(
+                            ""
+                        ).value,
+                        mainImgUrl = albumDetailScreenState.albumImgUrl,
+                        itemTitle = albumDetailScreenState.albumTitle,
+                        itemArtists = albumDetailScreenState.artists
+                    )
+                )
             }
-            item {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Image(
-                        painter = painterResource(id = R.drawable.wikipedia_logo),
-                        contentDescription = "Wikipedia Logo",
-                        modifier = Modifier
-                            .padding(start = 15.dp)
-                            .size(20.dp)
-                    )
-                    Text(
-                        text = " • Overview",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
+            if (wikipediaExtractText.value.contains("album") && wikipediaExtractText.value.lowercase()
+                    .contains(albumDetailScreenState.artists.random().lowercase())
+            ) {
+                item {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Image(
+                            painter = painterResource(id = R.drawable.wikipedia_logo),
+                            contentDescription = "Wikipedia Logo",
+                            modifier = Modifier
+                                .padding(start = 15.dp)
+                                .size(20.dp)
+                        )
+                        Text(
+                            text = " • Overview",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
                 }
-            }
-            item {
-                Text(text = "The College Dropout is the debut studio album by the American rapper and record producer Kanye West. It was released on February 10, 2004, by Def Jam Recordings and Jay-Z's Roc-A-Fella Records. In the years leading up to release, West had received praise for his production work for rappers such as Jay-Z and Talib Kweli, but faced difficulty being accepted as an artist in his own right by figures in the music industry. Intent on pursuing a solo career, he signed a record deal with Roc-A-Fella and recorded the album over a period of four years, beginning in 1999.",
-                    style = MaterialTheme.typography.titleSmall,
-                    modifier = Modifier
-                        .clickable {
-                            isBtmSheetVisible.value = true
-                            coroutineScope.launch {
-                                modalBottomSheetState.show()
+                item {
+                    Text(text = wikipediaExtractText.value,
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier
+                            .clickable {
+                                isBtmSheetVisible.value = true
+                                coroutineScope.launch {
+                                    modalBottomSheetState.show()
+                                }
                             }
-                        }
-                        .padding(15.dp)
-                        .fadedBottomEdges(colorScheme),
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 5,
-                    overflow = TextOverflow.Ellipsis)
+                            .padding(15.dp)
+                            .fadedBottomEdges(colorScheme),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 5,
+                        overflow = TextOverflow.Ellipsis)
+                }
             }
             item {
                 Row(
@@ -125,7 +143,7 @@ fun AlbumDetailScreen() {
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurface
                     )
-                    Text(text = "• Released on February 10, 2004",
+                    Text(text = "• Released on ${albumDetailScreenState.releaseDate}",
                         style = MaterialTheme.typography.titleSmall,
                         modifier = Modifier
                             .clickable {
@@ -387,9 +405,16 @@ fun AlbumDetailScreen() {
                     isBtmSheetVisible.value = false
                 }
             }) {
-                AlbumxTrackCover()
+                AlbumxTrackCover(
+                    albumxTrackCoverState = AlbumxTrackCoverState(
+                        covertImgUrl = albumDetailScreenState.covertArtImgUrl.collectAsState(initial = "").value,
+                        mainImgUrl = albumDetailScreenState.albumImgUrl,
+                        itemTitle = albumDetailScreenState.albumTitle,
+                        itemArtists = albumDetailScreenState.artists
+                    )
+                )
                 Text(
-                    text = "The College Dropout is the debut studio album by the American rapper and record producer Kanye West. It was released on February 10, 2004, by Def Jam Recordings and Jay-Z's Roc-A-Fella Records. In the years leading up to release, West had received praise for his production work for rappers such as Jay-Z and Talib Kweli, but faced difficulty being accepted as an artist in his own right by figures in the music industry. Intent on pursuing a solo career, he signed a record deal with Roc-A-Fella and recorded the album over a period of four years, beginning in 1999.",
+                    text = albumDetailScreenState.wikipediaExtractText.collectAsState(initial = "").value,
                     style = MaterialTheme.typography.titleSmall,
                     modifier = Modifier
                         .padding(start = 15.dp, end = 15.dp)
