@@ -76,7 +76,9 @@ fun AlbumDetailScreen(albumDetailScreenState: AlbumDetailScreenState) {
         mutableStateOf(false)
     }
     val wikipediaExtractText =
-        albumDetailScreenState.wikipediaExtractText.collectAsState(initial = "")
+        albumDetailScreenState.wikipediaExtractText.collectAsStateWithLifecycle("")
+    val trackList =
+        albumDetailScreenState.trackList.collectAsStateWithLifecycle(initialValue = emptyList())
     MusicBoxdTheme {
         val colorScheme = MaterialTheme.colorScheme
         LazyColumn(
@@ -346,14 +348,16 @@ fun AlbumDetailScreen(albumDetailScreenState: AlbumDetailScreenState) {
                     modifier = Modifier.padding(start = 15.dp, end = 15.dp, top = 15.dp),
                     color = MaterialTheme.colorScheme.outline.copy(0.25f)
                 )
-                Text(
-                    text = "Tracklist",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(15.dp)
-                )
+                if (trackList.value.isNotEmpty()) {
+                    Text(
+                        text = "Track list",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(15.dp)
+                    )
+                }
             }
-            itemsIndexed(List(15) { it }) { index, item ->
+            itemsIndexed(trackList.value) { index, item ->
                 Row(
                     modifier = Modifier
                         .fillMaxSize()
@@ -369,13 +373,13 @@ fun AlbumDetailScreen(albumDetailScreenState: AlbumDetailScreenState) {
                         Text(
                             modifier = Modifier.width(25.dp),
                             color = LocalContentColor.current.copy(0.9f),
-                            text = (item + 1).toString(),
+                            text = item.track_number.toString(),
                             style = MaterialTheme.typography.titleSmall
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
-                                text = "Title ${item + 1}",
+                                text = item.name,
                                 style = MaterialTheme.typography.titleMedium,
                                 maxLines = 1,
                                 modifier = Modifier.basicMarquee(),
@@ -383,7 +387,7 @@ fun AlbumDetailScreen(albumDetailScreenState: AlbumDetailScreenState) {
                             )
                             Spacer(modifier = Modifier.height(5.dp))
                             Text(
-                                text = "Artist ${item + 1}",
+                                text = item.artists.joinToString { it.name },
                                 style = MaterialTheme.typography.titleSmall,
                                 maxLines = 1,
                                 textAlign = TextAlign.Start,

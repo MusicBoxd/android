@@ -93,9 +93,11 @@ fun SearchContent(
                                     albumTitle = it.name,
                                     artists = it.artists.map { it.name },
                                     wikipediaExtractText = flowOf(),
-                                    releaseDate = it.release_date
+                                    releaseDate = it.release_date,
+                                    trackList = flowOf()
                                 )
                                 detailsViewModel.loadAlbumInfo(
+                                    albumID = it.id,
                                     albumName = it.name,
                                     artistName = it.artists.joinToString { it.name })
                                 navController.navigate(NavigationRoutes.ALBUM_DETAILS.name)

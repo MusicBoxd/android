@@ -3,6 +3,7 @@ package musicboxd.android.data.remote.api.spotify
 import musicboxd.android.data.remote.api.spotify.model.album.SpotifyAlbumSearchDTO
 import musicboxd.android.data.remote.api.spotify.model.artist.SpotifyArtistSearchDTO
 import musicboxd.android.data.remote.api.spotify.model.track.SpotifyTrackSearchDTO
+import musicboxd.android.data.remote.api.spotify.model.tracklist.SpotifyAlbumTrackListDTO
 import javax.inject.Inject
 
 class SpotifyAPIImpl @Inject constructor(private val spotifyAPIService: SpotifyAPIService) :
@@ -29,6 +30,13 @@ class SpotifyAPIImpl @Inject constructor(private val spotifyAPIService: SpotifyA
             limit,
             "Bearer ".plus(authorizationToken)
         )
+    }
+
+    override suspend fun getTrackListOfAnAlbum(
+        albumID: String,
+        authorizationToken: String
+    ): SpotifyAlbumTrackListDTO {
+        return spotifyAPIService.getTrackListOfAnAlbum(albumID, "Bearer ".plus(authorizationToken))
     }
 
     override suspend fun searchTracks(
