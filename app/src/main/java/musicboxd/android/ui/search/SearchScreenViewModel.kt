@@ -88,35 +88,38 @@ class SearchScreenViewModel @Inject constructor(
                 viewModelScope.launch {
                     _searchQuery.emit(searchScreenUiEvent.query)
                     _searchQuery.debounce(150L).collectLatest { query ->
-                        if (query.isNotEmpty() && spotifyToken != null) {
-                            awaitAll(async {
-                                _searchTracksResult.emit(
+                        awaitAll(async {
+                            _searchTracksResult.emit(
+                                if (query.isNotEmpty() && spotifyToken != null)
                                     spotifyAPIRepo.searchTracks(
                                         query,
                                         "10",
                                         spotifyToken!!.accessToken
-                                    ).tracks.items
-                                )
-                            }, async {
-                                _searchAlbumsResult.emit(
+                                    ).tracks.items else emptyList()
+                            )
+                        }, async {
+                            _searchAlbumsResult.emit(
+                                if (query.isNotEmpty() && spotifyToken != null)
                                     spotifyAPIRepo.searchAlbums(
                                         query,
                                         "10",
                                         spotifyToken!!.accessToken
-                                    ).albums.items
-                                )
-                            }, async {
-                                _searchArtistsResult.emit(
+                                    ).albums.items.filter {
+                                        it.album_type == "album"
+                                    } else emptyList()
+                            )
+                        }, async {
+                            _searchArtistsResult.emit(
+                                if (query.isNotEmpty() && spotifyToken != null)
                                     spotifyAPIRepo.searchArtists(
                                         query,
                                         "10",
                                         spotifyToken!!.accessToken
                                     ).artists.items.sortedByDescending {
                                         it.popularity
-                                    }
-                                )
-                            })
-                        }
+                                    } else emptyList()
+                            )
+                        })
                     }
                 }
             }

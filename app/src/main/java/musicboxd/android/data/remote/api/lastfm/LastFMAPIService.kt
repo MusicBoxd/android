@@ -1,11 +1,13 @@
 package musicboxd.android.data.remote.api.lastfm
 
+import androidx.annotation.Keep
 import musicboxd.android.data.remote.api.lastfm.model.searchAlbums.SearchAlbumsFromLastFm
 import musicboxd.android.data.remote.api.lastfm.model.searchArtists.SearchArtists
 import musicboxd.android.data.remote.api.lastfm.model.searchTracks.SearchTracks
 import retrofit2.http.GET
 import retrofit2.http.Query
 
+@Keep
 interface LastFMAPIService {
 
     @GET("2.0/?method=artist.search&format=json")

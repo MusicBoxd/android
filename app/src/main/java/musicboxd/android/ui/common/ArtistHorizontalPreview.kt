@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,19 +23,23 @@ fun ArtistHorizontalPreview(artistImgUrl: String, artistName: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(15.dp),
+            .padding(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         CoilImage(
             imgUrl = artistImgUrl, modifier = Modifier
-                .size(65.dp)
+                .size(50.dp)
                 .clip(CircleShape), contentDescription = "Artist Image"
         )
         Spacer(modifier = Modifier.width(15.dp))
         Column {
-            Text(text = artistName, style = MaterialTheme.typography.titleSmall)
+            Text(text = artistName, style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(10.dp))
-            Text(text = "Artist", style = MaterialTheme.typography.titleSmall)
+            Text(
+                text = "Artist",
+                style = MaterialTheme.typography.titleSmall,
+                color = LocalContentColor.current.copy(0.9f),
+            )
         }
     }
 }

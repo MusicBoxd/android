@@ -11,7 +11,7 @@ import musicboxd.android.ui.search.SearchScreen
 fun MainNavigation(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = NavigationRoutes.HOME.name
+        startDestination = NavigationRoutes.SEARCH.name
     ) {
         composable(route = NavigationRoutes.HOME.name) {
             Column {

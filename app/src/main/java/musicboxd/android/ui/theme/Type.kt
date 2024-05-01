@@ -15,6 +15,6 @@ val fonts = FontFamily(
 )
 val Typography = Typography(
     titleLarge = TextStyle(fontFamily = fonts, fontWeight = FontWeight.SemiBold),
-    titleMedium = TextStyle(fontFamily = fonts, fontWeight = FontWeight.Medium),
+    titleMedium = TextStyle(fontFamily = fonts, fontWeight = FontWeight.SemiBold),
     titleSmall = TextStyle(fontFamily = fonts, fontWeight = FontWeight.Normal),
 )

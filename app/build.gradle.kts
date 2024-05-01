@@ -102,12 +102,13 @@ dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.9.0"))
 
     implementation("androidx.datastore:datastore-preferences:1.0.0")
-
+    implementation("com.google.accompanist:accompanist-pager:0.25.0")
+    implementation("com.google.accompanist:accompanist-pager-indicators:0.25.0")
     val roomVersion = ("2.6.1")
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
     ksp("androidx.room:room-compiler:$roomVersion")
-    implementation ("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
     implementation("com.google.dagger:hilt-android:2.49")
     kapt("com.google.dagger:hilt-android-compiler:2.48.1")
     kapt("androidx.hilt:hilt-compiler:1.2.0")
