@@ -1,5 +1,6 @@
 package musicboxd.android.ui.common
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,6 +25,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun AlbumxTrackHorizontalPreview(
+    onClick: () -> Unit,
     itemType: String,
     albumImgUrl: String,
     albumTitle: String,
@@ -32,6 +34,9 @@ fun AlbumxTrackHorizontalPreview(
 ) {
     Row(
         modifier = Modifier
+            .clickable {
+                onClick()
+            }
             .fillMaxWidth()
             .padding(10.dp),
         verticalAlignment = Alignment.CenterVertically

@@ -1,5 +1,6 @@
 package musicboxd.android.ui.common
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,9 +20,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun ArtistHorizontalPreview(artistImgUrl: String, artistName: String) {
+fun ArtistHorizontalPreview(onClick: () -> Unit, artistImgUrl: String, artistName: String) {
     Row(
         modifier = Modifier
+            .clickable {
+                onClick()
+            }
             .fillMaxWidth()
             .padding(10.dp),
         verticalAlignment = Alignment.CenterVertically

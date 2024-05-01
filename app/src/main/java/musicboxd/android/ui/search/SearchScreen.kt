@@ -23,12 +23,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import musicboxd.android.ui.theme.MusicBoxdTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
-    searchScreenViewModel: SearchScreenViewModel = hiltViewModel()
+    searchScreenViewModel: SearchScreenViewModel = hiltViewModel(),
+    navController: NavController
 ) {
     val searchQuery = searchScreenViewModel.searchQuery.collectAsStateWithLifecycle()
     val isSearchActive = rememberSaveable {
@@ -85,7 +87,12 @@ fun SearchScreen(
                 onActiveChange = {
                     isSearchActive.value = it
                 },
-                content = { SearchContent(searchScreenViewModel = searchScreenViewModel) }
+                content = {
+                    SearchContent(
+                        searchScreenViewModel = searchScreenViewModel,
+                        navController
+                    )
+                }
             )
         }
     }

@@ -18,16 +18,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.launch
 import musicboxd.android.ui.common.AlbumxTrackHorizontalPreview
 import musicboxd.android.ui.common.ArtistHorizontalPreview
+import musicboxd.android.ui.navigation.NavigationRoutes
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalPagerApi::class)
 @Composable
-fun SearchContent(searchScreenViewModel: SearchScreenViewModel) {
+fun SearchContent(searchScreenViewModel: SearchScreenViewModel, navController: NavController) {
     val searchArtistsResult =
         searchScreenViewModel.searchArtistsResult.collectAsStateWithLifecycle()
     val searchTracksResult = searchScreenViewModel.searchTracksResult.collectAsStateWithLifecycle()
@@ -65,6 +67,9 @@ fun SearchContent(searchScreenViewModel: SearchScreenViewModel) {
                         it.id
                     }) { index, it ->
                         ArtistHorizontalPreview(
+                            onClick = {
+                                navController.navigate(NavigationRoutes.ARTIST_DETAILS.name)
+                            },
                             artistImgUrl = if (it.images.isNotEmpty()) it.images.last().url else "",
                             artistName = it.name
                         )
@@ -74,6 +79,9 @@ fun SearchContent(searchScreenViewModel: SearchScreenViewModel) {
                         it.id
                     }) { index, it ->
                         AlbumxTrackHorizontalPreview(
+                            onClick = {
+                                navController.navigate(NavigationRoutes.ALBUM_DETAILS.name)
+                            },
                             isExplicit = false,
                             itemType = it.album_type.capitalize(),
                             albumImgUrl = if (it.images.isNotEmpty()) it.images.last().url else "",
@@ -86,6 +94,9 @@ fun SearchContent(searchScreenViewModel: SearchScreenViewModel) {
                         it.id
                     }) { index, it ->
                         AlbumxTrackHorizontalPreview(
+                            onClick = {
+                                navController.navigate(NavigationRoutes.TRACK_DETAILS.name)
+                            },
                             isExplicit = it.explicit,
                             itemType = it.type.capitalize(),
                             albumImgUrl = if (it.album.images.isNotEmpty()) it.album.images.last().url else "",
