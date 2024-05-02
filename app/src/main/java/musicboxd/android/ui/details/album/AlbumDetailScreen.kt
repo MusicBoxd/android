@@ -23,12 +23,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Audiotrack
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.MusicVideo
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.QueueMusic
 import androidx.compose.material.icons.filled.RateReview
@@ -36,6 +38,7 @@ import androidx.compose.material.icons.filled.Reviews
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -47,6 +50,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.contentColorFor
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -74,6 +78,7 @@ import kotlinx.coroutines.launch
 import musicboxd.android.R
 import musicboxd.android.ui.common.AlbumxTrackCover
 import musicboxd.android.ui.common.AlbumxTrackCoverState
+import musicboxd.android.ui.common.CoilImage
 import musicboxd.android.ui.common.fadedBottomEdges
 import musicboxd.android.ui.details.DetailsViewModel
 import musicboxd.android.ui.theme.MusicBoxdTheme
@@ -391,6 +396,75 @@ fun AlbumDetailScreen(
                     modifier = Modifier.padding(start = 15.dp, end = 15.dp, top = 15.dp),
                     color = MaterialTheme.colorScheme.outline.copy(0.25f)
                 )
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(15.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = detailsViewModel.previewCardColor.value
+                    )
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        CoilImage(
+                            imgUrl = rememberSaveable(albumDetailScreenState.albumImgUrl) {
+                                mutableStateOf(albumDetailScreenState.albumImgUrl)
+                            }.value,
+                            modifier = Modifier.size(75.dp),
+                            contentDescription = "Album Cover Art"
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column(modifier = Modifier.fillMaxWidth(0.7f)) {
+                            Text(
+                                text = albumDetailScreenState.albumTitle,
+                                style = MaterialTheme.typography.titleLarge,
+                                color = contentColorFor(detailsViewModel.previewCardColor.value),
+                                fontSize = 14.sp,
+                                softWrap = true,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(end = 15.dp)
+                            )
+                            Spacer(modifier = Modifier.height(5.dp))
+                            Text(
+                                text = buildAnnotatedString {
+                                    withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
+                                        append("Preview")
+                                    }
+                                    append(" • Album")
+                                },
+                                style = MaterialTheme.typography.titleSmall,
+                                color = contentColorFor(detailsViewModel.previewCardColor.value).copy(
+                                    0.9f
+                                ),
+                                softWrap = true,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
+                            Row {
+                                IconButton(onClick = { /*TODO*/ }) {
+                                    Icon(
+                                        imageVector = Icons.Default.MusicVideo,
+                                        contentDescription = "Play Album Preview Icon Button"
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(15.dp))
+                            }
+                        }
+                    }
+                }
+            }
+            item {
+                Divider(
+                    modifier = Modifier.padding(start = 15.dp, end = 15.dp),
+                    color = MaterialTheme.colorScheme.outline.copy(0.25f)
+                )
                 if (trackList.value.isNotEmpty()) {
                     Text(
                         text = "Track list",
@@ -456,7 +530,7 @@ fun AlbumDetailScreen(
                                 }
                             }
                             IconButton(onClick = {
-                                if (isAnyTrackIsPlayingState.value || isAnyTrackInLoadingState.value) {
+                                if (item.id == selectedTrackId.value && (isAnyTrackIsPlayingState.value || isAnyTrackInLoadingState.value)) {
                                     isAnyTrackInLoadingState.value = false
                                     isAnyTrackIsPlayingState.value = false
                                     mediaPlayer.stop()
@@ -474,6 +548,7 @@ fun AlbumDetailScreen(
                                 mediaPlayer.prepareAsync()
                                 mediaPlayer.setOnPreparedListener {
                                     it.start()
+                                    isAnyTrackInLoadingState.value = false
                                     isAnyTrackIsPlayingState.value = true
                                 }
                                 mediaPlayer.setOnCompletionListener {
@@ -484,7 +559,7 @@ fun AlbumDetailScreen(
                                 }
                             }) {
                                 Icon(
-                                    imageVector = if (isAnyTrackIsPlayingState.value && selectedTrackId.value == item.id) Icons.Default.Stop else Icons.Default.PlayArrow,
+                                    imageVector = if (isAnyTrackInLoadingState.value && selectedTrackId.value == item.id) Icons.Default.Audiotrack else if (isAnyTrackIsPlayingState.value && selectedTrackId.value == item.id) Icons.Default.Stop else Icons.Default.PlayArrow,
                                     contentDescription = null
                                 )
                             }
@@ -494,6 +569,9 @@ fun AlbumDetailScreen(
                         }
                     }
                 }
+            }
+            item {
+                Spacer(modifier = Modifier.height(200.dp))
             }
         }
         if (isBtmSheetVisible.value) {

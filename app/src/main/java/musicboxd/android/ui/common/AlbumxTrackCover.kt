@@ -33,7 +33,7 @@ fun AlbumxTrackCover(albumxTrackCoverState: AlbumxTrackCoverState) {
             .height((200 + 50).dp)
     ) {
         CoilImage(
-            alignment = Alignment.Center,
+            alignment = Alignment.TopEnd,
             imgUrl = rememberSaveable(albumxTrackCoverState.covertImgUrl) {
                 mutableStateOf(albumxTrackCoverState.covertImgUrl)
             }.value,

@@ -9,7 +9,7 @@ data class Item(
     val explicit: Boolean,
     val id: String,
     val name: String,
-    val preview_url: String,
+    val preview_url: String = "",
     val track_number: Int,
     val type: String,
     val uri: String
