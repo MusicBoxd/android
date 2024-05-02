@@ -2,7 +2,8 @@ package musicboxd.android.data.remote.api.spotify
 
 import androidx.annotation.Keep
 import musicboxd.android.data.remote.api.spotify.model.album.SpotifyAlbumSearchDTO
-import musicboxd.android.data.remote.api.spotify.model.artist.SpotifyArtistSearchDTO
+import musicboxd.android.data.remote.api.spotify.model.artist_search.SpotifyArtistSearchDTO
+import musicboxd.android.data.remote.api.spotify.model.specific_artist.SpecificArtistFromSpotifyDTO
 import musicboxd.android.data.remote.api.spotify.model.track.SpotifyTrackSearchDTO
 import musicboxd.android.data.remote.api.spotify.model.tracklist.SpotifyAlbumTrackListDTO
 import retrofit2.http.GET
@@ -19,6 +20,12 @@ interface SpotifyAPIService {
         @Query("limit") limit: String,
         @Header("Authorization") authorizationToken: String
     ): SpotifyArtistSearchDTO
+
+    @GET("artists/{id}")
+    suspend fun getArtistData(
+        @Path("id") artistId: String,
+        @Header("Authorization") authorizationToken: String
+    ): SpecificArtistFromSpotifyDTO
 
     @GET("search?type=album")
     suspend fun searchAlbums(

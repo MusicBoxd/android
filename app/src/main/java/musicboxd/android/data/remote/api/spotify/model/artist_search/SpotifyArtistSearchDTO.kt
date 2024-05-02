@@ -1,4 +1,4 @@
-package musicboxd.android.data.remote.api.spotify.model.artist
+package musicboxd.android.data.remote.api.spotify.model.artist_search
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

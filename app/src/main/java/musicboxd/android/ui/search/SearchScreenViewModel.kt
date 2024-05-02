@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import musicboxd.android.data.remote.api.spotify.SpotifyAPIRepo
-import musicboxd.android.data.remote.api.spotify.model.artist.Item
+import musicboxd.android.data.remote.api.spotify.model.artist_search.Item
 import musicboxd.android.data.remote.api.spotify.model.token.SpotifyToken
 import okhttp3.OkHttpClient
 import okhttp3.Request

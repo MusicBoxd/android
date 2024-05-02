@@ -31,7 +31,7 @@ fun MainNavigation(navController: NavHostController, detailsViewModel: DetailsVi
             SearchScreen(navController = navController, detailsViewModel = detailsViewModel)
         }
         composable(route = NavigationRoutes.ALBUM_DETAILS.name) {
-            AlbumDetailScreen(detailsViewModel.albumScreenState)
+            AlbumDetailScreen(detailsViewModel.albumScreenState, detailsViewModel)
         }
         composable(route = NavigationRoutes.TRACK_DETAILS.name) {
             TrackDetailScreen()

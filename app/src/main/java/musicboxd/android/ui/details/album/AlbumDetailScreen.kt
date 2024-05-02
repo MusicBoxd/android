@@ -1,9 +1,11 @@
 package musicboxd.android.ui.details.album
 
+import android.media.AudioAttributes
+import android.media.MediaPlayer
+import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,11 +29,14 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.QueueMusic
 import androidx.compose.material.icons.filled.RateReview
 import androidx.compose.material.icons.filled.Reviews
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
@@ -44,12 +49,16 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -60,25 +69,59 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import musicboxd.android.R
 import musicboxd.android.ui.common.AlbumxTrackCover
 import musicboxd.android.ui.common.AlbumxTrackCoverState
 import musicboxd.android.ui.common.fadedBottomEdges
+import musicboxd.android.ui.details.DetailsViewModel
 import musicboxd.android.ui.theme.MusicBoxdTheme
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun AlbumDetailScreen(albumDetailScreenState: AlbumDetailScreenState) {
+fun AlbumDetailScreen(
+    albumDetailScreenState: AlbumDetailScreenState,
+    detailsViewModel: DetailsViewModel
+) {
     val modalBottomSheetState = rememberModalBottomSheetState()
     val coroutineScope = rememberCoroutineScope()
     val isBtmSheetVisible = rememberSaveable {
         mutableStateOf(false)
     }
+    val localContext = LocalContext.current
     val wikipediaExtractText =
         albumDetailScreenState.wikipediaExtractText.collectAsStateWithLifecycle("")
     val trackList =
         albumDetailScreenState.trackList.collectAsStateWithLifecycle(initialValue = emptyList())
+    val audioAttributes = AudioAttributes.Builder()
+        .setUsage(AudioAttributes.USAGE_MEDIA)
+        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+        .build()
+    val mediaPlayer = remember {
+        MediaPlayer().apply {
+            setAudioAttributes(audioAttributes)
+        }
+    }
+    val isAnyTrackIsPlayingState = rememberSaveable {
+        mutableStateOf(false)
+    }
+    val isAnyTrackInLoadingState = rememberSaveable {
+        mutableStateOf(false)
+    }
+    val selectedTrackId = rememberSaveable {
+        mutableStateOf("")
+    }
+    val currentPlayingTrackDurationAsFloat = rememberSaveable {
+        mutableFloatStateOf(0f)
+    }
+    LaunchedEffect(key1 = isAnyTrackIsPlayingState.value) {
+        while (isAnyTrackIsPlayingState.value) {
+            currentPlayingTrackDurationAsFloat.floatValue =
+                mediaPlayer.currentPosition.toFloat() / 30000f
+            delay(500L)
+        }
+    }
     MusicBoxdTheme {
         val colorScheme = MaterialTheme.colorScheme
         LazyColumn(
@@ -353,21 +396,21 @@ fun AlbumDetailScreen(albumDetailScreenState: AlbumDetailScreenState) {
                         text = "Track list",
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(15.dp)
+                        modifier = Modifier.padding(start = 15.dp, top = 15.dp, bottom = 7.5.dp)
                     )
                 }
             }
             itemsIndexed(trackList.value) { index, item ->
                 Row(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(end = 15.dp, bottom = 15.dp),
+                        .fillMaxWidth()
+                        .padding(end = 10.dp, top = 7.5.dp, bottom = 7.5.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth(0.8f)
+                        modifier = Modifier.fillMaxWidth(0.7f)
                     ) {
                         Spacer(modifier = Modifier.width(25.dp))
                         Text(
@@ -382,7 +425,7 @@ fun AlbumDetailScreen(albumDetailScreenState: AlbumDetailScreenState) {
                                 text = item.name,
                                 style = MaterialTheme.typography.titleMedium,
                                 maxLines = 1,
-                                modifier = Modifier.basicMarquee(),
+                                overflow = TextOverflow.Ellipsis,
                                 textAlign = TextAlign.Start
                             )
                             Spacer(modifier = Modifier.height(5.dp))
@@ -392,11 +435,63 @@ fun AlbumDetailScreen(albumDetailScreenState: AlbumDetailScreenState) {
                                 maxLines = 1,
                                 textAlign = TextAlign.Start,
                                 color = LocalContentColor.current.copy(0.9f),
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
                     }
-                    IconButton(onClick = { /*TODO*/ }) {
-                        Icon(imageVector = Icons.Default.MoreVert, contentDescription = null)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(contentAlignment = Alignment.Center) {
+                            if (selectedTrackId.value == item.id && (isAnyTrackIsPlayingState.value || isAnyTrackInLoadingState.value)) {
+                                if (isAnyTrackIsPlayingState.value) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(30.dp),
+                                        strokeWidth = 2.5.dp,
+                                        progress = currentPlayingTrackDurationAsFloat.floatValue
+                                    )
+                                } else {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(30.dp),
+                                        strokeWidth = 2.5.dp
+                                    )
+                                }
+                            }
+                            IconButton(onClick = {
+                                if (isAnyTrackIsPlayingState.value || isAnyTrackInLoadingState.value) {
+                                    isAnyTrackInLoadingState.value = false
+                                    isAnyTrackIsPlayingState.value = false
+                                    mediaPlayer.stop()
+                                    mediaPlayer.reset()
+                                    return@IconButton
+                                }
+                                Toast
+                                    .makeText(localContext, "Fetching Audio", Toast.LENGTH_SHORT)
+                                    .show()
+                                selectedTrackId.value = item.id
+                                isAnyTrackInLoadingState.value = true
+                                mediaPlayer.stop()
+                                mediaPlayer.reset()
+                                mediaPlayer.setDataSource(item.preview_url)
+                                mediaPlayer.prepareAsync()
+                                mediaPlayer.setOnPreparedListener {
+                                    it.start()
+                                    isAnyTrackIsPlayingState.value = true
+                                }
+                                mediaPlayer.setOnCompletionListener {
+                                    it.stop()
+                                    it.reset()
+                                    isAnyTrackIsPlayingState.value = false
+                                    isAnyTrackInLoadingState.value = false
+                                }
+                            }) {
+                                Icon(
+                                    imageVector = if (isAnyTrackIsPlayingState.value && selectedTrackId.value == item.id) Icons.Default.Stop else Icons.Default.PlayArrow,
+                                    contentDescription = null
+                                )
+                            }
+                        }
+                        IconButton(onClick = { }) {
+                            Icon(imageVector = Icons.Default.MoreVert, contentDescription = null)
+                        }
                     }
                 }
             }

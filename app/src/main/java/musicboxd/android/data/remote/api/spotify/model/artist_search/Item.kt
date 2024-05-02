@@ -1,9 +1,11 @@
-package musicboxd.android.data.remote.api.spotify.model.artist
+package musicboxd.android.data.remote.api.spotify.model.artist_search
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ItemX(
+
+data class Item(
+    val external_urls: ExternalUrls,
     val followers: Followers,
     val genres: List<String>,
     val href: String,

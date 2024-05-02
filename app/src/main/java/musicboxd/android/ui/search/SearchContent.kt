@@ -99,7 +99,8 @@ fun SearchContent(
                                 detailsViewModel.loadAlbumInfo(
                                     albumID = it.id,
                                     albumName = it.name,
-                                    artistName = it.artists.joinToString { it.name })
+                                    artistID = it.artists.map { it.id }.random()
+                                )
                                 navController.navigate(NavigationRoutes.ALBUM_DETAILS.name)
                             },
                             isExplicit = false,

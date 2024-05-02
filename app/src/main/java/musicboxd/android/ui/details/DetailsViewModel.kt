@@ -1,6 +1,5 @@
 package musicboxd.android.ui.details
 
-import android.util.Log
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
@@ -27,7 +26,7 @@ class DetailsViewModel @Inject constructor(
         trackList = flow { }
     )
 
-    fun loadAlbumInfo(artistName: String, albumName: String, albumID: String) {
+    fun loadAlbumInfo(artistID: String, albumName: String, albumID: String) {
         spotifyToken?.accessToken?.let {
             viewModelScope.launch {
                 awaitAll(
@@ -38,14 +37,10 @@ class DetailsViewModel @Inject constructor(
                     },
                     async {
                         albumScreenState = albumScreenState.copy(covertArtImgUrl = flow {
-                            emit(spotifyAPIRepo.searchArtists(
-                                artistName, "3", it
-                            ).bestMatch.items.map { it.images }.first().map { it.url }.first()
-                            )
+                            emit(spotifyAPIRepo.getArtistData(artistID, it).images.first().url)
                         })
                     },
                     async {
-                        Log.d("10MinMail", albumID)
                         albumScreenState = albumScreenState.copy(trackList = flow {
                             emit(
                                 spotifyAPIRepo.getTrackListOfAnAlbum(

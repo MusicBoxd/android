@@ -19,6 +19,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -32,7 +33,7 @@ fun AlbumxTrackCover(albumxTrackCoverState: AlbumxTrackCoverState) {
             .height((200 + 50).dp)
     ) {
         CoilImage(
-            alignment = Alignment.TopCenter,
+            alignment = Alignment.Center,
             imgUrl = rememberSaveable(albumxTrackCoverState.covertImgUrl) {
                 mutableStateOf(albumxTrackCoverState.covertImgUrl)
             }.value,
@@ -62,7 +63,9 @@ fun AlbumxTrackCover(albumxTrackCoverState: AlbumxTrackCoverState) {
                     style = MaterialTheme.typography.titleLarge,
                     fontSize = 18.sp,
                     color = MaterialTheme.colorScheme.onSurface,
-                    softWrap = true
+                    softWrap = true,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(5.dp))
                 Text(
