@@ -1,6 +1,5 @@
 package musicboxd.android.ui.common
 
-import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,7 +25,6 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun AlbumxTrackCover(albumxTrackCoverState: AlbumxTrackCoverState) {
     val colorScheme = MaterialTheme.colorScheme
-    Log.d("10MinMail", albumxTrackCoverState.covertImgUrl)
     Box(
         modifier = Modifier
             .fillMaxWidth()

@@ -4,31 +4,59 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.rememberBottomSheetScaffoldState
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import musicboxd.android.ui.details.DetailsViewModel
 import musicboxd.android.ui.navigation.BottomNavigationBar
 import musicboxd.android.ui.navigation.MainNavigation
+import musicboxd.android.ui.navigation.NavigationRoutes
 import musicboxd.android.ui.theme.MusicBoxdTheme
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @OptIn(ExperimentalMaterialApi::class)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             val navController = rememberNavController()
+            val scaffoldState = rememberBottomSheetScaffoldState()
+            val currentBackStackEntry = navController.currentBackStackEntryAsState()
+            val currentNavRoute = rememberSaveable(
+                inputs = arrayOf(currentBackStackEntry.value?.destination?.route)
+            ) {
+                currentBackStackEntry.value?.destination?.route.toString()
+            }
+            LaunchedEffect(key1 = currentNavRoute) {
+                if (currentNavRoute != NavigationRoutes.VIDEO_CANVAS.name && currentNavRoute != NavigationRoutes.ALBUM_DETAILS.name) {
+                    scaffoldState.bottomSheetState.expand()
+                } else {
+                    scaffoldState.bottomSheetState.collapse()
+                }
+            }
+            val detailsViewModel: DetailsViewModel = hiltViewModel()
             MusicBoxdTheme {
-                /*Surface {
-                    AlbumDetailScreen()
-                }*/
-                val detailsViewModel: DetailsViewModel = hiltViewModel()
-                Scaffold(bottomBar = {
-                    BottomNavigationBar(navController = navController)
-                }) {
-                    MainNavigation(navController = navController, detailsViewModel)
+                Scaffold(Modifier.fillMaxSize()) {
+                    androidx.compose.material.BottomSheetScaffold(
+                        sheetPeekHeight = 0.dp,
+                        scaffoldState = scaffoldState,
+                        sheetContent = {
+                            BottomNavigationBar(navController = navController)
+                        }) {
+                        Scaffold {
+                            MainNavigation(navController = navController, detailsViewModel)
+                        }
+                    }
                 }
             }
         }

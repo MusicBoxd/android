@@ -73,6 +73,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import musicboxd.android.R
@@ -81,13 +82,15 @@ import musicboxd.android.ui.common.AlbumxTrackCoverState
 import musicboxd.android.ui.common.CoilImage
 import musicboxd.android.ui.common.fadedEdges
 import musicboxd.android.ui.details.DetailsViewModel
+import musicboxd.android.ui.navigation.NavigationRoutes
 import musicboxd.android.ui.theme.MusicBoxdTheme
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun AlbumDetailScreen(
     albumDetailScreenState: AlbumDetailScreenState,
-    detailsViewModel: DetailsViewModel
+    detailsViewModel: DetailsViewModel,
+    navController: NavController
 ) {
     val modalBottomSheetState = rememberModalBottomSheetState()
     val coroutineScope = rememberCoroutineScope()
@@ -400,7 +403,11 @@ fun AlbumDetailScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(15.dp),
+                        .padding(15.dp)
+                        .clickable {
+                            detailsViewModel.albumScreenState = albumDetailScreenState
+                            navController.navigate(NavigationRoutes.VIDEO_CANVAS.name)
+                        },
                     colors = CardDefaults.cardColors(
                         containerColor = detailsViewModel.previewCardColor.value
                     )

@@ -119,4 +119,6 @@ dependencies {
     implementation("androidx.palette:palette-ktx:1.0.0")
 
     implementation ("com.google.android.exoplayer:exoplayer:2.19.1")
+
+    implementation("org.jsoup:jsoup:1.14.3")
 }
