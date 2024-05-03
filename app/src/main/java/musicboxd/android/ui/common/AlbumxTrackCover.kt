@@ -40,7 +40,7 @@ fun AlbumxTrackCover(albumxTrackCoverState: AlbumxTrackCoverState) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp)
-                .fadedBottomEdges(colorScheme),
+                .fadedEdges(colorScheme),
             contentDescription = "null"
         )
         Row(
@@ -69,7 +69,7 @@ fun AlbumxTrackCover(albumxTrackCoverState: AlbumxTrackCoverState) {
                 )
                 Spacer(modifier = Modifier.height(5.dp))
                 Text(
-                    text = "Album • ${albumxTrackCoverState.itemArtists.joinToString { it }}",
+                    text = "${albumxTrackCoverState.itemType} • ${albumxTrackCoverState.itemArtists.joinToString { it }}",
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurface,
                     softWrap = true

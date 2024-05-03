@@ -9,17 +9,29 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 
-fun Modifier.fadedBottomEdges(colorScheme: ColorScheme): Modifier {
+enum class EdgeType {
+    BOTTOM, TOP
+}
+
+fun Modifier.fadedEdges(colorScheme: ColorScheme, edgeType: EdgeType = EdgeType.BOTTOM): Modifier {
     return this
         .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
         .drawWithContent {
             drawContent()
             drawRect(
                 Brush.verticalGradient(
-                    listOf(
-                        colorScheme.surface,
-                        Color.Transparent
-                    )
+                    if (edgeType == EdgeType.BOTTOM) {
+                        listOf(
+                            colorScheme.surface,
+                            Color.Transparent
+                        )
+                    } else {
+                        listOf(
+                            Color.Transparent,
+                            colorScheme.surface
+                        )
+                    }
+
                 ), blendMode = BlendMode.DstIn
             )
         }

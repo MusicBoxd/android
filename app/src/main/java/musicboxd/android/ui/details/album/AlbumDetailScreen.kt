@@ -79,7 +79,7 @@ import musicboxd.android.R
 import musicboxd.android.ui.common.AlbumxTrackCover
 import musicboxd.android.ui.common.AlbumxTrackCoverState
 import musicboxd.android.ui.common.CoilImage
-import musicboxd.android.ui.common.fadedBottomEdges
+import musicboxd.android.ui.common.fadedEdges
 import musicboxd.android.ui.details.DetailsViewModel
 import musicboxd.android.ui.theme.MusicBoxdTheme
 
@@ -142,7 +142,8 @@ fun AlbumDetailScreen(
                         ).value,
                         mainImgUrl = albumDetailScreenState.albumImgUrl,
                         itemTitle = albumDetailScreenState.albumTitle,
-                        itemArtists = albumDetailScreenState.artists
+                        itemArtists = albumDetailScreenState.artists,
+                        itemType = "Album"
                     )
                 )
             }
@@ -176,7 +177,7 @@ fun AlbumDetailScreen(
                                 }
                             }
                             .padding(15.dp)
-                            .fadedBottomEdges(colorScheme),
+                            .fadedEdges(colorScheme),
                         color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 5,
                         overflow = TextOverflow.Ellipsis)
@@ -587,7 +588,8 @@ fun AlbumDetailScreen(
                         covertImgUrl = albumDetailScreenState.covertArtImgUrl.collectAsState(initial = "").value,
                         mainImgUrl = albumDetailScreenState.albumImgUrl,
                         itemTitle = albumDetailScreenState.albumTitle,
-                        itemArtists = albumDetailScreenState.artists
+                        itemArtists = albumDetailScreenState.artists,
+                        itemType = "Album"
                     )
                 )
                 Text(
