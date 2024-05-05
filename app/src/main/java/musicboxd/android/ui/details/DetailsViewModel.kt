@@ -34,6 +34,7 @@ class DetailsViewModel @Inject constructor(
         trackList = flow { }
     )
     var previewCardColor = mutableStateOf(Color.Black)
+    var paletteColors = mutableStateOf<Palette?>(null)
     fun loadAlbumInfo(artistID: String, albumName: String, albumID: String) {
         spotifyToken?.accessToken?.let {
             viewModelScope.launch {
@@ -53,6 +54,7 @@ class DetailsViewModel @Inject constructor(
                         }
                         val albumCoverArtBitmap = BitmapFactory.decodeStream(inputStream)
                         val paletteForAlbumCoverArt = Palette.from(albumCoverArtBitmap).generate()
+                        paletteColors.value = paletteForAlbumCoverArt
                         previewCardColor.value =
                             Color(paletteForAlbumCoverArt.getDarkMutedColor(Color.Black.toArgb()))
                     },

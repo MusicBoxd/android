@@ -3,6 +3,12 @@ package musicboxd.android.ui.details.canvas
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.util.Log
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,15 +27,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -38,15 +44,21 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.palette.graphics.Palette
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.VerticalPager
 import com.google.accompanist.pager.rememberPagerState
@@ -54,15 +66,13 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.ui.PlayerView
-import kotlinx.coroutines.delay
 import musicboxd.android.ui.common.CoilImage
 import musicboxd.android.ui.details.DetailsViewModel
 
-@OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun VideoCanvas(
-    detailsViewModel: DetailsViewModel,
-    videoCanvasVM: VideoCanvasVM = hiltViewModel()
+    detailsViewModel: DetailsViewModel, videoCanvasVM: VideoCanvasVM = hiltViewModel()
 ) {
     val localContext = LocalContext.current
     val isPlayerReady = rememberSaveable {
@@ -72,10 +82,8 @@ fun VideoCanvas(
     val systemUiController = rememberSystemUiController()
     systemUiController.setNavigationBarColor(MaterialTheme.colorScheme.surface)
     systemUiController.setStatusBarColor(MaterialTheme.colorScheme.surface)
-    val audioAttributes = AudioAttributes.Builder()
-        .setUsage(AudioAttributes.USAGE_MEDIA)
-        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-        .build()
+    val audioAttributes = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA)
+        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build()
     val mediaPlayer = remember {
         MediaPlayer().apply {
             setAudioAttributes(audioAttributes)
@@ -108,10 +116,8 @@ fun VideoCanvas(
     }
     LaunchedEffect(key1 = pagerState.currentPage, key2 = trackList.value.size) {
         currentPage.intValue = pagerState.currentPage
-        if (mediaPlayer.isPlaying) {
-            mediaPlayer.stop()
-            mediaPlayer.reset()
-        }
+        mediaPlayer.stop()
+        mediaPlayer.reset()
         if (trackList.value.isEmpty()) {
             return@LaunchedEffect
         }
@@ -120,12 +126,15 @@ fun VideoCanvas(
         mediaPlayer.setOnPreparedListener {
             it.start()
         }
-        mediaPlayer.isLooping = true
-        while (true) {
-            currentDuration.floatValue =
-                mediaPlayer.currentPosition.toFloat() / mediaPlayer.duration.toFloat()
-            delay(500L)
-        }
+        /*  mediaPlayer.isLooping = true
+          while (true) {
+              currentDuration.floatValue =
+                  mediaPlayer.currentPosition.toFloat() / mediaPlayer.duration.toFloat()
+              delay(500L)
+          }*/
+    }
+    val showStaticLayout = rememberSaveable {
+        mutableStateOf(false)
     }
     VerticalPager(count = trackList.value.size, state = pagerState) {
         val exoPlayer = remember(canvasList.value) {
@@ -136,8 +145,10 @@ fun VideoCanvas(
                 setMediaItem(
                     MediaItem.fromUri(
                         try {
+                            showStaticLayout.value = false
                             canvasList.value[it]
                         } catch (_: Exception) {
+                            showStaticLayout.value = true
                             ""
                         }
                     )
@@ -148,21 +159,29 @@ fun VideoCanvas(
                 play()
             }
         }
+        if (showStaticLayout.value || (canvasList.value.size > it && canvasList.value[it].isEmpty() && canvasList.value.isNotEmpty())) {
+            NonCanvasMode(
+                paletteFromCoverArt = detailsViewModel.paletteColors,
+                imgUrl = albumScreenState.albumImgUrl,
+                title = trackList.value[it].name,
+                artists = albumScreenState.artists,
+                albumName = albumScreenState.albumTitle
+            )
+            return@VerticalPager
+        }
         Box(Modifier.fillMaxSize()) {
             if (canvasList.value.isNotEmpty()) {
                 DisposableEffect(
-                    AndroidView(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight(),
+                    AndroidView(modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight(),
                         factory = {
                             PlayerView(localContext).apply {
                                 player = exoPlayer
                                 useController = false
                                 this.setShowBuffering(PlayerView.SHOW_BUFFERING_WHEN_PLAYING)
                             }
-                        }
-                    )
+                        })
                 ) {
                     onDispose {
                         exoPlayer.release()
@@ -209,7 +228,7 @@ fun VideoCanvas(
                         )
                         Spacer(modifier = Modifier.height(5.dp))
                         Text(
-                            text = "Album • ${albumScreenState.artists.joinToString { it }}",
+                            text = "${albumScreenState.albumTitle} • Album • ${albumScreenState.artists.joinToString { it }}",
                             style = MaterialTheme.typography.titleSmall,
                             color = MaterialTheme.colorScheme.onSurface,
                             maxLines = 1,
@@ -224,16 +243,16 @@ fun VideoCanvas(
                             .background(MaterialTheme.colorScheme.surface),
                         contentAlignment = Alignment.CenterEnd
                     ) {
-                        Slider(
-                            thumb = {},
-                            value = currentDuration.floatValue,
-                            onValueChange = {
-                                currentDuration.floatValue = it
-                                mediaPlayer.seekTo((it * mediaPlayer.duration).toInt())
-                            }, modifier = Modifier
-                                .fillMaxWidth(0.5f)
-                                .align(Alignment.CenterStart)
-                        )
+                        /* Slider(
+                             thumb = {},
+                             value = currentDuration.floatValue,
+                             onValueChange = {
+                                 currentDuration.floatValue = it
+                                 mediaPlayer.seekTo((it * mediaPlayer.duration).toInt())
+                             }, modifier = Modifier
+                                 .fillMaxWidth(0.5f)
+                                 .align(Alignment.CenterStart)
+                         )*/
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             FilledTonalIconButton(onClick = { /*TODO*/ }) {
                                 Icon(
@@ -249,8 +268,7 @@ fun VideoCanvas(
                             }
                             FilledTonalIconButton(onClick = { /*TODO*/ }) {
                                 Icon(
-                                    imageVector = Icons.Default.MoreVert,
-                                    contentDescription = null
+                                    imageVector = Icons.Default.MoreVert, contentDescription = null
                                 )
                             }
                         }
@@ -260,5 +278,92 @@ fun VideoCanvas(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun NonCanvasMode(
+    paletteFromCoverArt: MutableState<Palette?>,
+    imgUrl: String,
+    title: String,
+    artists: List<String>,
+    albumName: String
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "VideoCanvas")
+    val animatedProgress = infiniteTransition.animateFloat(
+        initialValue = -2f,
+        targetValue = 0.2f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(15000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ), label = "VideoCanvas Gradient"
+    )
+    val localColor = LocalContentColor.current
+    val colorScheme = MaterialTheme.colorScheme
+    val gradientColors = listOf(
+        colorScheme.surface,
+        Color(
+            paletteFromCoverArt.value?.getDarkMutedColor(
+                localColor.toArgb()
+            ) ?: localColor.toArgb()
+        ),
+    )
+    Column(
+        Modifier
+            .fillMaxSize()
+            .drawWithCache {
+                val height = size.height
+                val offset = height * animatedProgress.value
+                val brush = Brush.linearGradient(
+                    colors = gradientColors,
+                    start = Offset(0f, 5f),
+                    end = Offset(offset, height)
+
+                )
+                onDrawBehind {
+                    drawRect(
+                        brush = brush,
+                        blendMode = BlendMode.SrcIn
+                    )
+                }
+            },
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Box(Modifier.wrapContentHeight(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .size(250.dp)
+                    .clip(RoundedCornerShape(10.dp))
+            )
+            CoilImage(
+                imgUrl = imgUrl,
+                modifier = Modifier
+                    .size(225.dp)
+                    .clip(RoundedCornerShape(10.dp)),
+                contentDescription = "Album Cover Art"
+            )
+        }
+        Spacer(modifier = Modifier.height(15.dp))
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            fontSize = 18.sp,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 15.dp, end = 15.dp),
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(5.dp))
+        Text(
+            text = "$albumName • Album • ${artists.joinToString { it }}",
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 15.dp, end = 15.dp),
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = TextAlign.Center,
+        )
     }
 }
