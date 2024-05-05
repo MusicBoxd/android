@@ -3,13 +3,14 @@ package musicboxd.android.ui.details.album
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.widget.Toast
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Audiotrack
@@ -62,7 +64,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -85,7 +89,7 @@ import musicboxd.android.ui.details.DetailsViewModel
 import musicboxd.android.ui.navigation.NavigationRoutes
 import musicboxd.android.ui.theme.MusicBoxdTheme
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun AlbumDetailScreen(
     albumDetailScreenState: AlbumDetailScreenState,
@@ -123,6 +127,7 @@ fun AlbumDetailScreen(
     val currentPlayingTrackDurationAsFloat = rememberSaveable {
         mutableFloatStateOf(0f)
     }
+    val localUriHandler = LocalUriHandler.current
     LaunchedEffect(key1 = isAnyTrackIsPlayingState.value) {
         while (isAnyTrackIsPlayingState.value) {
             currentPlayingTrackDurationAsFloat.floatValue =
@@ -208,6 +213,43 @@ fun AlbumDetailScreen(
                             }
                             .padding(start = 5.dp),
                         color = MaterialTheme.colorScheme.onSurface)
+                }
+            }
+            if (detailsViewModel.externalLinks.value.isNotEmpty()) {
+                item {
+                    Divider(
+                        modifier = Modifier.padding(start = 15.dp, top = 15.dp, end = 15.dp),
+                        color = MaterialTheme.colorScheme.outline.copy(0.25f)
+                    )
+                    Text(
+                        text = "Available On",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(15.dp)
+                    )
+                }
+                item {
+                    FlowRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 5.dp)
+                    ) {
+                        detailsViewModel.externalLinks.value.forEach {
+                            if (it.externalLink != "") {
+                                IconButton(onClick = {
+                                    localUriHandler.openUri(it.externalLink)
+                                }) {
+                                    CoilImage(
+                                        imgUrl = it.imgURL, modifier = Modifier
+                                            .size(24.dp)
+                                            .clip(
+                                                CircleShape
+                                            ), contentDescription = ""
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
             item {

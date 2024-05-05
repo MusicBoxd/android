@@ -12,6 +12,9 @@ import musicboxd.android.data.remote.api.lastfm.LastFMAPIService
 import musicboxd.android.data.remote.api.musicbrainz.MusicBrainzAPIImpl
 import musicboxd.android.data.remote.api.musicbrainz.MusicBrainzAPIRepo
 import musicboxd.android.data.remote.api.musicbrainz.MusicBrainzAPIService
+import musicboxd.android.data.remote.api.songlink.SongLinkAPIService
+import musicboxd.android.data.remote.api.songlink.SongLinkImpl
+import musicboxd.android.data.remote.api.songlink.SongLinkRepo
 import musicboxd.android.data.remote.api.spotify.SpotifyAPIImpl
 import musicboxd.android.data.remote.api.spotify.SpotifyAPIRepo
 import musicboxd.android.data.remote.api.spotify.SpotifyAPIService
@@ -41,6 +44,17 @@ object AppModule {
             )
         )
             .build().create(LastFMAPIService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSongLinkAPIInstance(): SongLinkAPIService {
+        return Retrofit.Builder().baseUrl("https://api.song.link/v1-alpha.1/").addConverterFactory(
+            json.asConverterFactory(
+                "application/json".toMediaType()
+            )
+        )
+            .build().create(SongLinkAPIService::class.java)
     }
 
     @Provides
@@ -107,5 +121,11 @@ object AppModule {
     @Singleton
     fun provideLastFmRepo(lastFMAPIService: LastFMAPIService): LastFMAPIRepo {
         return LastFMAPIImpl(lastFMAPIService)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSongLinkRepo(songLinkAPIService: SongLinkAPIService): SongLinkRepo {
+        return SongLinkImpl(songLinkAPIService)
     }
 }

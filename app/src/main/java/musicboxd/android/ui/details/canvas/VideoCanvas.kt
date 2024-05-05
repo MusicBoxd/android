@@ -2,7 +2,6 @@ package musicboxd.android.ui.details.canvas
 
 import android.media.AudioAttributes
 import android.media.MediaPlayer
-import android.util.Log
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -18,6 +17,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -27,14 +27,20 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -51,12 +57,15 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.palette.graphics.Palette
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -66,13 +75,14 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.ui.PlayerView
+import kotlinx.coroutines.delay
 import musicboxd.android.ui.common.CoilImage
 import musicboxd.android.ui.details.DetailsViewModel
 
-@OptIn(ExperimentalPagerApi::class)
+@OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun VideoCanvas(
-    detailsViewModel: DetailsViewModel, videoCanvasVM: VideoCanvasVM = hiltViewModel()
+    detailsViewModel: DetailsViewModel
 ) {
     val localContext = LocalContext.current
     val isPlayerReady = rememberSaveable {
@@ -100,20 +110,7 @@ fun VideoCanvas(
     val currentPage = rememberSaveable {
         mutableIntStateOf(0)
     }
-    val canvasList = videoCanvasVM.canvasUrl
-    val isCanvasLoaded = rememberSaveable {
-        mutableStateOf(false)
-    }
-    LaunchedEffect(key1 = trackList.value.size) {
-        if (!isCanvasLoaded.value && trackList.value.isNotEmpty()) {
-            videoCanvasVM.loadCanvasUrls(trackList.value.map { "https://www.canvasdownloader.com/canvas?link=https://open.spotify.com/track/" + it.id })
-            Log.d(
-                "10MinMail",
-                "https://www.canvasdownloader.com/canvas?link=https://open.spotify.com/track/" + trackList.value.random().id
-            )
-            isCanvasLoaded.value = true
-        }
-    }
+    val canvasList = detailsViewModel.canvasUrl
     LaunchedEffect(key1 = pagerState.currentPage, key2 = trackList.value.size) {
         currentPage.intValue = pagerState.currentPage
         mediaPlayer.stop()
@@ -126,14 +123,14 @@ fun VideoCanvas(
         mediaPlayer.setOnPreparedListener {
             it.start()
         }
-        /*  mediaPlayer.isLooping = true
-          while (true) {
-              currentDuration.floatValue =
-                  mediaPlayer.currentPosition.toFloat() / mediaPlayer.duration.toFloat()
-              delay(500L)
-          }*/
+        mediaPlayer.isLooping = true
+        while (true) {
+            currentDuration.floatValue =
+                mediaPlayer.currentPosition.toFloat() / mediaPlayer.duration.toFloat()
+            delay(500L)
+        }
     }
-    val showStaticLayout = rememberSaveable {
+    val showNonCanvasModeLayout = rememberSaveable {
         mutableStateOf(false)
     }
     VerticalPager(count = trackList.value.size, state = pagerState) {
@@ -145,10 +142,10 @@ fun VideoCanvas(
                 setMediaItem(
                     MediaItem.fromUri(
                         try {
-                            showStaticLayout.value = false
+                            showNonCanvasModeLayout.value = false
                             canvasList.value[it]
                         } catch (_: Exception) {
-                            showStaticLayout.value = true
+                            showNonCanvasModeLayout.value = true
                             ""
                         }
                     )
@@ -159,13 +156,15 @@ fun VideoCanvas(
                 play()
             }
         }
-        if (showStaticLayout.value || (canvasList.value.size > it && canvasList.value[it].isEmpty() && canvasList.value.isNotEmpty())) {
+        if (showNonCanvasModeLayout.value || (canvasList.value.size > it && canvasList.value[it].isEmpty() && canvasList.value.isNotEmpty())) {
             NonCanvasMode(
                 paletteFromCoverArt = detailsViewModel.paletteColors,
                 imgUrl = albumScreenState.albumImgUrl,
                 title = trackList.value[it].name,
                 artists = albumScreenState.artists,
-                albumName = albumScreenState.albumTitle
+                albumName = albumScreenState.albumTitle,
+                currentDuration = currentDuration,
+                mediaPlayer = mediaPlayer
             )
             return@VerticalPager
         }
@@ -243,16 +242,16 @@ fun VideoCanvas(
                             .background(MaterialTheme.colorScheme.surface),
                         contentAlignment = Alignment.CenterEnd
                     ) {
-                        /* Slider(
-                             thumb = {},
-                             value = currentDuration.floatValue,
-                             onValueChange = {
-                                 currentDuration.floatValue = it
-                                 mediaPlayer.seekTo((it * mediaPlayer.duration).toInt())
-                             }, modifier = Modifier
-                                 .fillMaxWidth(0.5f)
-                                 .align(Alignment.CenterStart)
-                         )*/
+                        Slider(
+                            thumb = {},
+                            value = currentDuration.floatValue,
+                            onValueChange = {
+                                currentDuration.floatValue = it
+                                mediaPlayer.seekTo((it * mediaPlayer.duration).toInt())
+                            }, modifier = Modifier
+                                .fillMaxWidth(0.5f)
+                                .align(Alignment.CenterStart)
+                        )
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             FilledTonalIconButton(onClick = { /*TODO*/ }) {
                                 Icon(
@@ -281,13 +280,16 @@ fun VideoCanvas(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NonCanvasMode(
     paletteFromCoverArt: MutableState<Palette?>,
     imgUrl: String,
     title: String,
     artists: List<String>,
-    albumName: String
+    albumName: String,
+    currentDuration: MutableFloatState,
+    mediaPlayer: MediaPlayer
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "VideoCanvas")
     val animatedProgress = infiniteTransition.animateFloat(
@@ -308,62 +310,112 @@ fun NonCanvasMode(
             ) ?: localColor.toArgb()
         ),
     )
-    Column(
-        Modifier
-            .fillMaxSize()
-            .drawWithCache {
-                val height = size.height
-                val offset = height * animatedProgress.value
-                val brush = Brush.linearGradient(
-                    colors = gradientColors,
-                    start = Offset(0f, 5f),
-                    end = Offset(offset, height)
-
-                )
-                onDrawBehind {
-                    drawRect(
-                        brush = brush,
-                        blendMode = BlendMode.SrcIn
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .drawWithCache {
+                    val height = size.height
+                    val offset = height * animatedProgress.value
+                    val brush = Brush.linearGradient(
+                        colors = gradientColors,
+                        start = Offset(0f, 5f),
+                        end = Offset(offset, height)
                     )
-                }
-            },
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Box(Modifier.wrapContentHeight(), contentAlignment = Alignment.Center) {
+                    onDrawBehind {
+                        drawRect(
+                            brush = brush,
+                            blendMode = BlendMode.SrcIn
+                        )
+                    }
+                },
+            verticalArrangement = Arrangement.Bottom
+        ) {
             Box(
+                Modifier
+                    .wrapContentHeight()
+                    .fillMaxWidth(), contentAlignment = Alignment.CenterStart
+            ) {
+                CoilImage(
+                    imgUrl = imgUrl,
+                    modifier = Modifier
+                        .size(225.dp)
+                        .padding(start = 15.dp)
+                        .clip(RoundedCornerShape(10.dp)),
+                    contentDescription = "Album Cover Art"
+                )
+            }
+            Spacer(modifier = Modifier.height(15.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                fontSize = 20.sp,
+                color = contentColorFor(backgroundColor = gradientColors[1]),
                 modifier = Modifier
-                    .size(250.dp)
-                    .clip(RoundedCornerShape(10.dp))
+                    .fillMaxWidth()
+                    .padding(start = 15.dp, end = 15.dp),
+                textAlign = TextAlign.Start
             )
-            CoilImage(
-                imgUrl = imgUrl,
+            Spacer(modifier = Modifier.height(5.dp))
+            Text(
+                text = buildAnnotatedString {
+                    withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
+                        append(albumName)
+                    }
+                    append(" • Album • ${artists.joinToString { it }}")
+                },
                 modifier = Modifier
-                    .size(225.dp)
-                    .clip(RoundedCornerShape(10.dp)),
-                contentDescription = "Album Cover Art"
+                    .fillMaxWidth()
+                    .padding(start = 15.dp, end = 15.dp),
+                style = MaterialTheme.typography.titleSmall,
+                color = contentColorFor(backgroundColor = gradientColors[1]),
+                textAlign = TextAlign.Start,
             )
+            Spacer(modifier = Modifier.height(15.dp))
+            Box(
+                Modifier
+                    .wrapContentHeight()
+                    .fillMaxWidth()
+                    .padding(start = 10.dp, end = 15.dp)
+                    .navigationBarsPadding(),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Slider(
+                        colors = SliderDefaults.colors(inactiveTrackColor = Color.Transparent),
+                        thumb = {},
+                        value = currentDuration.floatValue,
+                        onValueChange = {
+                            currentDuration.floatValue = it
+                            mediaPlayer.seekTo((it * mediaPlayer.duration).toInt())
+                        }, modifier = Modifier
+                            .fillMaxWidth(0.5f)
+                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = { /*TODO*/ }) {
+                            Icon(
+                                imageVector = Icons.Default.FavoriteBorder,
+                                contentDescription = null
+                            )
+                        }
+                        IconButton(onClick = { /*TODO*/ }) {
+                            Icon(
+                                imageVector = Icons.Default.BookmarkBorder,
+                                contentDescription = null
+                            )
+                        }
+                        IconButton(onClick = { /*TODO*/ }) {
+                            Icon(
+                                imageVector = Icons.Default.MoreVert, contentDescription = null
+                            )
+                        }
+                    }
+                }
+            }
         }
-        Spacer(modifier = Modifier.height(15.dp))
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge,
-            fontSize = 18.sp,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 15.dp, end = 15.dp),
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(5.dp))
-        Text(
-            text = "$albumName • Album • ${artists.joinToString { it }}",
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 15.dp, end = 15.dp),
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurface,
-            textAlign = TextAlign.Center,
-        )
     }
 }

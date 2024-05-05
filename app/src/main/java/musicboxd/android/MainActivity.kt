@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.rememberBottomSheetScaffoldState
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
@@ -46,15 +47,17 @@ class MainActivity : ComponentActivity() {
             }
             val detailsViewModel: DetailsViewModel = hiltViewModel()
             MusicBoxdTheme {
-                Scaffold(Modifier.fillMaxSize()) {
-                    androidx.compose.material.BottomSheetScaffold(
-                        sheetPeekHeight = 0.dp,
-                        scaffoldState = scaffoldState,
-                        sheetContent = {
-                            BottomNavigationBar(navController = navController)
-                        }) {
-                        Scaffold {
-                            MainNavigation(navController = navController, detailsViewModel)
+                Surface {
+                    Scaffold(Modifier.fillMaxSize()) {
+                        androidx.compose.material.BottomSheetScaffold(
+                            sheetPeekHeight = 0.dp,
+                            scaffoldState = scaffoldState,
+                            sheetContent = {
+                                BottomNavigationBar(navController = navController)
+                            }) {
+                            Scaffold {
+                                MainNavigation(navController = navController, detailsViewModel)
+                            }
                         }
                     }
                 }
