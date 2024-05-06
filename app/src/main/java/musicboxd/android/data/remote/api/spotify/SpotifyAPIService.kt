@@ -1,9 +1,11 @@
 package musicboxd.android.data.remote.api.spotify
 
 import androidx.annotation.Keep
+import musicboxd.android.data.remote.api.spotify.model.album.Albums
 import musicboxd.android.data.remote.api.spotify.model.album.SpotifyAlbumSearchDTO
 import musicboxd.android.data.remote.api.spotify.model.artist_search.SpotifyArtistSearchDTO
 import musicboxd.android.data.remote.api.spotify.model.specific_artist.SpecificArtistFromSpotifyDTO
+import musicboxd.android.data.remote.api.spotify.model.topTracks.TopTracksDTO
 import musicboxd.android.data.remote.api.spotify.model.track.SpotifyTrackSearchDTO
 import musicboxd.android.data.remote.api.spotify.model.tracklist.SpotifyAlbumTrackListDTO
 import retrofit2.http.GET
@@ -46,4 +48,16 @@ interface SpotifyAPIService {
         @Path("id") albumID: String,
         @Header("Authorization") authorizationToken: String
     ): SpotifyAlbumTrackListDTO
+
+    @GET("artists/{id}/top-tracks")
+    suspend fun getTopTracksOfAnArtist(
+        @Path("id") artistId: String,
+        @Header("Authorization") authorizationToken: String
+    ): TopTracksDTO
+
+    @GET("artists/{id}/albums")
+    suspend fun getAlbumsOfAnArtist(
+        @Path("id") artistId: String,
+        @Header("Authorization") authorizationToken: String
+    ): Albums
 }

@@ -24,10 +24,14 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
+import musicboxd.android.data.remote.api.spotify.model.album.Albums
+import musicboxd.android.data.remote.api.spotify.model.specific_artist.SpecificArtistFromSpotifyDTO
+import musicboxd.android.data.remote.api.spotify.model.topTracks.TopTracksDTO
 import musicboxd.android.ui.common.AlbumxTrackHorizontalPreview
 import musicboxd.android.ui.common.ArtistHorizontalPreview
 import musicboxd.android.ui.details.DetailsViewModel
 import musicboxd.android.ui.details.album.AlbumDetailScreenState
+import musicboxd.android.ui.details.artist.ArtistDetailScreenState
 import musicboxd.android.ui.navigation.NavigationRoutes
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalPagerApi::class)
@@ -75,6 +79,28 @@ fun SearchContent(
                     }) { index, it ->
                         ArtistHorizontalPreview(
                             onClick = {
+                                detailsViewModel.artistDetailScreenState.value =
+                                    ArtistDetailScreenState(
+                                        specificArtistFromSpotifyDTO = SpecificArtistFromSpotifyDTO(
+                                            external_urls = it.external_urls,
+                                            followers = it.followers,
+                                            genres = it.genres,
+                                            id = it.id,
+                                            images = it.images,
+                                            name = it.name,
+                                            popularity = 0,
+                                            type = it.type,
+                                            uri = it.uri
+                                        ),
+                                        topTracks = TopTracksDTO(listOf()),
+                                        albumSearchDTO = Albums(
+                                            items = listOf(),
+                                            limit = 0,
+                                            offset = 0,
+                                            total = 0
+                                        )
+                                    )
+                                detailsViewModel.loadArtistInfo(it.id)
                                 navController.navigate(NavigationRoutes.ARTIST_DETAILS.name)
                             },
                             artistImgUrl = if (it.images.isNotEmpty()) it.images.last().url else "",

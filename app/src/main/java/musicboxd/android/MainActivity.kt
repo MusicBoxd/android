@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
                 currentBackStackEntry.value?.destination?.route.toString()
             }
             LaunchedEffect(key1 = currentNavRoute) {
-                if (currentNavRoute != NavigationRoutes.VIDEO_CANVAS.name && currentNavRoute != NavigationRoutes.ALBUM_DETAILS.name) {
+                if (currentNavRoute != NavigationRoutes.VIDEO_CANVAS.name && currentNavRoute != NavigationRoutes.ALBUM_DETAILS.name && currentNavRoute != NavigationRoutes.ARTIST_DETAILS.name) {
                     scaffoldState.bottomSheetState.expand()
                 } else {
                     scaffoldState.bottomSheetState.collapse()

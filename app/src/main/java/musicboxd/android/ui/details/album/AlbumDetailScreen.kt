@@ -25,7 +25,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Audiotrack
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Favorite
@@ -33,22 +32,18 @@ import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.MusicVideo
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.QueueMusic
 import androidx.compose.material.icons.filled.RateReview
 import androidx.compose.material.icons.filled.Reviews
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -71,7 +66,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
@@ -84,6 +78,7 @@ import musicboxd.android.R
 import musicboxd.android.ui.common.AlbumxTrackCover
 import musicboxd.android.ui.common.AlbumxTrackCoverState
 import musicboxd.android.ui.common.CoilImage
+import musicboxd.android.ui.common.HorizontalTrackPreview
 import musicboxd.android.ui.common.fadedEdges
 import musicboxd.android.ui.details.DetailsViewModel
 import musicboxd.android.ui.navigation.NavigationRoutes
@@ -215,7 +210,7 @@ fun AlbumDetailScreen(
                         color = MaterialTheme.colorScheme.onSurface)
                 }
             }
-            if (detailsViewModel.externalLinks.value.isNotEmpty()) {
+            if (detailsViewModel.albumExternalLinks.value.isNotEmpty()) {
                 item {
                     Divider(
                         modifier = Modifier.padding(start = 15.dp, top = 15.dp, end = 15.dp),
@@ -234,7 +229,7 @@ fun AlbumDetailScreen(
                             .fillMaxWidth()
                             .padding(start = 5.dp)
                     ) {
-                        detailsViewModel.externalLinks.value.forEach {
+                        detailsViewModel.albumExternalLinks.value.forEach {
                             if (it.externalLink != "") {
                                 IconButton(onClick = {
                                     localUriHandler.openUri(it.externalLink)
@@ -525,100 +520,46 @@ fun AlbumDetailScreen(
                 }
             }
             itemsIndexed(trackList.value) { index, item ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(end = 10.dp, top = 7.5.dp, bottom = 7.5.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth(0.7f)
-                    ) {
-                        Spacer(modifier = Modifier.width(25.dp))
-                        Text(
-                            modifier = Modifier.width(25.dp),
-                            color = LocalContentColor.current.copy(0.9f),
-                            text = item.track_number.toString(),
-                            style = MaterialTheme.typography.titleSmall
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Column {
-                            Text(
-                                text = item.name,
-                                style = MaterialTheme.typography.titleMedium,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                textAlign = TextAlign.Start
-                            )
-                            Spacer(modifier = Modifier.height(5.dp))
-                            Text(
-                                text = item.artists.joinToString { it.name },
-                                style = MaterialTheme.typography.titleSmall,
-                                maxLines = 1,
-                                textAlign = TextAlign.Start,
-                                color = LocalContentColor.current.copy(0.9f),
-                                overflow = TextOverflow.Ellipsis
-                            )
+                HorizontalTrackPreview(
+                    trackNumber = item.track_number.toString(),
+                    trackName = item.name,
+                    isExplicit = item.explicit,
+                    artists = item.artists.map { it.name },
+                    currentTrackID = item.id,
+                    selectedTrackId = selectedTrackId.value,
+                    isAnyTrackIsPlayingState = isAnyTrackIsPlayingState,
+                    isAnyTrackInLoadingState = isAnyTrackInLoadingState,
+                    onPlayClick = {
+                        if (item.id == selectedTrackId.value && (isAnyTrackIsPlayingState.value || isAnyTrackInLoadingState.value)) {
+                            isAnyTrackInLoadingState.value = false
+                            isAnyTrackIsPlayingState.value = false
+                            mediaPlayer.stop()
+                            mediaPlayer.reset()
+                            return@HorizontalTrackPreview
                         }
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(contentAlignment = Alignment.Center) {
-                            if (selectedTrackId.value == item.id && (isAnyTrackIsPlayingState.value || isAnyTrackInLoadingState.value)) {
-                                if (isAnyTrackIsPlayingState.value) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(30.dp),
-                                        strokeWidth = 2.5.dp,
-                                        progress = currentPlayingTrackDurationAsFloat.floatValue
-                                    )
-                                } else {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(30.dp),
-                                        strokeWidth = 2.5.dp
-                                    )
-                                }
-                            }
-                            IconButton(onClick = {
-                                if (item.id == selectedTrackId.value && (isAnyTrackIsPlayingState.value || isAnyTrackInLoadingState.value)) {
-                                    isAnyTrackInLoadingState.value = false
-                                    isAnyTrackIsPlayingState.value = false
-                                    mediaPlayer.stop()
-                                    mediaPlayer.reset()
-                                    return@IconButton
-                                }
-                                Toast
-                                    .makeText(localContext, "Fetching Audio", Toast.LENGTH_SHORT)
-                                    .show()
-                                selectedTrackId.value = item.id
-                                isAnyTrackInLoadingState.value = true
-                                mediaPlayer.stop()
-                                mediaPlayer.reset()
-                                mediaPlayer.setDataSource(item.preview_url)
-                                mediaPlayer.prepareAsync()
-                                mediaPlayer.setOnPreparedListener {
-                                    it.start()
-                                    isAnyTrackInLoadingState.value = false
-                                    isAnyTrackIsPlayingState.value = true
-                                }
-                                mediaPlayer.setOnCompletionListener {
-                                    it.stop()
-                                    it.reset()
-                                    isAnyTrackIsPlayingState.value = false
-                                    isAnyTrackInLoadingState.value = false
-                                }
-                            }) {
-                                Icon(
-                                    imageVector = if (isAnyTrackInLoadingState.value && selectedTrackId.value == item.id) Icons.Default.Audiotrack else if (isAnyTrackIsPlayingState.value && selectedTrackId.value == item.id) Icons.Default.Stop else Icons.Default.PlayArrow,
-                                    contentDescription = null
-                                )
-                            }
+                        Toast
+                            .makeText(localContext, "Fetching Audio", Toast.LENGTH_SHORT)
+                            .show()
+                        selectedTrackId.value = item.id
+                        isAnyTrackInLoadingState.value = true
+                        mediaPlayer.stop()
+                        mediaPlayer.reset()
+                        mediaPlayer.setDataSource(item.preview_url)
+                        mediaPlayer.prepareAsync()
+                        mediaPlayer.setOnPreparedListener {
+                            it.start()
+                            isAnyTrackInLoadingState.value = false
+                            isAnyTrackIsPlayingState.value = true
                         }
-                        IconButton(onClick = { }) {
-                            Icon(imageVector = Icons.Default.MoreVert, contentDescription = null)
+                        mediaPlayer.setOnCompletionListener {
+                            it.stop()
+                            it.reset()
+                            isAnyTrackIsPlayingState.value = false
+                            isAnyTrackInLoadingState.value = false
                         }
-                    }
-                }
+                    },
+                    currentPlayingTrackDurationAsFloat = currentPlayingTrackDurationAsFloat
+                )
             }
             item {
                 Spacer(modifier = Modifier.height(200.dp))

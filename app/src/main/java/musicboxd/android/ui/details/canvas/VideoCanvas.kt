@@ -33,8 +33,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
@@ -79,7 +77,7 @@ import kotlinx.coroutines.delay
 import musicboxd.android.ui.common.CoilImage
 import musicboxd.android.ui.details.DetailsViewModel
 
-@OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun VideoCanvas(
     detailsViewModel: DetailsViewModel
@@ -242,16 +240,16 @@ fun VideoCanvas(
                             .background(MaterialTheme.colorScheme.surface),
                         contentAlignment = Alignment.CenterEnd
                     ) {
-                        Slider(
-                            thumb = {},
-                            value = currentDuration.floatValue,
-                            onValueChange = {
-                                currentDuration.floatValue = it
-                                mediaPlayer.seekTo((it * mediaPlayer.duration).toInt())
-                            }, modifier = Modifier
-                                .fillMaxWidth(0.5f)
-                                .align(Alignment.CenterStart)
-                        )
+                        /* Slider(
+                             thumb = {},
+                             value = currentDuration.floatValue,
+                             onValueChange = {
+                                 currentDuration.floatValue = it
+                                 mediaPlayer.seekTo((it * mediaPlayer.duration).toInt())
+                             }, modifier = Modifier
+                                 .fillMaxWidth(0.5f)
+                                 .align(Alignment.CenterStart)
+                         )*/
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             FilledTonalIconButton(onClick = { /*TODO*/ }) {
                                 Icon(
@@ -385,7 +383,7 @@ fun NonCanvasMode(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Slider(
+                    /*Slider(
                         colors = SliderDefaults.colors(inactiveTrackColor = Color.Transparent),
                         thumb = {},
                         value = currentDuration.floatValue,
@@ -394,7 +392,7 @@ fun NonCanvasMode(
                             mediaPlayer.seekTo((it * mediaPlayer.duration).toInt())
                         }, modifier = Modifier
                             .fillMaxWidth(0.5f)
-                    )
+                    )*/
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         IconButton(onClick = { /*TODO*/ }) {
                             Icon(
