@@ -10,20 +10,22 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import musicboxd.android.LAST_FM_API_KEY
+import musicboxd.android.data.remote.api.lastfm.LastFMAPIRepo
 import musicboxd.android.data.remote.api.songlink.SongLinkRepo
 import musicboxd.android.data.remote.api.spotify.SpotifyAPIRepo
 import musicboxd.android.data.remote.api.spotify.model.album.Albums
 import musicboxd.android.data.remote.api.spotify.model.artist_search.ExternalUrls
 import musicboxd.android.data.remote.api.spotify.model.artist_search.Followers
-import musicboxd.android.data.remote.api.spotify.model.specific_artist.SpecificArtistFromSpotifyDTO
+import musicboxd.android.data.remote.api.spotify.model.artist_search.Item
 import musicboxd.android.data.remote.api.spotify.model.topTracks.TopTracksDTO
-import musicboxd.android.data.remote.api.wikipedia.WikipediaAPIRepo
 import musicboxd.android.ui.details.album.AlbumDetailScreenState
-import musicboxd.android.ui.details.artist.ArtistDetailScreenState
 import musicboxd.android.ui.details.model.ItemExternalLink
 import musicboxd.android.ui.search.SearchScreenViewModel
 import org.jsoup.Jsoup
@@ -33,50 +35,61 @@ import javax.inject.Inject
 @HiltViewModel
 class DetailsViewModel @Inject constructor(
     private val spotifyAPIRepo: SpotifyAPIRepo,
-    private val wikipediaAPIRepo: WikipediaAPIRepo,
-    private val songLinkRepo: SongLinkRepo
+    private val songLinkRepo: SongLinkRepo,
+    private val lastFMAPIRepo: LastFMAPIRepo
 ) : SearchScreenViewModel(spotifyAPIRepo) {
     var albumScreenState = AlbumDetailScreenState(covertArtImgUrl = flow { },
         albumImgUrl = "",
         albumTitle = "",
         artists = listOf(),
-        wikipediaExtractText = flow { },
+        albumWiki = flow { },
         releaseDate = "",
         trackList = flow { })
     var previewCardColor = mutableStateOf(Color.Black)
     var paletteColors = mutableStateOf<Palette?>(null)
     val canvasUrl = mutableStateOf(emptyList<String>())
     val albumExternalLinks = mutableStateOf(emptyList<ItemExternalLink>())
-    val artistDetailScreenState = mutableStateOf(
-        ArtistDetailScreenState(
-            albumSearchDTO = Albums(items = listOf(), limit = 0, offset = 0, total = 0),
-            specificArtistFromSpotifyDTO = SpecificArtistFromSpotifyDTO(
-                external_urls = ExternalUrls(
-                    spotify = "",
-                ),
-                followers = Followers(
-                    total = 0,
-                ),
-                genres = listOf(),
-                id = "",
-                images = listOf(),
-                name = "",
-                popularity = 0,
-                type = "",
-                uri = ""
+    private val _artistAlbums =
+        MutableStateFlow(Albums(items = listOf(), limit = 0, offset = 0, total = 0))
+    val artistAlbums = _artistAlbums.asStateFlow()
+    private val _artistWiki = MutableStateFlow("")
+    val artistBio = _artistWiki.asStateFlow()
+    val artistInfo = mutableStateOf(
+        Item(
+            external_urls = ExternalUrls(
+                spotify = "",
             ),
-            topTracks = TopTracksDTO(tracks = listOf())
+            followers = Followers(
+                total = 0,
+            ),
+            genres = listOf(),
+            href = "",
+            id = "",
+            images = listOf(),
+            name = "",
+            popularity = 0,
+            type = "",
+            uri = ""
         )
     )
-
-    fun loadAlbumInfo(artistID: String, albumName: String, albumID: String) {
+    private val _topTracksDTO = MutableStateFlow(TopTracksDTO(listOf()))
+    val topTracksDTO = _topTracksDTO.asStateFlow()
+    private val _lastFMImage = MutableStateFlow("")
+    val lastFMImage = _lastFMImage.asStateFlow()
+    fun loadAlbumInfo(artistID: String, albumName: String, albumID: String, artistName: String) {
         canvasUrl.value = emptyList()
         albumExternalLinks.value = emptyList()
         spotifyToken?.accessToken?.let {
             viewModelScope.launch {
                 awaitAll(async {
-                    albumScreenState = albumScreenState.copy(wikipediaExtractText = flow {
-                        emit(wikipediaAPIRepo.getSummary(albumName).extract)
+                    albumScreenState = albumScreenState.copy(albumWiki = flow {
+                        emit(
+                            lastFMAPIRepo.getAlbumInfo(
+                                artistName,
+                                albumName,
+                                LAST_FM_API_KEY
+                            ).album.wiki.content
+                        )
                     })
                 }, async {
                     albumScreenState = albumScreenState.copy(covertArtImgUrl = flow {
@@ -186,25 +199,64 @@ class DetailsViewModel @Inject constructor(
         }
     }
 
-    fun loadArtistInfo(artistID: String) {
+    fun loadArtistInfo(artistID: String, artistName: String) {
+        viewModelScope.launch {
+            _lastFMImage.emit("")
+        }
+        _topTracksDTO.value = TopTracksDTO(tracks = listOf())
+        _artistAlbums.value = Albums(items = listOf(), limit = 0, offset = 0, total = 0)
         viewModelScope.launch {
             spotifyToken?.let {
                 awaitAll(async {
-                    artistDetailScreenState.value = artistDetailScreenState.value.copy(
-                        topTracks = spotifyAPIRepo.getTopTracksOfAnArtist(
-                            artistID,
-                            it.accessToken
+                    _topTracksDTO.emit(
+                        spotifyAPIRepo.getTopTracksOfAnArtist(
+                            artistID, it.accessToken
                         )
                     )
                 }, async {
-                    artistDetailScreenState.value = artistDetailScreenState.value.copy(
-                        albumSearchDTO = spotifyAPIRepo.getAlbumsOfAnArtist(
-                            artistID,
-                            it.accessToken
+                    _artistWiki.emit(
+                        lastFMAPIRepo.getArtistInfo(
+                            artistName,
+                            LAST_FM_API_KEY
+                        ).artist.bio.content.substringBefore("<a href=")
+                    )
+                }, async {
+                    _artistAlbums.emit(
+                        spotifyAPIRepo.getAlbumsOfAnArtist(
+                            artistID, it.accessToken
                         )
                     )
+                }, async {
+                    lastFMAPIRepo.searchArtists(
+                        artistName,
+                        LAST_FM_API_KEY
+                    ).results.artistMatches.artists.random()
+                }, async {
+                    val imageItem = withContext(Dispatchers.IO) {
+                        Jsoup.connect(
+                            "https://www.last.fm/music/${
+                                artistName.replace(
+                                    " ",
+                                    "+"
+                                )
+                            }/+images"
+                        ).get()
+                    }.toString().substringAfter("<a href=\"/music/").substringAfter("+images/")
+                        .substringBefore("\" class")
+                    val imgURL = "https://lastfm.freetls.fastly.net" + withContext(Dispatchers.IO) {
+                        Jsoup.connect(
+                            "https://www.last.fm/music/${
+                                artistName.replace(
+                                    " ",
+                                    "+"
+                                )
+                            }/+images/${imageItem.substringBefore("\">")}".replace(" ", "+")
+                        )
+                            .get()
+                    }.toString().substringAfter("src=\"https://lastfm.freetls.fastly.net")
+                        .substringBefore("\">")
+                    _lastFMImage.emit(imgURL)
                 })
-
             }
         }
     }

@@ -9,7 +9,7 @@ data class AlbumDetailScreenState(
     val albumImgUrl: String,
     val albumTitle: String,
     val artists: List<String>,
-    val wikipediaExtractText: Flow<String>,
+    val albumWiki: Flow<String>,
     val releaseDate: String,
     val trackList: Flow<List<Item>>
 )

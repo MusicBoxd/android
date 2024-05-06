@@ -18,9 +18,6 @@ import musicboxd.android.data.remote.api.songlink.SongLinkRepo
 import musicboxd.android.data.remote.api.spotify.SpotifyAPIImpl
 import musicboxd.android.data.remote.api.spotify.SpotifyAPIRepo
 import musicboxd.android.data.remote.api.spotify.SpotifyAPIService
-import musicboxd.android.data.remote.api.wikipedia.WikipediaAPIImpl
-import musicboxd.android.data.remote.api.wikipedia.WikipediaAPIRepo
-import musicboxd.android.data.remote.api.wikipedia.WikipediaAPIService
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -93,28 +90,11 @@ object AppModule {
             .build().create(SpotifyAPIService::class.java)
     }
 
-    @Provides
-    @Singleton
-    fun provideWikipediaAPIInstance(): WikipediaAPIService {
-        return Retrofit.Builder().baseUrl("https://en.wikipedia.org/api/rest_v1/")
-            .addConverterFactory(
-                json.asConverterFactory(
-                    "application/json".toMediaType()
-                )
-            )
-            .build().create(WikipediaAPIService::class.java)
-    }
 
     @Provides
     @Singleton
     fun provideSpotifyAPIRepo(spotifyAPIService: SpotifyAPIService): SpotifyAPIRepo {
         return SpotifyAPIImpl(spotifyAPIService)
-    }
-
-    @Provides
-    @Singleton
-    fun provideWikipediaAPIRepo(wikipediaAPIService: WikipediaAPIService): WikipediaAPIRepo {
-        return WikipediaAPIImpl(wikipediaAPIService)
     }
 
     @Provides

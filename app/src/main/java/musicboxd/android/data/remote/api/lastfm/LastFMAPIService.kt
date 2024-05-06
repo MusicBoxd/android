@@ -1,6 +1,8 @@
 package musicboxd.android.data.remote.api.lastfm
 
 import androidx.annotation.Keep
+import musicboxd.android.data.remote.api.lastfm.model.getAlbumInfo.GetAlbumInfoFromLastFMDTO
+import musicboxd.android.data.remote.api.lastfm.model.getArtistInfo.GetArtistInfoFromLastFM
 import musicboxd.android.data.remote.api.lastfm.model.searchAlbums.SearchAlbumsFromLastFm
 import musicboxd.android.data.remote.api.lastfm.model.searchArtists.SearchArtists
 import musicboxd.android.data.remote.api.lastfm.model.searchTracks.SearchTracks
@@ -27,4 +29,17 @@ interface LastFMAPIService {
         @Query("album") albumName: String,
         @Query("api_key") apiKey: String
     ): SearchAlbumsFromLastFm
+
+    @GET("2.0/?method=artist.getinfo&format=json")
+    suspend fun getArtistInfo(
+        @Query("artist") artistName: String,
+        @Query("api_key") apiKey: String
+    ): GetArtistInfoFromLastFM
+
+    @GET("2.0/?method=album.getinfo&format=json")
+    suspend fun getAlbumInfo(
+        @Query("artist") artistName: String,
+        @Query("album") albumName: String,
+        @Query("api_key") apiKey: String
+    ): GetAlbumInfoFromLastFMDTO
 }

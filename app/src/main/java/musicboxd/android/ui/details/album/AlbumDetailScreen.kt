@@ -98,7 +98,7 @@ fun AlbumDetailScreen(
     }
     val localContext = LocalContext.current
     val wikipediaExtractText =
-        albumDetailScreenState.wikipediaExtractText.collectAsStateWithLifecycle("")
+        albumDetailScreenState.albumWiki.collectAsStateWithLifecycle("")
     val trackList =
         albumDetailScreenState.trackList.collectAsStateWithLifecycle(initialValue = emptyList())
     val audioAttributes = AudioAttributes.Builder()
@@ -583,7 +583,7 @@ fun AlbumDetailScreen(
                     )
                 )
                 Text(
-                    text = albumDetailScreenState.wikipediaExtractText.collectAsState(initial = "").value,
+                    text = albumDetailScreenState.albumWiki.collectAsState(initial = "").value,
                     style = MaterialTheme.typography.titleSmall,
                     modifier = Modifier
                         .padding(start = 15.dp, end = 15.dp)

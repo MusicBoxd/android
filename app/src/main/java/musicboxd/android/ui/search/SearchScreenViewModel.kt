@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -77,12 +78,17 @@ open class SearchScreenViewModel @Inject constructor(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery = _searchQuery.asStateFlow()
 
+    private var searchJob: Job? = null
+
     @OptIn(FlowPreview::class)
     fun onUiEvent(searchScreenUiEvent: SearchScreenUiEvent) {
         when (searchScreenUiEvent) {
             is SearchScreenUiEvent.OnQueryChange -> {
                 viewModelScope.launch {
                     _searchQuery.emit(searchScreenUiEvent.query)
+                }
+                searchJob?.cancel()
+                searchJob = viewModelScope.launch() {
                     _searchQuery.debounce(150L).collectLatest { query ->
                         awaitAll(async {
                             _searchTracksResult.emit(
