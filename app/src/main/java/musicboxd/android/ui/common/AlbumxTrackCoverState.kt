@@ -5,5 +5,6 @@ data class AlbumxTrackCoverState(
     val mainImgUrl: String,
     val itemTitle: String,
     val itemType: String,
-    val itemArtists: List<String>
+    val itemArtists: List<String>,
+    val onArtistNameClick: () -> Unit = {}
 )

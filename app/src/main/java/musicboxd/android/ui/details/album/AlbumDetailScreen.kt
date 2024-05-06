@@ -123,6 +123,9 @@ fun AlbumDetailScreen(
         mutableFloatStateOf(0f)
     }
     val localUriHandler = LocalUriHandler.current
+    val artistImg = albumDetailScreenState.covertArtImgUrl.collectAsStateWithLifecycle(
+        initialValue = ""
+    )
     LaunchedEffect(key1 = isAnyTrackIsPlayingState.value) {
         while (isAnyTrackIsPlayingState.value) {
             currentPlayingTrackDurationAsFloat.floatValue =
@@ -146,7 +149,15 @@ fun AlbumDetailScreen(
                         mainImgUrl = albumDetailScreenState.albumImgUrl,
                         itemTitle = albumDetailScreenState.albumTitle,
                         itemArtists = albumDetailScreenState.artists,
-                        itemType = "Album"
+                        itemType = "Album",
+                        onArtistNameClick = {
+                            detailsViewModel.loadArtistInfo(
+                                albumDetailScreenState.artistId,
+                                albumDetailScreenState.artists.first(),
+                                navigatingFromAlbumScreen = true
+                            )
+                            navController.navigate(NavigationRoutes.ARTIST_DETAILS.name)
+                        }
                     )
                 )
             }
@@ -217,7 +228,7 @@ fun AlbumDetailScreen(
                         color = MaterialTheme.colorScheme.outline.copy(0.25f)
                     )
                     Text(
-                        text = "Available On",
+                        text = "Listen On",
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.padding(15.dp)

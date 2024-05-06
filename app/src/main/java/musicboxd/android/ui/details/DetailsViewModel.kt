@@ -38,13 +38,15 @@ class DetailsViewModel @Inject constructor(
     private val songLinkRepo: SongLinkRepo,
     private val lastFMAPIRepo: LastFMAPIRepo
 ) : SearchScreenViewModel(spotifyAPIRepo) {
-    var albumScreenState = AlbumDetailScreenState(covertArtImgUrl = flow { },
+    var albumScreenState = AlbumDetailScreenState(
+        covertArtImgUrl = flow { },
         albumImgUrl = "",
         albumTitle = "",
         artists = listOf(),
         albumWiki = flow { },
         releaseDate = "",
-        trackList = flow { })
+        trackList = flow { }, artistId = ""
+    )
     var previewCardColor = mutableStateOf(Color.Black)
     var paletteColors = mutableStateOf<Palette?>(null)
     val canvasUrl = mutableStateOf(emptyList<String>())
@@ -54,6 +56,7 @@ class DetailsViewModel @Inject constructor(
     val artistAlbums = _artistAlbums.asStateFlow()
     private val _artistWiki = MutableStateFlow("")
     val artistBio = _artistWiki.asStateFlow()
+    val artistSocials = mutableStateOf<List<String>>(emptyList())
     val artistInfo = mutableStateOf(
         Item(
             external_urls = ExternalUrls(
@@ -76,7 +79,14 @@ class DetailsViewModel @Inject constructor(
     val topTracksDTO = _topTracksDTO.asStateFlow()
     private val _lastFMImage = MutableStateFlow("")
     val lastFMImage = _lastFMImage.asStateFlow()
-    fun loadAlbumInfo(artistID: String, albumName: String, albumID: String, artistName: String) {
+    fun loadAlbumInfo(
+        artistID: String,
+        albumName: String,
+        albumID: String,
+        artistName: String,
+        loadArtistImg: Boolean = true
+    ) {
+        albumScreenState = albumScreenState.copy(artistId = artistID)
         canvasUrl.value = emptyList()
         albumExternalLinks.value = emptyList()
         spotifyToken?.accessToken?.let {
@@ -92,9 +102,11 @@ class DetailsViewModel @Inject constructor(
                         )
                     })
                 }, async {
-                    albumScreenState = albumScreenState.copy(covertArtImgUrl = flow {
-                        emit(spotifyAPIRepo.getArtistData(artistID, it).images.first().url)
-                    })
+                    if (loadArtistImg) {
+                        albumScreenState = albumScreenState.copy(covertArtImgUrl = flow {
+                            emit(spotifyAPIRepo.getArtistData(artistID, it).images.first().url)
+                        })
+                    }
                     val inputStream = withContext(Dispatchers.IO) {
                         URL(albumScreenState.albumImgUrl).openConnection().getInputStream()
                     }
@@ -199,7 +211,12 @@ class DetailsViewModel @Inject constructor(
         }
     }
 
-    fun loadArtistInfo(artistID: String, artistName: String) {
+    fun loadArtistInfo(
+        artistID: String,
+        artistName: String,
+        navigatingFromAlbumScreen: Boolean = false
+    ) {
+        artistSocials.value = emptyList()
         viewModelScope.launch {
             _lastFMImage.emit("")
         }
@@ -208,6 +225,22 @@ class DetailsViewModel @Inject constructor(
         viewModelScope.launch {
             spotifyToken?.let {
                 awaitAll(async {
+                    if (navigatingFromAlbumScreen) {
+                        val artistData = spotifyAPIRepo.getArtistData(artistID, it.accessToken)
+                        artistInfo.value = Item(
+                            external_urls = artistData.external_urls,
+                            followers = artistData.followers,
+                            genres = artistData.genres,
+                            href = "",
+                            id = artistData.id,
+                            images = artistData.images,
+                            name = artistData.name,
+                            popularity = artistData.popularity,
+                            type = artistData.type,
+                            uri = artistData.uri
+                        )
+                    }
+                }, async {
                     _topTracksDTO.emit(
                         spotifyAPIRepo.getTopTracksOfAnArtist(
                             artistID, it.accessToken
@@ -227,10 +260,24 @@ class DetailsViewModel @Inject constructor(
                         )
                     )
                 }, async {
-                    lastFMAPIRepo.searchArtists(
-                        artistName,
-                        LAST_FM_API_KEY
-                    ).results.artistMatches.artists.random()
+                    val socialsItem = withContext(Dispatchers.IO) {
+                        Jsoup.connect("https://open.spotify.com/artist/$artistID")
+                            .userAgent("Mozilla")
+                            .header("Accept", "text/html")
+                            .header("Accept-Encoding", "gzip,deflate")
+                            .header(
+                                "Accept-Language",
+                                "it-IT,en;q=0.8,en-US;q=0.6,de;q=0.4,it;q=0.2,es;q=0.2"
+                            )
+                            .header("Connection", "keep-alive")
+                            .ignoreContentType(true).get()
+                    }.toString().substringAfter("<div class=\"ZdmJvgeayszd6ZvSl5B6\">")
+                        .substringBefore("<div class=\"iQxdxLc2HsEnJMZt0Us4\">")
+                        .split("<li class=\"p44AskfOeVB1s75duZoC\"><a rel=\"noopener noreferrer\" target=\"_blank\" href=\"")
+                        .map {
+                            it.substringAfter("https://").substringBefore("\" class")
+                        }.filter { it.contains(".com") }.map { "https://".plus(it) }
+                    artistSocials.value = socialsItem
                 }, async {
                     val imageItem = withContext(Dispatchers.IO) {
                         Jsoup.connect(
@@ -240,7 +287,15 @@ class DetailsViewModel @Inject constructor(
                                     "+"
                                 )
                             }/+images"
-                        ).get()
+                        ).userAgent("Mozilla")
+                            .header("Accept", "text/html")
+                            .header("Accept-Encoding", "gzip,deflate")
+                            .header(
+                                "Accept-Language",
+                                "it-IT,en;q=0.8,en-US;q=0.6,de;q=0.4,it;q=0.2,es;q=0.2"
+                            )
+                            .header("Connection", "keep-alive")
+                            .ignoreContentType(true).get()
                     }.toString().substringAfter("<a href=\"/music/").substringAfter("+images/")
                         .substringBefore("\" class")
                     val imgURL = "https://lastfm.freetls.fastly.net" + withContext(Dispatchers.IO) {
@@ -251,7 +306,15 @@ class DetailsViewModel @Inject constructor(
                                     "+"
                                 )
                             }/+images/${imageItem.substringBefore("\">")}".replace(" ", "+")
-                        )
+                        ).userAgent("Mozilla")
+                            .header("Accept", "text/html")
+                            .header("Accept-Encoding", "gzip,deflate")
+                            .header(
+                                "Accept-Language",
+                                "it-IT,en;q=0.8,en-US;q=0.6,de;q=0.4,it;q=0.2,es;q=0.2"
+                            )
+                            .header("Connection", "keep-alive")
+                            .ignoreContentType(true)
                             .get()
                     }.toString().substringAfter("src=\"https://lastfm.freetls.fastly.net")
                         .substringBefore("\">")

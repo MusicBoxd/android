@@ -5,6 +5,7 @@ import musicboxd.android.data.remote.api.spotify.model.tracklist.Item
 
 
 data class AlbumDetailScreenState(
+    val artistId: String,
     val covertArtImgUrl: Flow<String>,
     val albumImgUrl: String,
     val albumTitle: String,

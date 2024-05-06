@@ -5,6 +5,7 @@ import android.media.MediaPlayer
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -29,6 +31,7 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Divider
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -44,11 +47,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flowOf
 import musicboxd.android.data.remote.api.spotify.model.album.Albums
 import musicboxd.android.data.remote.api.spotify.model.topTracks.TopTracksDTO
 import musicboxd.android.ui.common.ArtistCoverArt
@@ -57,10 +63,12 @@ import musicboxd.android.ui.common.CoilImage
 import musicboxd.android.ui.common.HorizontalTrackPreview
 import musicboxd.android.ui.common.fadedEdges
 import musicboxd.android.ui.details.DetailsViewModel
+import musicboxd.android.ui.details.album.AlbumDetailScreenState
+import musicboxd.android.ui.navigation.NavigationRoutes
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun ArtistDetailScreen(detailsViewModel: DetailsViewModel) {
+fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavController) {
     val topTracks = detailsViewModel.topTracksDTO.collectAsStateWithLifecycle(
         initialValue = TopTracksDTO(
             emptyList()
@@ -103,6 +111,7 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel) {
     val artistBio = detailsViewModel.artistBio.collectAsStateWithLifecycle()
     val localContext = LocalContext.current
     val lastFmImage = detailsViewModel.lastFMImage.collectAsStateWithLifecycle()
+    val localUriHandler = LocalUriHandler.current
     LaunchedEffect(key1 = isAnyTrackIsPlayingState.value) {
         while (isAnyTrackIsPlayingState.value) {
             currentPlayingTrackDurationAsFloat.floatValue =
@@ -169,6 +178,12 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel) {
             }
         }
         item {
+            Divider(
+                modifier = Modifier.padding(start = 15.dp, bottom = 15.dp, end = 15.dp),
+                color = MaterialTheme.colorScheme.outline.copy(0.25f)
+            )
+        }
+        item {
             Text(
                 text = "Top Tracks",
                 style = MaterialTheme.typography.titleMedium,
@@ -221,6 +236,12 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel) {
                 trackImgUrl = it.album.images.first().url
             )
         }
+        /*  item {
+              Divider(
+                  modifier = Modifier.padding(start = 15.dp, top = 10.dp, end = 15.dp),
+                  color = MaterialTheme.colorScheme.outline.copy(0.25f)
+              )
+          }*/
         item {
             Text(
                 text = "Discography",
@@ -245,6 +266,30 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel) {
                         Modifier
                             .width(200.dp)
                             .height(275.dp)
+                            .clickable(indication = null, interactionSource = remember {
+                                MutableInteractionSource()
+                            }, onClick = {
+                                detailsViewModel.albumScreenState = AlbumDetailScreenState(
+                                    covertArtImgUrl = flowOf(specificArtistFromSpotifyDTO.value.images.first().url),
+                                    albumImgUrl = it.images.first().url,
+                                    albumTitle = it.name,
+                                    artists = it.artists.map { it.name },
+                                    albumWiki = flowOf(),
+                                    releaseDate = it.release_date,
+                                    trackList = flowOf(),
+                                    artistId = it.id
+                                )
+                                detailsViewModel.loadAlbumInfo(
+                                    albumID = it.id,
+                                    albumName = it.name,
+                                    artistID = it.artists
+                                        .map { it.id }
+                                        .random(),
+                                    artistName = it.artists.first().name,
+                                    loadArtistImg = false
+                                )
+                                navController.navigate(NavigationRoutes.ALBUM_DETAILS.name)
+                            })
                     ) {
                         CoilImage(
                             imgUrl = it.images.first().url,
@@ -286,7 +331,12 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel) {
                 )
             }
         }
-
+        /* item {
+             Divider(
+                 modifier = Modifier.padding(start = 15.dp, end = 15.dp, bottom = 5.dp),
+                 color = MaterialTheme.colorScheme.outline.copy(0.25f)
+             )
+         }*/
         item {
             Text(
                 text = "About",
@@ -334,6 +384,74 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel) {
                         Icon(imageVector = Icons.Default.ChevronRight, contentDescription = "")
                     }
                 }
+            }
+        }
+
+        item {
+            Text(
+                text = "Socials",
+                style = MaterialTheme.typography.titleMedium,
+                color = LocalContentColor.current,
+                modifier = Modifier.padding(10.dp)
+            )
+        }
+        item {
+            detailsViewModel.artistSocials.value.forEach {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            localUriHandler.openUri(it)
+                        }) {
+                    IconButton(onClick = {
+                        localUriHandler.openUri(it)
+                    }) {
+                        CoilImage(
+                            imgUrl = when {
+                                it.lowercase()
+                                    .contains("facebook") -> "https://store-images.s-microsoft.com/image/apps.37935.9007199266245907.b029bd80-381a-4869-854f-bac6f359c5c9.91f8693c-c75b-4050-a796-63e1314d18c9?h=210"
+
+                                it.lowercase()
+                                    .contains("instagram") -> "https://lookaside.fbsbx.com/elementpath/media/?media_id=676073767417807&version=1711727173"
+
+                                it.lowercase()
+                                    .contains("twitter") -> "https://store-images.s-microsoft.com/image/apps.60673.9007199266244427.4d45042b-d7a5-4a83-be66-97779553b24d.5d82b7eb-9734-4b51-b65d-a0383348ab1b?h=210"
+
+                                it.lowercase()
+                                    .contains("wikipedia") -> "https://store-images.s-microsoft.com/image/apps.65178.9007199266246789.dfb1c4fb-983f-4ce1-82c2-212765396aff.e4c94818-3916-474c-ac14-3be893975101?h=210"
+
+                                else -> ""
+                            }, modifier = Modifier
+                                .size(32.dp)
+                                .then(
+                                    if (!it
+                                            .lowercase()
+                                            .contains("instagram")
+                                    ) Modifier.clip(CircleShape) else Modifier
+                                ), contentDescription = ""
+                        )
+                    }
+                    androidx.compose.material3.Text(
+                        style = MaterialTheme.typography.titleSmall,
+                        text = when {
+                            it.lowercase()
+                                .contains("facebook") -> "Facebook"
+
+                            it.lowercase()
+                                .contains("instagram") -> "Instagram"
+
+                            it.lowercase()
+                                .contains("twitter") -> "Twitter"
+
+                            it.lowercase()
+                                .contains("wikipedia") -> "Wikipedia"
+
+                            else -> ""
+                        }
+                    )
+                }
+                Spacer(modifier = Modifier.height(5.dp))
             }
         }
     }

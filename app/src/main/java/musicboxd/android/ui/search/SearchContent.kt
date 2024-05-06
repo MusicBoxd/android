@@ -96,7 +96,8 @@ fun SearchContent(
                                     artists = it.artists.map { it.name },
                                     albumWiki = flowOf(),
                                     releaseDate = it.release_date,
-                                    trackList = flowOf()
+                                    trackList = flowOf(),
+                                    artistId = it.id
                                 )
                                 detailsViewModel.loadAlbumInfo(
                                     albumID = it.id,
