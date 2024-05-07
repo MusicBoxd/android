@@ -97,7 +97,8 @@ fun AlbumxTrackCover(albumxTrackCoverState: AlbumxTrackCoverState) {
                                     })
                             }
                         )
-                    )
+                    ),
+                    maxLines = 1
                 )
             }
         }

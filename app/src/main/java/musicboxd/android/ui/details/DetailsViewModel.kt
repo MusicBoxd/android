@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import musicboxd.android.LAST_FM_API_KEY
@@ -45,7 +46,7 @@ class DetailsViewModel @Inject constructor(
         artists = listOf(),
         albumWiki = flow { },
         releaseDate = "",
-        trackList = flow { }, artistId = ""
+        trackList = flow { }, artistId = "", itemType = ""
     )
     var previewCardColor = mutableStateOf(Color.Black)
     var paletteColors = mutableStateOf<Palette?>(null)
@@ -124,89 +125,10 @@ class DetailsViewModel @Inject constructor(
                         )
                     })
                 }, async {
-                    val albumExternalLinksAPIData =
-                        songLinkRepo.getLinks("https://open.spotify.com/album/$albumID").linksByPlatform
-                    albumExternalLinks.value = listOf(
-                        ItemExternalLink(
-                            imgURL = "https://play-lh.googleusercontent.com/WKVNPckIxFKWO22Cu1o7zZf8l36-caVIkneZD7ocSBgGbSWYbnkyE4iECGI_qEhHkuQ",
-                            externalLink = albumExternalLinksAPIData.amazonMusic.url
-                        ),
-                        ItemExternalLink(
-                            imgURL = "https://asset.brandfetch.io/id4G4LfCWL/idAXHZ3WLJ.jpeg",
-                            externalLink = albumExternalLinksAPIData.anghami.url
-                        ),
-                        ItemExternalLink(
-                            imgURL = "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Apple_Music_icon.svg/2048px-Apple_Music_icon.svg.png",
-                            externalLink = albumExternalLinksAPIData.appleMusic.url
-                        ),
-                        ItemExternalLink(
-                            imgURL = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRoAajHlXLDtUtidNRDFDlCOidk_mXIbeLk4qtds_tuap4699CnsHylLd9rjEz9JKqtAPc&usqp=CAU",
-                            externalLink = albumExternalLinksAPIData.audiomack.url
-                        ),
-                        ItemExternalLink(
-                            imgURL = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQnPbBTXM_f1seJ-qjOxEkRLJQ1c6sbjkAyIQFKv2Am_Q&s",
-                            externalLink = albumExternalLinksAPIData.boomplay.url
-                        ),
-                        ItemExternalLink(
-                            imgURL = "https://store-images.s-microsoft.com/image/apps.46581.13510798886741797.6272719c-6e87-457e-89fa-c3c223a1c07a.f8b3708e-1ddf-4cb3-b201-9263bf813aae?h=210",
-                            externalLink = albumExternalLinksAPIData.deezer.url
-                        ),
-                        ItemExternalLink(
-                            imgURL = "https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/ITunes_logo.svg/438px-ITunes_logo.svg.png",
-                            externalLink = albumExternalLinksAPIData.itunes.url
-                        ),
-                        ItemExternalLink(
-                            imgURL = "https://images.squarespace-cdn.com/content/v1/55915377e4b05e44b9c13bca/1535515150211-O2O5767XRDJRF1WG2A1Q/Napster-Logo-.png?format=2500w",
-                            externalLink = albumExternalLinksAPIData.napster.url
-                        ),
-                        ItemExternalLink(
-                            imgURL = "https://store-images.s-microsoft.com/image/apps.31523.9007199266244713.666a3fe2-1a3e-4c9f-8301-d7fb23270871.7fd63e6c-7ca0-4e8a-9eed-ceee957307f2?h=210",
-                            externalLink = albumExternalLinksAPIData.pandora.url
-                        ),
-                        ItemExternalLink(
-                            imgURL = "https://store-images.s-microsoft.com/image/apps.22696.14398308773733109.53eed167-276f-443c-a7a5-c0d635242775.283cc376-189e-4777-8a82-29f500a9de4f?h=210",
-                            externalLink = albumExternalLinksAPIData.soundcloud.url
-                        ),
-                        ItemExternalLink(
-                            imgURL = "https://store-images.s-microsoft.com/image/apps.10546.13571498826857201.6603a5e2-631f-4f29-9b08-f96589723808.dc893fe0-ecbc-4846-9ac6-b13886604095?h=210",
-                            externalLink = albumExternalLinksAPIData.spotify.url
-                        ),
-                        ItemExternalLink(
-                            imgURL = "https://store-images.s-microsoft.com/image/apps.54003.13740903646068838.738514b4-7fb6-4210-af7f-9aa318dd0a71.d958b4a6-53ef-42fc-96c5-08796bbcb894?h=210",
-                            externalLink = albumExternalLinksAPIData.tidal.url
-                        ),
-                        ItemExternalLink(
-                            imgURL = "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Yandex_Music_icon.svg/165px-Yandex_Music_icon.svg.png",
-                            externalLink = albumExternalLinksAPIData.yandex.url
-                        ),
-                        ItemExternalLink(
-                            imgURL = "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/YouTube_full-color_icon_%282017%29.svg/512px-YouTube_full-color_icon_%282017%29.svg.png?20240107144800",
-                            externalLink = albumExternalLinksAPIData.youtube.url
-                        ),
-                        ItemExternalLink(
-                            imgURL = "https://play-lh.googleusercontent.com/GnYnNfKBr2nysHBYgYRCQtcv_RRNN0Sosn47F5ArKJu89DMR3_jHRAazoIVsPUoaMg=w240-h480",
-                            externalLink = albumExternalLinksAPIData.youtubeMusic.url
-                        ),
-                    )
+                    loadExternalLinks(false, "", albumID)
                 })
             }.invokeOnCompletion {
-                viewModelScope.launch {
-                    withContext(Dispatchers.IO) {
-                        albumScreenState.trackList.first().forEach {
-                            val rawHtml =
-                                Jsoup.connect("https://www.canvasdownloader.com/canvas?link=https://open.spotify.com/track/${it.id}")
-                                    .get().toString()
-                            if (rawHtml.contains("<source src=\"https://")) {
-                                rawHtml.substringAfter("<source src=\"https://")
-                                    .substringBefore(".mp4\" type=\"video/mp4\">").let { url ->
-                                        canvasUrl.value += ("https://$url.mp4")
-                                    }
-                            } else {
-                                canvasUrl.value += ""
-                            }
-                        }
-                    }
-                }
+                loadCanvases()
             }
         }
     }
@@ -226,19 +148,7 @@ class DetailsViewModel @Inject constructor(
             spotifyToken?.let {
                 awaitAll(async {
                     if (navigatingFromAlbumScreen) {
-                        val artistData = spotifyAPIRepo.getArtistData(artistID, it.accessToken)
-                        artistInfo.value = Item(
-                            external_urls = artistData.external_urls,
-                            followers = artistData.followers,
-                            genres = artistData.genres,
-                            href = "",
-                            id = artistData.id,
-                            images = artistData.images,
-                            name = artistData.name,
-                            popularity = artistData.popularity,
-                            type = artistData.type,
-                            uri = artistData.uri
-                        )
+                        loadArtistMetaData(artistID)
                     }
                 }, async {
                     _topTracksDTO.emit(
@@ -320,6 +230,121 @@ class DetailsViewModel @Inject constructor(
                         .substringBefore("\">")
                     _lastFMImage.emit(imgURL)
                 })
+            }
+        }
+    }
+
+    fun loadArtistMetaData(artistID: String) {
+        viewModelScope.launch {
+            spotifyToken?.let {
+                val artistData = spotifyAPIRepo.getArtistData(artistID, it.accessToken)
+                albumScreenState =
+                    albumScreenState.copy(covertArtImgUrl = flowOf(artistData.images.first().url))
+                artistInfo.value = Item(
+                    external_urls = artistData.external_urls,
+                    followers = artistData.followers,
+                    genres = artistData.genres,
+                    href = "",
+                    id = artistData.id,
+                    images = artistData.images,
+                    name = artistData.name,
+                    popularity = artistData.popularity,
+                    type = artistData.type,
+                    uri = artistData.uri
+                )
+            }
+        }
+    }
+
+    fun loadExternalLinks(isTrack: Boolean, trackID: String, albumID: String) {
+        albumExternalLinks.value = emptyList()
+        viewModelScope.launch {
+            val itemType = if (isTrack) "track" else "album"
+            val itemId = if (isTrack) trackID else albumID
+            val albumExternalLinksAPIData =
+                songLinkRepo.getLinks("https://open.spotify.com/$itemType/$itemId").linksByPlatform
+            albumExternalLinks.value = listOf(
+                ItemExternalLink(
+                    imgURL = "https://play-lh.googleusercontent.com/WKVNPckIxFKWO22Cu1o7zZf8l36-caVIkneZD7ocSBgGbSWYbnkyE4iECGI_qEhHkuQ",
+                    externalLink = albumExternalLinksAPIData.amazonMusic.url
+                ),
+                ItemExternalLink(
+                    imgURL = "https://asset.brandfetch.io/id4G4LfCWL/idAXHZ3WLJ.jpeg",
+                    externalLink = albumExternalLinksAPIData.anghami.url
+                ),
+                ItemExternalLink(
+                    imgURL = "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Apple_Music_icon.svg/2048px-Apple_Music_icon.svg.png",
+                    externalLink = albumExternalLinksAPIData.appleMusic.url
+                ),
+                ItemExternalLink(
+                    imgURL = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRoAajHlXLDtUtidNRDFDlCOidk_mXIbeLk4qtds_tuap4699CnsHylLd9rjEz9JKqtAPc&usqp=CAU",
+                    externalLink = albumExternalLinksAPIData.audiomack.url
+                ),
+                ItemExternalLink(
+                    imgURL = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQnPbBTXM_f1seJ-qjOxEkRLJQ1c6sbjkAyIQFKv2Am_Q&s",
+                    externalLink = albumExternalLinksAPIData.boomplay.url
+                ),
+                ItemExternalLink(
+                    imgURL = "https://store-images.s-microsoft.com/image/apps.46581.13510798886741797.6272719c-6e87-457e-89fa-c3c223a1c07a.f8b3708e-1ddf-4cb3-b201-9263bf813aae?h=210",
+                    externalLink = albumExternalLinksAPIData.deezer.url
+                ),
+                ItemExternalLink(
+                    imgURL = "https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/ITunes_logo.svg/438px-ITunes_logo.svg.png",
+                    externalLink = albumExternalLinksAPIData.itunes.url
+                ),
+                ItemExternalLink(
+                    imgURL = "https://images.squarespace-cdn.com/content/v1/55915377e4b05e44b9c13bca/1535515150211-O2O5767XRDJRF1WG2A1Q/Napster-Logo-.png?format=2500w",
+                    externalLink = albumExternalLinksAPIData.napster.url
+                ),
+                ItemExternalLink(
+                    imgURL = "https://store-images.s-microsoft.com/image/apps.31523.9007199266244713.666a3fe2-1a3e-4c9f-8301-d7fb23270871.7fd63e6c-7ca0-4e8a-9eed-ceee957307f2?h=210",
+                    externalLink = albumExternalLinksAPIData.pandora.url
+                ),
+                ItemExternalLink(
+                    imgURL = "https://store-images.s-microsoft.com/image/apps.22696.14398308773733109.53eed167-276f-443c-a7a5-c0d635242775.283cc376-189e-4777-8a82-29f500a9de4f?h=210",
+                    externalLink = albumExternalLinksAPIData.soundcloud.url
+                ),
+                ItemExternalLink(
+                    imgURL = "https://store-images.s-microsoft.com/image/apps.10546.13571498826857201.6603a5e2-631f-4f29-9b08-f96589723808.dc893fe0-ecbc-4846-9ac6-b13886604095?h=210",
+                    externalLink = albumExternalLinksAPIData.spotify.url
+                ),
+                ItemExternalLink(
+                    imgURL = "https://store-images.s-microsoft.com/image/apps.54003.13740903646068838.738514b4-7fb6-4210-af7f-9aa318dd0a71.d958b4a6-53ef-42fc-96c5-08796bbcb894?h=210",
+                    externalLink = albumExternalLinksAPIData.tidal.url
+                ),
+                ItemExternalLink(
+                    imgURL = "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Yandex_Music_icon.svg/165px-Yandex_Music_icon.svg.png",
+                    externalLink = albumExternalLinksAPIData.yandex.url
+                ),
+                ItemExternalLink(
+                    imgURL = "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/YouTube_full-color_icon_%282017%29.svg/512px-YouTube_full-color_icon_%282017%29.svg.png?20240107144800",
+                    externalLink = albumExternalLinksAPIData.youtube.url
+                ),
+                ItemExternalLink(
+                    imgURL = "https://play-lh.googleusercontent.com/GnYnNfKBr2nysHBYgYRCQtcv_RRNN0Sosn47F5ArKJu89DMR3_jHRAazoIVsPUoaMg=w240-h480",
+                    externalLink = albumExternalLinksAPIData.youtubeMusic.url
+                ),
+            )
+        }
+    }
+
+    fun loadCanvases() {
+        canvasUrl.value = emptyList()
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                albumScreenState.trackList.first().forEach {
+                    val rawHtml =
+                        Jsoup.connect("https://www.canvasdownloader.com/canvas?link=https://open.spotify.com/track/${it.id}")
+                            .get().toString()
+                    if (rawHtml.contains("<source src=\"https://")) {
+                        rawHtml.substringAfter("<source src=\"https://")
+                            .substringBefore(".mp4\" type=\"video/mp4\">").let { url ->
+                                canvasUrl.value += ("https://$url.mp4")
+                            }
+                    } else {
+                        canvasUrl.value += ""
+                    }
+                }
             }
         }
     }

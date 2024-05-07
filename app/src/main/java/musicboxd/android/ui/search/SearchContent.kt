@@ -24,6 +24,8 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
+import musicboxd.android.data.remote.api.spotify.model.tracklist.Artist
+import musicboxd.android.data.remote.api.spotify.model.tracklist.Item
 import musicboxd.android.ui.common.AlbumxTrackHorizontalPreview
 import musicboxd.android.ui.common.ArtistHorizontalPreview
 import musicboxd.android.ui.details.DetailsViewModel
@@ -97,7 +99,8 @@ fun SearchContent(
                                     albumWiki = flowOf(),
                                     releaseDate = it.release_date,
                                     trackList = flowOf(),
-                                    artistId = it.id
+                                    artistId = it.id,
+                                    itemType = it.album_type.capitalize()
                                 )
                                 detailsViewModel.loadAlbumInfo(
                                     albumID = it.id,
@@ -120,7 +123,42 @@ fun SearchContent(
                     }) { index, it ->
                         AlbumxTrackHorizontalPreview(
                             onClick = {
-                                navController.navigate(NavigationRoutes.TRACK_DETAILS.name)
+                                detailsViewModel.albumScreenState = AlbumDetailScreenState(
+                                    covertArtImgUrl = flowOf(),
+                                    albumImgUrl = it.album.images.first().url,
+                                    albumTitle = it.name,
+                                    artists = it.artists.map { it.name },
+                                    albumWiki = flowOf(),
+                                    releaseDate = it.album.release_date,
+                                    trackList = flowOf(
+                                        listOf(
+                                            Item(
+                                                artists = it.artists.map {
+                                                    Artist(
+                                                        href = it.href,
+                                                        id = it.id,
+                                                        name = it.name,
+                                                        type = it.type,
+                                                        uri = it.uri
+                                                    )
+                                                },
+                                                explicit = false,
+                                                id = it.id,
+                                                name = it.name,
+                                                preview_url = it.preview_url,
+                                                track_number = 1,
+                                                type = it.type,
+                                                uri = it.uri
+                                            )
+                                        )
+                                    ),
+                                    artistId = it.artists.first().id,
+                                    itemType = "Track"
+                                )
+                                detailsViewModel.loadArtistMetaData(it.artists.first().id)
+                                detailsViewModel.loadExternalLinks(isTrack = true, it.id, "")
+                                detailsViewModel.loadCanvases()
+                                navController.navigate(NavigationRoutes.ALBUM_DETAILS.name)
                             },
                             isExplicit = it.explicit,
                             itemType = it.type.capitalize(),

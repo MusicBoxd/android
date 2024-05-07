@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -31,17 +32,22 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,8 +61,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 import musicboxd.android.data.remote.api.spotify.model.album.Albums
 import musicboxd.android.data.remote.api.spotify.model.topTracks.TopTracksDTO
+import musicboxd.android.ui.common.AlbumxTrackHorizontalPreview
 import musicboxd.android.ui.common.ArtistCoverArt
 import musicboxd.android.ui.common.ArtistCoverArtState
 import musicboxd.android.ui.common.CoilImage
@@ -66,7 +74,7 @@ import musicboxd.android.ui.details.DetailsViewModel
 import musicboxd.android.ui.details.album.AlbumDetailScreenState
 import musicboxd.android.ui.navigation.NavigationRoutes
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavController) {
     val topTracks = detailsViewModel.topTracksDTO.collectAsStateWithLifecycle(
@@ -112,6 +120,14 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
     val localContext = LocalContext.current
     val lastFmImage = detailsViewModel.lastFMImage.collectAsStateWithLifecycle()
     val localUriHandler = LocalUriHandler.current
+    val bottomModalSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val isDiscographyBtmSheetEnabled = rememberSaveable {
+        mutableStateOf(false)
+    }
+    val isBtmSheetVisible = rememberSaveable {
+        mutableStateOf(false)
+    }
+    val coroutineScope = rememberCoroutineScope()
     LaunchedEffect(key1 = isAnyTrackIsPlayingState.value) {
         while (isAnyTrackIsPlayingState.value) {
             currentPlayingTrackDurationAsFloat.floatValue =
@@ -277,7 +293,8 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                                     albumWiki = flowOf(),
                                     releaseDate = it.release_date,
                                     trackList = flowOf(),
-                                    artistId = it.id
+                                    artistId = it.id,
+                                    itemType = it.album_type.capitalize()
                                 )
                                 detailsViewModel.loadAlbumInfo(
                                     albumID = it.id,
@@ -323,7 +340,13 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
         item {
             FilledTonalButton(modifier = Modifier
                 .fillMaxWidth()
-                .padding(15.dp), onClick = { }) {
+                .padding(15.dp), onClick = {
+                isBtmSheetVisible.value = true
+                isDiscographyBtmSheetEnabled.value = true
+                coroutineScope.launch {
+                    bottomModalSheetState.expand()
+                }
+            }) {
                 Text(
                     text = "See discography",
                     color = LocalContentColor.current,
@@ -364,7 +387,16 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .align(Alignment.BottomStart),
+                        .align(Alignment.BottomStart)
+                        .clickable(interactionSource = remember {
+                            MutableInteractionSource()
+                        }, indication = null, onClick = {
+                            isBtmSheetVisible.value = true
+                            isDiscographyBtmSheetEnabled.value = false
+                            coroutineScope.launch {
+                                bottomModalSheetState.expand()
+                            }
+                        }),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -380,7 +412,13 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                             .fillMaxWidth(0.85f)
                             .padding(10.dp)
                     )
-                    IconButton(onClick = { /*TODO*/ }) {
+                    IconButton(onClick = {
+                        isBtmSheetVisible.value = true
+                        isDiscographyBtmSheetEnabled.value = false
+                        coroutineScope.launch {
+                            bottomModalSheetState.expand()
+                        }
+                    }) {
                         Icon(imageVector = Icons.Default.ChevronRight, contentDescription = "")
                     }
                 }
@@ -452,6 +490,86 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                     )
                 }
                 Spacer(modifier = Modifier.height(5.dp))
+            }
+        }
+    }
+    if (isBtmSheetVisible.value) {
+        ModalBottomSheet(dragHandle = {
+            if (isDiscographyBtmSheetEnabled.value)
+                BottomSheetDefaults.DragHandle()
+            else {
+            }
+        }, onDismissRequest = {
+            coroutineScope.launch {
+                bottomModalSheetState.hide()
+            }.invokeOnCompletion {
+                isBtmSheetVisible.value = false
+            }
+        }) {
+            if (isDiscographyBtmSheetEnabled.value) {
+                LazyColumn(
+                    Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .navigationBarsPadding()
+                ) {
+                    item {
+                        Text(
+                            text = "Discography",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = LocalContentColor.current,
+                            modifier = Modifier.padding(start = 10.dp, bottom = 10.dp)
+                        )
+                    }
+                    items(albums) {
+                        AlbumxTrackHorizontalPreview(
+                            onClick = {
+                                detailsViewModel.albumScreenState = AlbumDetailScreenState(
+                                    covertArtImgUrl = flowOf(specificArtistFromSpotifyDTO.value.images.first().url),
+                                    albumImgUrl = it.images.first().url,
+                                    albumTitle = it.name,
+                                    artists = it.artists.map { it.name },
+                                    albumWiki = flowOf(),
+                                    releaseDate = it.release_date,
+                                    trackList = flowOf(),
+                                    artistId = it.id,
+                                    itemType = it.album_type.capitalize()
+                                )
+                                detailsViewModel.loadAlbumInfo(
+                                    albumID = it.id,
+                                    albumName = it.name,
+                                    artistID = it.artists
+                                        .map { it.id }
+                                        .random(),
+                                    artistName = it.artists.first().name,
+                                    loadArtistImg = false
+                                )
+                                navController.navigate(NavigationRoutes.ALBUM_DETAILS.name)
+                            },
+                            itemType = it.album_type.capitalize(),
+                            albumImgUrl = it.images.first().url,
+                            albumTitle = it.name,
+                            artistName = it.artists.joinToString { it.name },
+                            isExplicit = false
+                        )
+                    }
+                }
+            } else {
+                ArtistCoverArt(
+                    artistCoverArtState = ArtistCoverArtState(
+                        specificArtistFromSpotifyDTO.value.name,
+                        specificArtistFromSpotifyDTO.value.images.first().url
+                    )
+                )
+                Text(
+                    text = artistBio.value.trim()
+                        .replace("\n", "\n\n") + if (artistBio.value.endsWith(".")) "" else ".",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = LocalContentColor.current,
+                    fontSize = 18.sp,
+                    modifier = Modifier
+                        .padding(10.dp)
+                )
             }
         }
     }

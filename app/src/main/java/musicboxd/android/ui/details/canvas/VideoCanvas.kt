@@ -162,7 +162,8 @@ fun VideoCanvas(
                 artists = albumScreenState.artists,
                 albumName = albumScreenState.albumTitle,
                 currentDuration = currentDuration,
-                mediaPlayer = mediaPlayer
+                mediaPlayer = mediaPlayer,
+                itemType = albumScreenState.itemType
             )
             return@VerticalPager
         }
@@ -225,7 +226,7 @@ fun VideoCanvas(
                         )
                         Spacer(modifier = Modifier.height(5.dp))
                         Text(
-                            text = "${albumScreenState.albumTitle} • Album • ${albumScreenState.artists.joinToString { it }}",
+                            text = "${albumScreenState.albumTitle} • ${albumScreenState.itemType} • ${albumScreenState.artists.joinToString { it }}",
                             style = MaterialTheme.typography.titleSmall,
                             color = MaterialTheme.colorScheme.onSurface,
                             maxLines = 1,
@@ -287,7 +288,8 @@ fun NonCanvasMode(
     artists: List<String>,
     albumName: String,
     currentDuration: MutableFloatState,
-    mediaPlayer: MediaPlayer
+    mediaPlayer: MediaPlayer,
+    itemType: String
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "VideoCanvas")
     val animatedProgress = infiniteTransition.animateFloat(
@@ -360,7 +362,7 @@ fun NonCanvasMode(
                     withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
                         append(albumName)
                     }
-                    append(" • Album • ${artists.joinToString { it }}")
+                    append(" • $itemType • ${artists.joinToString { it }}")
                 },
                 modifier = Modifier
                     .fillMaxWidth()

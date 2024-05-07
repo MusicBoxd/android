@@ -149,7 +149,7 @@ fun AlbumDetailScreen(
                         mainImgUrl = albumDetailScreenState.albumImgUrl,
                         itemTitle = albumDetailScreenState.albumTitle,
                         itemArtists = albumDetailScreenState.artists,
-                        itemType = "Album",
+                        itemType = albumDetailScreenState.itemType,
                         onArtistNameClick = {
                             detailsViewModel.loadArtistInfo(
                                 albumDetailScreenState.artistId,
@@ -492,7 +492,7 @@ fun AlbumDetailScreen(
                                     withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
                                         append("Preview")
                                     }
-                                    append(" • Album")
+                                    append(" • ${albumDetailScreenState.itemType}")
                                 },
                                 style = MaterialTheme.typography.titleSmall,
                                 color = contentColorFor(detailsViewModel.previewCardColor.value).copy(

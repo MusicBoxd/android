@@ -12,5 +12,6 @@ data class AlbumDetailScreenState(
     val artists: List<String>,
     val albumWiki: Flow<String>,
     val releaseDate: String,
-    val trackList: Flow<List<Item>>
+    val trackList: Flow<List<Item>>,
+    val itemType: String
 )
