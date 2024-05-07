@@ -128,8 +128,10 @@ class DetailsViewModel @Inject constructor(
         )) {
             is APIResult.Failure -> TODO()
             is APIResult.Success -> {
+                val modifiedText =
+                    getArtistInfoData.data.artist.bio.content.substringBefore("<a href=").trim()
                 _artistWiki.emit(
-                    getArtistInfoData.data.artist.bio.content.substringBefore("<a href=")
+                    modifiedText + if (modifiedText.endsWith(".")) "" else "."
                 )
             }
         }
@@ -407,7 +409,7 @@ class DetailsViewModel @Inject constructor(
             is APIResult.Success -> {
                 albumScreenState = albumScreenState.copy(albumWiki = flow {
                     emit(
-                        getAlbumInfoData.data.album.wiki.content
+                        getAlbumInfoData.data.album.wiki.content.substringBefore("<a href=").trim()
                     )
                 })
             }

@@ -3,6 +3,7 @@ package musicboxd.android.ui.details.album
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,8 +23,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Event
@@ -72,6 +75,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import musicboxd.android.R
@@ -167,10 +172,11 @@ fun AlbumDetailScreen(
                 item {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Image(
-                            painter = painterResource(id = R.drawable.wikipedia_logo),
+                            painter = painterResource(id = R.drawable.lastfm),
                             contentDescription = "Wikipedia Logo",
                             modifier = Modifier
                                 .padding(start = 15.dp)
+                                .clip(CircleShape)
                                 .size(20.dp)
                         )
                         Text(
@@ -184,13 +190,13 @@ fun AlbumDetailScreen(
                     Text(text = wikipediaExtractText.value,
                         style = MaterialTheme.typography.titleSmall,
                         modifier = Modifier
+                            .padding(15.dp)
                             .clickable {
                                 isBtmSheetVisible.value = true
                                 coroutineScope.launch {
                                     modalBottomSheetState.show()
                                 }
                             }
-                            .padding(15.dp)
                             .fadedEdges(colorScheme),
                         color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 5,
@@ -451,11 +457,7 @@ fun AlbumDetailScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(15.dp)
-                        .clickable {
-                            detailsViewModel.albumScreenState = albumDetailScreenState
-                            navController.navigate(NavigationRoutes.VIDEO_CANVAS.name)
-                        },
+                        .padding(15.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = detailsViewModel.previewCardColor.value
                     )
@@ -464,6 +466,12 @@ fun AlbumDetailScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
+                            .clickable {
+                                mediaPlayer.stop()
+                                mediaPlayer.reset()
+                                detailsViewModel.albumScreenState = albumDetailScreenState
+                                navController.navigate(NavigationRoutes.VIDEO_CANVAS.name)
+                            }
                     ) {
                         CoilImage(
                             imgUrl = rememberSaveable(albumDetailScreenState.albumImgUrl) {
@@ -504,7 +512,12 @@ fun AlbumDetailScreen(
                         }
                         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
                             Row {
-                                IconButton(onClick = { /*TODO*/ }) {
+                                IconButton(onClick = {
+                                    mediaPlayer.stop()
+                                    mediaPlayer.reset()
+                                    detailsViewModel.albumScreenState = albumDetailScreenState
+                                    navController.navigate(NavigationRoutes.VIDEO_CANVAS.name)
+                                }) {
                                     Icon(
                                         imageVector = Icons.Default.MusicVideo,
                                         contentDescription = "Play Album Preview Icon Button"
@@ -584,40 +597,58 @@ fun AlbumDetailScreen(
                     isBtmSheetVisible.value = false
                 }
             }) {
-                AlbumxTrackCover(
-                    albumxTrackCoverState = AlbumxTrackCoverState(
-                        covertImgUrl = albumDetailScreenState.covertArtImgUrl.collectAsState(initial = "").value,
-                        mainImgUrl = albumDetailScreenState.albumImgUrl,
-                        itemTitle = albumDetailScreenState.albumTitle,
-                        itemArtists = albumDetailScreenState.artists,
-                        itemType = "Album"
-                    )
-                )
-                Text(
-                    text = albumDetailScreenState.albumWiki.collectAsState(initial = "").value,
-                    style = MaterialTheme.typography.titleSmall,
+                Column(
                     modifier = Modifier
-                        .padding(start = 15.dp, end = 15.dp)
-                        .navigationBarsPadding(),
-                    fontSize = 18.sp,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.navigationBarsPadding()
+                        .verticalScroll(rememberScrollState())
+                        .fillMaxWidth()
                 ) {
-                    Icon(
-                        modifier = Modifier.padding(start = 15.dp, end = 5.dp),
-                        imageVector = Icons.Default.Info,
-                        contentDescription = "Source Info"
+                    AlbumxTrackCover(
+                        albumxTrackCoverState = AlbumxTrackCoverState(
+                            covertImgUrl = albumDetailScreenState.covertArtImgUrl.collectAsState(
+                                initial = ""
+                            ).value,
+                            mainImgUrl = albumDetailScreenState.albumImgUrl,
+                            itemTitle = albumDetailScreenState.albumTitle,
+                            itemArtists = albumDetailScreenState.artists,
+                            itemType = "Album"
+                        )
                     )
                     Text(
-                        text = "Info straight outta Wikipedia",
+                        text = albumDetailScreenState.albumWiki.collectAsState(initial = "").value,
                         style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier
+                            .padding(start = 15.dp, end = 15.dp)
+                            .navigationBarsPadding(),
+                        fontSize = 18.sp,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.navigationBarsPadding()
+                    ) {
+                        Icon(
+                            modifier = Modifier.padding(start = 15.dp, end = 5.dp),
+                            imageVector = Icons.Default.Info,
+                            contentDescription = "Source Info"
+                        )
+                        Text(
+                            text = "Info straight outta LastFM",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
                 }
             }
+        }
+    }
+    BackHandler {
+        coroutineScope.launch {
+            awaitAll(async {
+                mediaPlayer.stop()
+                mediaPlayer.reset()
+            }, async {
+                navController.popBackStack()
+            })
         }
     }
 }

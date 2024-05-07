@@ -2,6 +2,7 @@ package musicboxd.android.ui.details.canvas
 
 import android.media.AudioAttributes
 import android.media.MediaPlayer
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -31,7 +32,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.contentColorFor
@@ -39,11 +39,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableFloatState
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,7 +53,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -65,7 +64,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.palette.graphics.Palette
+import androidx.navigation.NavController
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.VerticalPager
 import com.google.accompanist.pager.rememberPagerState
@@ -73,14 +72,18 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.ui.PlayerView
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import musicboxd.android.ui.common.CoilImage
 import musicboxd.android.ui.details.DetailsViewModel
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun VideoCanvas(
-    detailsViewModel: DetailsViewModel
+    detailsViewModel: DetailsViewModel,
+    navController: NavController
 ) {
     val localContext = LocalContext.current
     val isPlayerReady = rememberSaveable {
@@ -108,6 +111,7 @@ fun VideoCanvas(
     val currentPage = rememberSaveable {
         mutableIntStateOf(0)
     }
+    val coroutineScope = rememberCoroutineScope()
     val canvasList = detailsViewModel.canvasUrl
     LaunchedEffect(key1 = pagerState.currentPage, key2 = trackList.value.size) {
         currentPage.intValue = pagerState.currentPage
@@ -156,7 +160,7 @@ fun VideoCanvas(
         }
         if (showNonCanvasModeLayout.value || (canvasList.value.size > it && canvasList.value[it].isEmpty() && canvasList.value.isNotEmpty())) {
             NonCanvasMode(
-                paletteFromCoverArt = detailsViewModel.paletteColors,
+                previewCardColor = detailsViewModel.previewCardColor.value,
                 imgUrl = albumScreenState.albumImgUrl,
                 title = trackList.value[it].name,
                 artists = albumScreenState.artists,
@@ -277,12 +281,22 @@ fun VideoCanvas(
             }
         }
     }
+    BackHandler {
+        coroutineScope.launch {
+            awaitAll(async {
+                mediaPlayer.stop()
+                mediaPlayer.reset()
+            }, async {
+                navController.popBackStack()
+            })
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NonCanvasMode(
-    paletteFromCoverArt: MutableState<Palette?>,
+    previewCardColor: Color,
     imgUrl: String,
     title: String,
     artists: List<String>,
@@ -300,15 +314,10 @@ fun NonCanvasMode(
             repeatMode = RepeatMode.Reverse
         ), label = "VideoCanvas Gradient"
     )
-    val localColor = LocalContentColor.current
     val colorScheme = MaterialTheme.colorScheme
     val gradientColors = listOf(
         colorScheme.surface,
-        Color(
-            paletteFromCoverArt.value?.getDarkMutedColor(
-                localColor.toArgb()
-            ) ?: localColor.toArgb()
-        ),
+        previewCardColor
     )
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -350,7 +359,7 @@ fun NonCanvasMode(
                 text = title,
                 style = MaterialTheme.typography.titleLarge,
                 fontSize = 20.sp,
-                color = contentColorFor(backgroundColor = gradientColors[1]),
+                color = contentColorFor(backgroundColor = colorScheme.surface),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 15.dp, end = 15.dp),
@@ -368,7 +377,7 @@ fun NonCanvasMode(
                     .fillMaxWidth()
                     .padding(start = 15.dp, end = 15.dp),
                 style = MaterialTheme.typography.titleSmall,
-                color = contentColorFor(backgroundColor = gradientColors[1]),
+                color = contentColorFor(backgroundColor = colorScheme.surface),
                 textAlign = TextAlign.Start,
             )
             Spacer(modifier = Modifier.height(15.dp))

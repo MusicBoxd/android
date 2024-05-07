@@ -1,6 +1,5 @@
 package musicboxd.android.ui.common
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,8 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.InlineTextContent
-import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,9 +18,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.Placeholder
-import androidx.compose.ui.text.PlaceholderVerticalAlign
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -73,31 +67,10 @@ fun AlbumxTrackCover(albumxTrackCoverState: AlbumxTrackCoverState) {
                 )
                 Spacer(modifier = Modifier.height(5.dp))
                 Text(
-                    text = buildAnnotatedString {
-                        append("${albumxTrackCoverState.itemType} • ")
-                        appendInlineContent("artist")
-                    },
+                    text = "${albumxTrackCoverState.itemType} • ${albumxTrackCoverState.itemArtists.joinToString { it }}",
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurface,
                     softWrap = true,
-                    inlineContent = mapOf(
-                        Pair(
-                            "artist", InlineTextContent(
-                                Placeholder(
-                                    width = 140.sp,
-                                    height = 20.sp,
-                                    placeholderVerticalAlign = PlaceholderVerticalAlign.Center
-                                )
-                            ) {
-                                Text(
-                                    text = albumxTrackCoverState.itemArtists.joinToString { it },
-                                    style = MaterialTheme.typography.titleSmall,
-                                    modifier = Modifier.clickable {
-                                        albumxTrackCoverState.onArtistNameClick()
-                                    })
-                            }
-                        )
-                    ),
                     maxLines = 1
                 )
             }

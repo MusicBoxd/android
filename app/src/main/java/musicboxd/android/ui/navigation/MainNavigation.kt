@@ -37,7 +37,7 @@ fun MainNavigation(navController: NavHostController, detailsViewModel: DetailsVi
             ArtistDetailScreen(detailsViewModel, navController)
         }
         composable(route = NavigationRoutes.VIDEO_CANVAS.name) {
-            VideoCanvas(detailsViewModel)
+            VideoCanvas(detailsViewModel, navController)
         }
     }
 }

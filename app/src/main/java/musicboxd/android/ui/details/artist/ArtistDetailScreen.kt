@@ -3,6 +3,7 @@ package musicboxd.android.ui.details.artist
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -24,9 +25,10 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Text
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.ExpandLess
@@ -41,6 +43,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -59,10 +62,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import musicboxd.android.data.remote.api.spotify.model.album.Albums
+import musicboxd.android.data.remote.api.spotify.model.album.Item
 import musicboxd.android.data.remote.api.spotify.model.topTracks.TopTracksDTO
 import musicboxd.android.ui.common.AlbumxTrackHorizontalPreview
 import musicboxd.android.ui.common.ArtistCoverArt
@@ -134,6 +140,29 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                 mediaPlayer.currentPosition.toFloat() / 30000f
             delay(500L)
         }
+    }
+    fun onDiscographyItemClick(it: Item) {
+        detailsViewModel.albumScreenState = AlbumDetailScreenState(
+            covertArtImgUrl = flowOf(specificArtistFromSpotifyDTO.value.images.first().url),
+            albumImgUrl = it.images.first().url,
+            albumTitle = it.name,
+            artists = it.artists.map { it.name },
+            albumWiki = flowOf(),
+            releaseDate = it.release_date,
+            trackList = flowOf(),
+            artistId = it.id,
+            itemType = it.album_type.capitalize()
+        )
+        detailsViewModel.loadAlbumInfo(
+            albumID = it.id,
+            albumName = it.name,
+            artistID = it.artists
+                .map { it.id }
+                .random(),
+            artistName = it.artists.first().name,
+            loadArtistImg = false
+        )
+        navController.navigate(NavigationRoutes.ALBUM_DETAILS.name)
     }
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         item {
@@ -285,27 +314,7 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                             .clickable(indication = null, interactionSource = remember {
                                 MutableInteractionSource()
                             }, onClick = {
-                                detailsViewModel.albumScreenState = AlbumDetailScreenState(
-                                    covertArtImgUrl = flowOf(specificArtistFromSpotifyDTO.value.images.first().url),
-                                    albumImgUrl = it.images.first().url,
-                                    albumTitle = it.name,
-                                    artists = it.artists.map { it.name },
-                                    albumWiki = flowOf(),
-                                    releaseDate = it.release_date,
-                                    trackList = flowOf(),
-                                    artistId = it.id,
-                                    itemType = it.album_type.capitalize()
-                                )
-                                detailsViewModel.loadAlbumInfo(
-                                    albumID = it.id,
-                                    albumName = it.name,
-                                    artistID = it.artists
-                                        .map { it.id }
-                                        .random(),
-                                    artistName = it.artists.first().name,
-                                    loadArtistImg = false
-                                )
-                                navController.navigate(NavigationRoutes.ALBUM_DETAILS.name)
+                                onDiscographyItemClick(it)
                             })
                     ) {
                         CoilImage(
@@ -524,27 +533,7 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                     items(albums) {
                         AlbumxTrackHorizontalPreview(
                             onClick = {
-                                detailsViewModel.albumScreenState = AlbumDetailScreenState(
-                                    covertArtImgUrl = flowOf(specificArtistFromSpotifyDTO.value.images.first().url),
-                                    albumImgUrl = it.images.first().url,
-                                    albumTitle = it.name,
-                                    artists = it.artists.map { it.name },
-                                    albumWiki = flowOf(),
-                                    releaseDate = it.release_date,
-                                    trackList = flowOf(),
-                                    artistId = it.id,
-                                    itemType = it.album_type.capitalize()
-                                )
-                                detailsViewModel.loadAlbumInfo(
-                                    albumID = it.id,
-                                    albumName = it.name,
-                                    artistID = it.artists
-                                        .map { it.id }
-                                        .random(),
-                                    artistName = it.artists.first().name,
-                                    loadArtistImg = false
-                                )
-                                navController.navigate(NavigationRoutes.ALBUM_DETAILS.name)
+                                onDiscographyItemClick(it)
                             },
                             itemType = it.album_type.capitalize(),
                             albumImgUrl = it.images.first().url,
@@ -555,22 +544,37 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                     }
                 }
             } else {
-                ArtistCoverArt(
-                    artistCoverArtState = ArtistCoverArtState(
-                        specificArtistFromSpotifyDTO.value.name,
-                        specificArtistFromSpotifyDTO.value.images.first().url
-                    )
-                )
-                Text(
-                    text = artistBio.value.trim()
-                        .replace("\n", "\n\n") + if (artistBio.value.endsWith(".")) "" else ".",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = LocalContentColor.current,
-                    fontSize = 18.sp,
+                Column(
                     modifier = Modifier
-                        .padding(10.dp)
-                )
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    ArtistCoverArt(
+                        artistCoverArtState = ArtistCoverArtState(
+                            specificArtistFromSpotifyDTO.value.name,
+                            specificArtistFromSpotifyDTO.value.images.first().url
+                        )
+                    )
+                    Text(
+                        text = artistBio.value,
+                        style = MaterialTheme.typography.titleSmall,
+                        color = LocalContentColor.current,
+                        fontSize = 18.sp,
+                        modifier = Modifier
+                            .padding(10.dp)
+                    )
+                }
             }
+        }
+    }
+    BackHandler {
+        coroutineScope.launch {
+            awaitAll(async {
+                mediaPlayer.stop()
+                mediaPlayer.reset()
+            }, async {
+                navController.popBackStack()
+            })
         }
     }
 }
