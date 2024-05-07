@@ -1,5 +1,6 @@
 package musicboxd.android.data.remote.api.spotify
 
+import musicboxd.android.data.remote.api.APIResult
 import musicboxd.android.data.remote.api.spotify.model.album.Albums
 import musicboxd.android.data.remote.api.spotify.model.album.SpotifyAlbumSearchDTO
 import musicboxd.android.data.remote.api.spotify.model.artist_search.SpotifyArtistSearchDTO
@@ -13,37 +14,37 @@ interface SpotifyAPIRepo {
         artistName: String,
         limit: String,
         authorizationToken: String
-    ): SpotifyArtistSearchDTO
+    ): APIResult<SpotifyArtistSearchDTO>
 
     suspend fun getArtistData(
         id: String,
         authorizationToken: String
-    ): SpecificArtistFromSpotifyDTO
+    ): APIResult<SpecificArtistFromSpotifyDTO>
 
     suspend fun searchAlbums(
         albumName: String,
         limit: String,
         authorizationToken: String
-    ): SpotifyAlbumSearchDTO
+    ): APIResult<SpotifyAlbumSearchDTO>
 
     suspend fun getTrackListOfAnAlbum(
         albumID: String,
         authorizationToken: String
-    ): SpotifyAlbumTrackListDTO
+    ): APIResult<SpotifyAlbumTrackListDTO>
 
     suspend fun searchTracks(
         trackName: String,
         limit: String,
         authorizationToken: String
-    ): SpotifyTrackSearchDTO
+    ): APIResult<SpotifyTrackSearchDTO>
 
     suspend fun getTopTracksOfAnArtist(
         artistId: String,
         authorizationToken: String
-    ): TopTracksDTO
+    ): APIResult<TopTracksDTO>
 
     suspend fun getAlbumsOfAnArtist(
         artistId: String,
         authorizationToken: String
-    ): Albums
+    ): APIResult<Albums>
 }

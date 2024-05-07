@@ -1,5 +1,6 @@
 package musicboxd.android.data.remote.api.spotify
 
+import musicboxd.android.data.remote.api.APIResult
 import musicboxd.android.data.remote.api.spotify.model.album.Albums
 import musicboxd.android.data.remote.api.spotify.model.album.SpotifyAlbumSearchDTO
 import musicboxd.android.data.remote.api.spotify.model.artist_search.SpotifyArtistSearchDTO
@@ -15,67 +16,112 @@ class SpotifyAPIImpl @Inject constructor(private val spotifyAPIService: SpotifyA
         artistName: String,
         limit: String,
         authorizationToken: String
-    ): SpotifyArtistSearchDTO {
-        return spotifyAPIService.searchArtists(
-            artistName,
-            limit,
-            "Bearer ".plus(authorizationToken)
-        )
+    ): APIResult<SpotifyArtistSearchDTO> {
+        return try {
+            APIResult.Success(
+                spotifyAPIService.searchArtists(
+                    artistName,
+                    limit,
+                    "Bearer ".plus(authorizationToken)
+                )
+            )
+        } catch (_: Exception) {
+            APIResult.Failure("Cannot fetch searchArtists in SpotifyImpl")
+        }
     }
 
     override suspend fun getArtistData(
         id: String,
         authorizationToken: String
-    ): SpecificArtistFromSpotifyDTO {
-        return spotifyAPIService.getArtistData(id, "Bearer ".plus(authorizationToken))
+    ): APIResult<SpecificArtistFromSpotifyDTO> {
+        return try {
+            APIResult.Success(
+                spotifyAPIService.getArtistData(
+                    id,
+                    "Bearer ".plus(authorizationToken)
+                )
+            )
+        } catch (_: Exception) {
+            APIResult.Failure("Cannot fetch getArtistData in SpotifyImpl")
+        }
     }
 
     override suspend fun searchAlbums(
         albumName: String,
         limit: String,
         authorizationToken: String
-    ): SpotifyAlbumSearchDTO {
-        return spotifyAPIService.searchAlbums(
-            albumName,
-            limit,
-            "Bearer ".plus(authorizationToken)
-        )
+    ): APIResult<SpotifyAlbumSearchDTO> {
+        return try {
+            APIResult.Success(
+                spotifyAPIService.searchAlbums(
+                    albumName,
+                    limit,
+                    "Bearer ".plus(authorizationToken)
+                )
+            )
+        } catch (_: Exception) {
+            APIResult.Failure("Cannot fetch searchAlbums in SpotifyImpl")
+        }
     }
 
     override suspend fun getTrackListOfAnAlbum(
         albumID: String,
         authorizationToken: String
-    ): SpotifyAlbumTrackListDTO {
-        return spotifyAPIService.getTrackListOfAnAlbum(albumID, "Bearer ".plus(authorizationToken))
+    ): APIResult<SpotifyAlbumTrackListDTO> {
+        return try {
+            APIResult.Success(
+                spotifyAPIService.getTrackListOfAnAlbum(albumID, "Bearer ".plus(authorizationToken))
+            )
+        } catch (_: Exception) {
+            APIResult.Failure("Cannot fetch getTrackListOfAnAlbum in SpotifyImpl")
+        }
     }
 
     override suspend fun searchTracks(
         trackName: String,
         limit: String,
         authorizationToken: String
-    ): SpotifyTrackSearchDTO {
-        return spotifyAPIService.searchTracks(
-            trackName,
-            limit,
-            "Bearer ".plus(authorizationToken)
-        )
+    ): APIResult<SpotifyTrackSearchDTO> {
+        return try {
+            APIResult.Success(
+                spotifyAPIService.searchTracks(
+                    trackName,
+                    limit,
+                    "Bearer ".plus(authorizationToken)
+                )
+            )
+        } catch (_: Exception) {
+            APIResult.Failure("Cannot fetch searchTracks in SpotifyImpl")
+        }
     }
 
     override suspend fun getTopTracksOfAnArtist(
         artistId: String,
         authorizationToken: String
-    ): TopTracksDTO {
-        return spotifyAPIService.getTopTracksOfAnArtist(
-            artistId,
-            "Bearer ".plus(authorizationToken)
-        )
+    ): APIResult<TopTracksDTO> {
+        return try {
+            APIResult.Success(
+                spotifyAPIService.getTopTracksOfAnArtist(
+                    artistId,
+                    "Bearer ".plus(authorizationToken)
+                )
+            )
+        } catch (_: Exception) {
+            APIResult.Failure("Cannot fetch getTopTracksOfAnArtist in SpotifyImpl")
+        }
     }
 
     override suspend fun getAlbumsOfAnArtist(
         artistId: String,
         authorizationToken: String
-    ): Albums {
-        return spotifyAPIService.getAlbumsOfAnArtist(artistId, "Bearer ".plus(authorizationToken))
+    ): APIResult<Albums> {
+        return try {
+            APIResult.Success(
+                spotifyAPIService.getAlbumsOfAnArtist(artistId, "Bearer ".plus(authorizationToken))
+            )
+        } catch (_: Exception) {
+            APIResult.Failure("Cannot fetch getAlbumsOfAnArtist in SpotifyImpl")
+        }
     }
 
 }

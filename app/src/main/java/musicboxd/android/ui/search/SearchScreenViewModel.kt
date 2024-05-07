@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import musicboxd.android.data.remote.api.APIResult
 import musicboxd.android.data.remote.api.spotify.SpotifyAPIRepo
 import musicboxd.android.data.remote.api.spotify.model.artist_search.Item
 import musicboxd.android.data.remote.api.spotify.model.token.SpotifyToken
@@ -80,50 +81,66 @@ open class SearchScreenViewModel @Inject constructor(
 
     private var searchJob: Job? = null
 
-    @OptIn(FlowPreview::class)
     fun onUiEvent(searchScreenUiEvent: SearchScreenUiEvent) {
         when (searchScreenUiEvent) {
             is SearchScreenUiEvent.OnQueryChange -> {
-                viewModelScope.launch {
-                    _searchQuery.emit(searchScreenUiEvent.query)
-                }
-                searchJob?.cancel()
-                searchJob = viewModelScope.launch() {
-                    _searchQuery.debounce(150L).collectLatest { query ->
-                        awaitAll(async {
-                            _searchTracksResult.emit(
-                                if (query.isNotEmpty() && spotifyToken != null)
-                                    spotifyAPIRepo.searchTracks(
-                                        query,
-                                        "10",
-                                        spotifyToken!!.accessToken
-                                    ).tracks.items else emptyList()
-                            )
-                        }, async {
-                            _searchAlbumsResult.emit(
-                                if (query.isNotEmpty() && spotifyToken != null)
-                                    spotifyAPIRepo.searchAlbums(
-                                        query,
-                                        "10",
-                                        spotifyToken!!.accessToken
-                                    ).albums.items.filter {
-                                        it.album_type == "album"
-                                    } else emptyList()
-                            )
-                        }, async {
-                            _searchArtistsResult.emit(
-                                if (query.isNotEmpty() && spotifyToken != null)
-                                    spotifyAPIRepo.searchArtists(
-                                        query,
-                                        "10",
-                                        spotifyToken!!.accessToken
-                                    ).artists.items.sortedByDescending {
-                                        it.popularity
-                                    } else emptyList()
-                            )
+                onQueryChange(searchScreenUiEvent.query)
+            }
+        }
+    }
+
+    @OptIn(FlowPreview::class)
+    private fun onQueryChange(query: String) {
+        viewModelScope.launch {
+            _searchQuery.emit(query)
+        }
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
+            _searchQuery.debounce(150L).collectLatest { query ->
+                awaitAll(async {
+                    val searchTracksData = spotifyAPIRepo.searchTracks(
+                        query,
+                        "10",
+                        spotifyToken!!.accessToken
+                    )
+                    when (searchTracksData) {
+                        is APIResult.Failure -> {
+                            _searchTracksResult.emit(emptyList())
+                        }
+
+                        is APIResult.Success -> _searchTracksResult.emit(searchTracksData.data.tracks.items)
+                    }
+                }, async {
+                    val searchAlbumsData = spotifyAPIRepo.searchAlbums(
+                        query,
+                        "10",
+                        spotifyToken!!.accessToken
+                    )
+                    when (searchAlbumsData) {
+                        is APIResult.Failure -> {
+                            _searchAlbumsResult.emit(emptyList())
+                        }
+
+                        is APIResult.Success -> _searchAlbumsResult.emit(searchAlbumsData.data.albums.items.filter {
+                            it.album_type.lowercase() == "album"
                         })
                     }
-                }
+                }, async {
+                    val searchArtistsData = spotifyAPIRepo.searchArtists(
+                        query,
+                        "10",
+                        spotifyToken!!.accessToken
+                    )
+                    when (searchArtistsData) {
+                        is APIResult.Failure -> {
+                            _searchArtistsResult.emit(emptyList())
+                        }
+
+                        is APIResult.Success -> {
+                            _searchArtistsResult.emit(searchArtistsData.data.artists.items)
+                        }
+                    }
+                })
             }
         }
     }
