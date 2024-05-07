@@ -146,11 +146,10 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
             covertArtImgUrl = flowOf(specificArtistFromSpotifyDTO.value.images.first().url),
             albumImgUrl = it.images.first().url,
             albumTitle = it.name,
-            artists = it.artists.map { it.name },
+            artists = it.artists,
             albumWiki = flowOf(),
             releaseDate = it.release_date,
             trackList = flowOf(),
-            artistId = it.id,
             itemType = it.album_type.capitalize()
         )
         detailsViewModel.loadAlbumInfo(

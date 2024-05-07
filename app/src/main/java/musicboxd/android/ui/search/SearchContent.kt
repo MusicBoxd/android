@@ -24,6 +24,7 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
+import musicboxd.android.data.remote.api.spotify.model.album.ExternalUrlsX
 import musicboxd.android.data.remote.api.spotify.model.tracklist.Artist
 import musicboxd.android.data.remote.api.spotify.model.tracklist.Item
 import musicboxd.android.ui.common.AlbumxTrackHorizontalPreview
@@ -95,11 +96,10 @@ fun SearchContent(
                                     covertArtImgUrl = flowOf(),
                                     albumImgUrl = it.images.first().url,
                                     albumTitle = it.name,
-                                    artists = it.artists.map { it.name },
+                                    artists = it.artists,
                                     albumWiki = flowOf(),
                                     releaseDate = it.release_date,
                                     trackList = flowOf(),
-                                    artistId = it.id,
                                     itemType = it.album_type.capitalize()
                                 )
                                 detailsViewModel.loadAlbumInfo(
@@ -127,7 +127,16 @@ fun SearchContent(
                                     covertArtImgUrl = flowOf(),
                                     albumImgUrl = it.album.images.first().url,
                                     albumTitle = it.name,
-                                    artists = it.artists.map { it.name },
+                                    artists = it.artists.map {
+                                        musicboxd.android.data.remote.api.spotify.model.album.Artist(
+                                            href = it.href,
+                                            id = it.id,
+                                            name = it.name,
+                                            type = it.type,
+                                            uri = it.uri,
+                                            external_urls = ExternalUrlsX(spotify = it.external_urls.spotify),
+                                        )
+                                    },
                                     albumWiki = flowOf(),
                                     releaseDate = it.album.release_date,
                                     trackList = flowOf(
@@ -152,7 +161,6 @@ fun SearchContent(
                                             )
                                         )
                                     ),
-                                    artistId = it.artists.first().id,
                                     itemType = "Track"
                                 )
                                 detailsViewModel.loadArtistMetaData(it.artists.first().id)

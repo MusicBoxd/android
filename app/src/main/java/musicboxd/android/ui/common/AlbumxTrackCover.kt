@@ -1,7 +1,10 @@
 package musicboxd.android.ui.common
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,9 +24,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import musicboxd.android.ui.details.DetailsViewModel
+import musicboxd.android.ui.navigation.NavigationRoutes
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun AlbumxTrackCover(albumxTrackCoverState: AlbumxTrackCoverState) {
+fun AlbumxTrackCover(
+    albumxTrackCoverState: AlbumxTrackCoverState,
+    detailsViewModel: DetailsViewModel,
+    navController: NavController
+) {
     val colorScheme = MaterialTheme.colorScheme
     Box(
         modifier = Modifier
@@ -66,13 +77,34 @@ fun AlbumxTrackCover(albumxTrackCoverState: AlbumxTrackCoverState) {
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(5.dp))
-                Text(
-                    text = "${albumxTrackCoverState.itemType} • ${albumxTrackCoverState.itemArtists.joinToString { it }}",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    softWrap = true,
-                    maxLines = 1
-                )
+                FlowRow(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "${albumxTrackCoverState.itemType} • ",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        softWrap = true,
+                        maxLines = 1
+                    )
+                    albumxTrackCoverState.itemArtists.forEachIndexed { index, it ->
+                        Text(
+                            text = it.name,
+                            style = MaterialTheme.typography.titleSmall,
+                            modifier = Modifier.clickable {
+                                detailsViewModel.loadArtistInfo(
+                                    detailsViewModel.albumScreenState.artists[index].id,
+                                    detailsViewModel.albumScreenState.artists[index].name,
+                                    navigatingFromAlbumScreen = true
+                                )
+                                navController.navigate(NavigationRoutes.ARTIST_DETAILS.name)
+                            }
+                        )
+                        if (albumxTrackCoverState.itemArtists.last() != it)
+                            Text(
+                                text = ", ",
+                                style = MaterialTheme.typography.titleSmall
+                            )
+                    }
+                }
             }
         }
     }

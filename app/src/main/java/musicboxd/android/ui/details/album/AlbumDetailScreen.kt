@@ -154,20 +154,14 @@ fun AlbumDetailScreen(
                         mainImgUrl = albumDetailScreenState.albumImgUrl,
                         itemTitle = albumDetailScreenState.albumTitle,
                         itemArtists = albumDetailScreenState.artists,
-                        itemType = albumDetailScreenState.itemType,
-                        onArtistNameClick = {
-                            detailsViewModel.loadArtistInfo(
-                                albumDetailScreenState.artistId,
-                                albumDetailScreenState.artists.first(),
-                                navigatingFromAlbumScreen = true
-                            )
-                            navController.navigate(NavigationRoutes.ARTIST_DETAILS.name)
-                        }
-                    )
+                        itemType = albumDetailScreenState.itemType
+                    ),
+                    detailsViewModel = detailsViewModel,
+                    navController = navController,
                 )
             }
             if (wikipediaExtractText.value.contains("album") && wikipediaExtractText.value.lowercase()
-                    .contains(albumDetailScreenState.artists.random().lowercase())
+                    .contains(albumDetailScreenState.artists.random().name.lowercase())
             ) {
                 item {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -611,7 +605,9 @@ fun AlbumDetailScreen(
                             itemTitle = albumDetailScreenState.albumTitle,
                             itemArtists = albumDetailScreenState.artists,
                             itemType = "Album"
-                        )
+                        ),
+                        detailsViewModel = detailsViewModel,
+                        navController = navController,
                     )
                     Text(
                         text = albumDetailScreenState.albumWiki.collectAsState(initial = "").value,

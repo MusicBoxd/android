@@ -163,7 +163,7 @@ fun VideoCanvas(
                 previewCardColor = detailsViewModel.previewCardColor.value,
                 imgUrl = albumScreenState.albumImgUrl,
                 title = trackList.value[it].name,
-                artists = albumScreenState.artists,
+                artists = albumScreenState.artists.map { it.name },
                 albumName = albumScreenState.albumTitle,
                 currentDuration = currentDuration,
                 mediaPlayer = mediaPlayer,
@@ -230,7 +230,7 @@ fun VideoCanvas(
                         )
                         Spacer(modifier = Modifier.height(5.dp))
                         Text(
-                            text = "${albumScreenState.albumTitle} • ${albumScreenState.itemType} • ${albumScreenState.artists.joinToString { it }}",
+                            text = "${albumScreenState.albumTitle} • ${albumScreenState.itemType} • ${albumScreenState.artists.joinToString { it.name }}",
                             style = MaterialTheme.typography.titleSmall,
                             color = MaterialTheme.colorScheme.onSurface,
                             maxLines = 1,
