@@ -28,7 +28,11 @@ fun MainNavigation(navController: NavHostController, detailsViewModel: DetailsVi
             }
         }
         composable(route = NavigationRoutes.SEARCH.name) {
-            SearchScreen(navController = navController, detailsViewModel = detailsViewModel)
+            SearchScreen(
+                navController = navController,
+                detailsViewModel = detailsViewModel,
+                searchScreenViewModel = detailsViewModel
+            )
         }
         composable(route = NavigationRoutes.ALBUM_DETAILS.name) {
             AlbumDetailScreen(detailsViewModel.albumScreenState, detailsViewModel, navController)

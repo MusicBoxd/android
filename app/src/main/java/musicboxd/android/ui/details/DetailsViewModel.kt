@@ -30,6 +30,7 @@ import musicboxd.android.data.remote.api.spotify.model.topTracks.TopTracksDTO
 import musicboxd.android.ui.details.album.AlbumDetailScreenState
 import musicboxd.android.ui.details.model.ItemExternalLink
 import musicboxd.android.ui.search.SearchScreenViewModel
+import musicboxd.android.utils.customConfig
 import org.jsoup.Jsoup
 import java.net.URL
 import javax.inject.Inject
@@ -47,7 +48,7 @@ class DetailsViewModel @Inject constructor(
         artists = listOf(),
         albumWiki = flow { },
         releaseDate = "",
-        trackList = flow { }, artistId = "", itemType = ""
+        trackList = flow { }, itemType = ""
     )
     var previewCardColor = mutableStateOf(Color.Black)
     var paletteColors = mutableStateOf<Palette?>(null)
@@ -88,7 +89,6 @@ class DetailsViewModel @Inject constructor(
         artistName: String,
         loadArtistImg: Boolean = true
     ) {
-        albumScreenState = albumScreenState.copy(artistId = artistID)
         canvasUrl.value = emptyList()
         albumExternalLinks.value = emptyList()
         spotifyToken?.accessToken?.let {
@@ -146,15 +146,7 @@ class DetailsViewModel @Inject constructor(
                         "+"
                     )
                 }/+images"
-            ).userAgent("Mozilla")
-                .header("Accept", "text/html")
-                .header("Accept-Encoding", "gzip,deflate")
-                .header(
-                    "Accept-Language",
-                    "it-IT,en;q=0.8,en-US;q=0.6,de;q=0.4,it;q=0.2,es;q=0.2"
-                )
-                .header("Connection", "keep-alive")
-                .ignoreContentType(true).get()
+            ).customConfig().get()
         }.toString().substringAfter("<a href=\"/music/").substringAfter("+images/")
             .substringBefore("\" class")
         val imgURL = "https://lastfm.freetls.fastly.net" + withContext(Dispatchers.IO) {
@@ -165,16 +157,7 @@ class DetailsViewModel @Inject constructor(
                         "+"
                     )
                 }/+images/${imageItem.substringBefore("\">")}".replace(" ", "+")
-            ).userAgent("Mozilla")
-                .header("Accept", "text/html")
-                .header("Accept-Encoding", "gzip,deflate")
-                .header(
-                    "Accept-Language",
-                    "it-IT,en;q=0.8,en-US;q=0.6,de;q=0.4,it;q=0.2,es;q=0.2"
-                )
-                .header("Connection", "keep-alive")
-                .ignoreContentType(true)
-                .get()
+            ).customConfig().get()
         }.toString().substringAfter("src=\"https://lastfm.freetls.fastly.net")
             .substringBefore("\">")
         _lastFMImage.emit(imgURL)
@@ -182,16 +165,7 @@ class DetailsViewModel @Inject constructor(
 
     private suspend fun loadArtistSocialHandles(artistID: String) {
         val socialsItem = withContext(Dispatchers.IO) {
-            Jsoup.connect("https://open.spotify.com/artist/$artistID")
-                .userAgent("Mozilla")
-                .header("Accept", "text/html")
-                .header("Accept-Encoding", "gzip,deflate")
-                .header(
-                    "Accept-Language",
-                    "it-IT,en;q=0.8,en-US;q=0.6,de;q=0.4,it;q=0.2,es;q=0.2"
-                )
-                .header("Connection", "keep-alive")
-                .ignoreContentType(true).get()
+            Jsoup.connect("https://open.spotify.com/artist/$artistID").customConfig().get()
         }.toString().substringAfter("<div class=\"ZdmJvgeayszd6ZvSl5B6\">")
             .substringBefore("<div class=\"iQxdxLc2HsEnJMZt0Us4\">")
             .split("<li class=\"p44AskfOeVB1s75duZoC\"><a rel=\"noopener noreferrer\" target=\"_blank\" href=\"")

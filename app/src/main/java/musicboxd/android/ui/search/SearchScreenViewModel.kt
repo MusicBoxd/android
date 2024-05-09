@@ -1,9 +1,13 @@
 package musicboxd.android.ui.search
 
 import android.util.Log
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -20,8 +24,11 @@ import musicboxd.android.data.remote.api.APIResult
 import musicboxd.android.data.remote.api.spotify.SpotifyAPIRepo
 import musicboxd.android.data.remote.api.spotify.model.artist_search.Item
 import musicboxd.android.data.remote.api.spotify.model.token.SpotifyToken
+import musicboxd.android.ui.search.charts.ChartMetaData
+import musicboxd.android.utils.customConfig
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.jsoup.Jsoup
 import javax.inject.Inject
 
 @HiltViewModel
@@ -37,6 +44,13 @@ open class SearchScreenViewModel @Inject constructor(
         accessTokenExpirationTimestampMs = 0L,
         clientId = "",
         isAnonymous = false
+    )
+
+    val billBoardChartsMetaData = mutableStateListOf(
+        ChartMetaData(chartName = "Artist 100", chartImgURL = mutableStateOf("")),
+        ChartMetaData(chartName = "Billboard 200", chartImgURL = mutableStateOf("")),
+        ChartMetaData(chartName = "Global 200", chartImgURL = mutableStateOf("")),
+        ChartMetaData(chartName = "Hot 100", chartImgURL = mutableStateOf(""))
     )
 
     init {
@@ -64,6 +78,30 @@ open class SearchScreenViewModel @Inject constructor(
                 }
             }
             Log.d("10MinMail", spotifyToken.toString())
+            repeat(4) {
+                withContext(Dispatchers.IO) {
+                    Jsoup.connect(
+                        when (it) {
+                            1 -> "https://www.billboard.com/charts/billboard-200/"
+                            2 -> "https://www.billboard.com/charts/billboard-global-200/"
+                            0 -> "https://www.billboard.com/charts/artist-100/"
+                            else -> "https://www.billboard.com/charts/hot-100/"
+                        }
+                    ).customConfig().get().toString()
+                        .substringAfter("<div class=\"charts-top-featured-alt")
+                        .substringAfter("<img class=\"c-lazy-image__img")
+                        .substringAfter("data-lazy-src=\"")
+                        .substringBefore("\"").let { topImageURL ->
+                            billBoardChartsMetaData[it] =
+                                billBoardChartsMetaData[it].copy(
+                                    chartImgURL = mutableStateOf(
+                                        topImageURL
+                                    )
+                                )
+                        }
+                }
+            }
+
         }
     }
 
