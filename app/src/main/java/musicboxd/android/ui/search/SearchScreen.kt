@@ -1,8 +1,10 @@
 package musicboxd.android.ui.search
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,20 +29,24 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -50,6 +56,8 @@ import androidx.navigation.NavController
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import musicboxd.android.R
 import musicboxd.android.ui.common.CoilImage
 import musicboxd.android.ui.common.fadedEdges
@@ -72,6 +80,23 @@ fun SearchScreen(
     val spotifyChartsData =
         searchScreenViewModel.spotifyChartsMetaData.collectAsStateWithLifecycle()
     val pagerState = rememberPagerState()
+    val isHighlightPagerTouched = rememberSaveable {
+        mutableStateOf(false)
+    }
+    val sliderValue = rememberSaveable {
+        mutableFloatStateOf(0f)
+    }
+    val coroutineScope = rememberCoroutineScope()
+    LaunchedEffect(key1 = isHighlightPagerTouched.value) {
+        var currentPage = 0
+        while (!isHighlightPagerTouched.value) {
+            if (currentPage == 3) {
+                currentPage = 0
+            }
+            pagerState.animateScrollToPage(currentPage++, animationSpec = tween(1000))
+            delay(2500)
+        }
+    }
     MusicBoxdTheme {
         LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier.fillMaxSize()) {
             item(span = {
@@ -204,48 +229,76 @@ fun SearchScreen(
                     Text(text = " • Charts", style = MaterialTheme.typography.titleSmall)
                 }
             }
-            item(span = {
-                GridItemSpan(maxLineSpan)
-            }) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(300.dp)
-                        .padding(15.dp)
-                        .clip(CardDefaults.shape)
-                ) {
-                    Box(Modifier.fillMaxSize()) {
-                        HorizontalPager(state = pagerState, count = 3) {
-                            Box(Modifier.fillMaxSize()) {
-                                CoilImage(
-                                    imgUrl = try {
-                                        spotifyChartsData.value.chartEntryViewResponses[it].highlights[0].displayImageUri
-                                    } catch (_: Exception) {
-                                        ""
-                                    },
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .fadedEdges(MaterialTheme.colorScheme)
-                                        .fadedEdges(MaterialTheme.colorScheme),
-                                    contentDescription = ""
-                                )
-                                Text(
-                                    text = spotifyChartsData.value.chartEntryViewResponses[it].highlights[0].text,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(15.dp)
-                                        .align(Alignment.BottomStart),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontSize = 18.sp,
-                                    textAlign = TextAlign.Start
-                                )
+            if (spotifyChartsData.value.chartEntryViewResponses.isNotEmpty()) {
+                item(span = {
+                    GridItemSpan(maxLineSpan)
+                }) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(320.dp)
+                            .padding(15.dp)
+                            .clip(CardDefaults.shape)
+                            .pointerInput(isHighlightPagerTouched.value) {
+                                detectTapGestures(
+                                    onPress = { isHighlightPagerTouched.value = true })
                             }
-                        }
-                        LinearProgressIndicator(
-                            modifier = Modifier
-                                .fillMaxWidth()
+                    ) {
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            HorizontalPager(state = pagerState, count = 3) {
+                                LaunchedEffect(pagerState.currentPage) {
+                                    when (pagerState.currentPage) {
+                                        0 -> sliderValue.floatValue = 0.0f
+                                        1 -> sliderValue.floatValue = 0.5f
+                                        2 -> sliderValue.floatValue = 1f
+                                    }
+                                }
+                                Box(Modifier.fillMaxSize()) {
+                                    CoilImage(
+                                        imgUrl = try {
+                                            spotifyChartsData.value.chartEntryViewResponses[it].highlights[0].displayImageUri
+                                        } catch (_: Exception) {
+                                            ""
+                                        },
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .fadedEdges(MaterialTheme.colorScheme)
+                                            .fadedEdges(MaterialTheme.colorScheme),
+                                        contentDescription = ""
+                                    )
+                                    Text(
+                                        text = spotifyChartsData.value.chartEntryViewResponses[it].highlights[0].text,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(start = 15.dp, end = 15.dp, bottom = 35.dp)
+                                            .align(Alignment.BottomStart),
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontSize = 18.sp,
+                                        textAlign = TextAlign.Start
+                                    )
+                                }
+                            }
+                            Slider(steps = 1, modifier = Modifier
                                 .align(Alignment.BottomCenter)
-                        )
+                                .fillMaxWidth()
+                                .padding(start = 75.dp, end = 75.dp),
+                                thumb = {}, value = sliderValue.floatValue, onValueChange = {
+                                    sliderValue.floatValue = it
+                                    when (sliderValue.floatValue) {
+                                        0.0f -> coroutineScope.launch {
+                                            pagerState.animateScrollToPage(0)
+                                        }
+
+                                        0.5f -> coroutineScope.launch {
+                                            pagerState.animateScrollToPage(1)
+                                        }
+
+                                        1.0f -> coroutineScope.launch {
+                                            pagerState.animateScrollToPage(2)
+                                        }
+                                    }
+                                })
+                        }
                     }
                 }
             }
