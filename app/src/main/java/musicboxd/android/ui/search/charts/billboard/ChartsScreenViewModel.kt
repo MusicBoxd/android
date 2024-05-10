@@ -9,7 +9,7 @@ import musicboxd.android.ui.search.charts.billboard.model.Data
 import musicboxd.android.utils.customConfig
 import org.jsoup.Jsoup
 
-class BillBoardDataViewModel : ViewModel() {
+class ChartsScreenViewModel : ViewModel() {
 
     private suspend fun scrapeBillBoardChartsData(url: String): BillBoardCharts {
         val hot100Doc = withContext(Dispatchers.IO) {

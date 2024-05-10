@@ -4,6 +4,8 @@ import org.jsoup.Connection
 
 fun Connection.customConfig(): Connection {
     return this.userAgent("Mozilla")
+        .referrer("http://www.google.com")
+        .followRedirects(true)
         .header("Accept", "text/html")
         .header("Accept-Encoding", "gzip,deflate")
         .header(

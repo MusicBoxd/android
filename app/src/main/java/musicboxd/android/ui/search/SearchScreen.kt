@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -57,6 +58,8 @@ fun SearchScreen(
         mutableStateOf(false)
     }
     val billBoardMetaData = searchScreenViewModel.billBoardChartsMetaData
+    val spotifyChartsData =
+        searchScreenViewModel.spotifyChartsMetaData.collectAsStateWithLifecycle()
     MusicBoxdTheme {
         LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier.fillMaxSize()) {
             item(span = {
@@ -167,6 +170,51 @@ fun SearchScreen(
                         style = MaterialTheme.typography.titleSmall
                     )
                 }
+            }
+
+            item(span = {
+                GridItemSpan(maxLineSpan)
+            }) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 5.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Spacer(modifier = Modifier.width(15.dp))
+                    Image(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(CircleShape),
+                        painter = painterResource(id = R.drawable.spotify_logo),
+                        contentDescription = ""
+                    )
+                    Text(text = " • Charts", style = MaterialTheme.typography.titleSmall)
+                }
+            }
+            item(span = {
+                GridItemSpan(maxLineSpan)
+            }) {
+                Spacer(modifier = Modifier.height(5.dp))
+            }
+            item(span = {
+                GridItemSpan(maxLineSpan)
+            }) {
+
+            }
+            itemsIndexed(spotifyChartsData.value.chartEntryViewResponses) { index, data ->
+                ChartCard(
+                    text = data.displayChart.chartMetadata.readableTitle, imgURL = when (index) {
+                        0 -> data.entries[0].trackMetadata.displayImageUri
+                        1 -> data.entries[0].albumMetadata.displayImageUri
+                        else -> data.entries[0].artistMetadata.displayImageUri
+                    }, index = index
+                )
+            }
+            item(span = {
+                GridItemSpan(maxLineSpan)
+            }) {
+                Spacer(modifier = Modifier.height(150.dp))
             }
         }
     }

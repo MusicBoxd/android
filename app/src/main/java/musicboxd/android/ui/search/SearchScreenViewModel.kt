@@ -3,11 +3,9 @@ package musicboxd.android.ui.search
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -23,6 +21,7 @@ import kotlinx.serialization.json.Json
 import musicboxd.android.data.remote.api.APIResult
 import musicboxd.android.data.remote.api.spotify.SpotifyAPIRepo
 import musicboxd.android.data.remote.api.spotify.model.artist_search.Item
+import musicboxd.android.data.remote.api.spotify.model.charts.SpotifyChartsDTO
 import musicboxd.android.data.remote.api.spotify.model.token.SpotifyToken
 import musicboxd.android.ui.search.charts.ChartMetaData
 import musicboxd.android.utils.customConfig
@@ -52,56 +51,76 @@ open class SearchScreenViewModel @Inject constructor(
         ChartMetaData(chartName = "Global 200", chartImgURL = mutableStateOf("")),
         ChartMetaData(chartName = "Hot 100", chartImgURL = mutableStateOf(""))
     )
+    private val _spotifyChartsMetaData =
+        MutableStateFlow(SpotifyChartsDTO(chartEntryViewResponses = listOf()))
+    val spotifyChartsMetaData = _spotifyChartsMetaData.asStateFlow()
+
+    private val json = Json {
+        coerceInputValues = true
+        ignoreUnknownKeys = true
+    }
+
 
     init {
         viewModelScope.launch {
-            spotifyToken = withContext(Dispatchers.Default) {
-                try {
-                    OkHttpClient().newCall(
-                        Request.Builder().get()
-                            .url("https://open.spotify.com/get_access_token?reason=transport&productType=web_player")
-                            .build()
-                    ).execute().body?.string()
-                } catch (_: Exception) {
-                    ""
-                }?.let {
+            awaitAll(async {
+                spotifyToken = withContext(Dispatchers.Default) {
                     try {
-                        Json.decodeFromString<SpotifyToken>(it)
+                        OkHttpClient().newCall(
+                            Request.Builder().get()
+                                .url("https://open.spotify.com/get_access_token?reason=transport&productType=web_player")
+                                .build()
+                        ).execute().body?.string()
                     } catch (_: Exception) {
-                        SpotifyToken(
-                            accessToken = "",
-                            accessTokenExpirationTimestampMs = 0,
-                            clientId = "",
-                            isAnonymous = false
-                        )
+                        ""
+                    }?.let {
+                        try {
+                            Json.decodeFromString<SpotifyToken>(it)
+                        } catch (_: Exception) {
+                            SpotifyToken(
+                                accessToken = "",
+                                accessTokenExpirationTimestampMs = 0,
+                                clientId = "",
+                                isAnonymous = false
+                            )
+                        }
                     }
                 }
-            }
-            Log.d("10MinMail", spotifyToken.toString())
-            repeat(4) {
-                withContext(Dispatchers.IO) {
-                    Jsoup.connect(
-                        when (it) {
-                            1 -> "https://www.billboard.com/charts/billboard-200/"
-                            2 -> "https://www.billboard.com/charts/billboard-global-200/"
-                            0 -> "https://www.billboard.com/charts/artist-100/"
-                            else -> "https://www.billboard.com/charts/hot-100/"
-                        }
-                    ).customConfig().get().toString()
-                        .substringAfter("<div class=\"charts-top-featured-alt")
-                        .substringAfter("<img class=\"c-lazy-image__img")
-                        .substringAfter("data-lazy-src=\"")
-                        .substringBefore("\"").let { topImageURL ->
-                            billBoardChartsMetaData[it] =
-                                billBoardChartsMetaData[it].copy(
-                                    chartImgURL = mutableStateOf(
-                                        topImageURL
+                Log.d("10MinMail", spotifyToken.toString())
+            }, async {
+                repeat(4) {
+                    withContext(Dispatchers.IO) {
+                        Jsoup.connect(
+                            when (it) {
+                                1 -> "https://www.billboard.com/charts/billboard-200/"
+                                2 -> "https://www.billboard.com/charts/billboard-global-200/"
+                                0 -> "https://www.billboard.com/charts/artist-100/"
+                                else -> "https://www.billboard.com/charts/hot-100/"
+                            }
+                        ).customConfig().get().toString()
+                            .substringAfter("<div class=\"charts-top-featured-alt")
+                            .substringAfter("<img class=\"c-lazy-image__img")
+                            .substringAfter("data-lazy-src=\"")
+                            .substringBefore("\"").let { topImageURL ->
+                                billBoardChartsMetaData[it] =
+                                    billBoardChartsMetaData[it].copy(
+                                        chartImgURL = mutableStateOf(
+                                            topImageURL
+                                        )
                                     )
-                                )
-                        }
+                            }
+                    }
                 }
-            }
-
+            }, async {
+                val okHttpClient = OkHttpClient()
+                val request = Request.Builder()
+                    .url("https://charts-spotify-com-service.spotify.com/public/v0/charts").build()
+                withContext(Dispatchers.IO) {
+                    okHttpClient.newCall(request).execute().body?.string()?.let {
+                        _spotifyChartsMetaData.emit(json.decodeFromString(it))
+                    }
+                }
+            })
         }
     }
 
