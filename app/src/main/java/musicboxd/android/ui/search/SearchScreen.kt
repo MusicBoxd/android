@@ -3,6 +3,8 @@ package musicboxd.android.ui.search
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,10 +22,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
@@ -38,15 +42,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.rememberPagerState
 import musicboxd.android.R
+import musicboxd.android.ui.common.CoilImage
+import musicboxd.android.ui.common.fadedEdges
 import musicboxd.android.ui.details.DetailsViewModel
 import musicboxd.android.ui.search.charts.ChartCard
 import musicboxd.android.ui.theme.MusicBoxdTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
 @Composable
 fun SearchScreen(
     searchScreenViewModel: SearchScreenViewModel,
@@ -60,6 +71,7 @@ fun SearchScreen(
     val billBoardMetaData = searchScreenViewModel.billBoardChartsMetaData
     val spotifyChartsData =
         searchScreenViewModel.spotifyChartsMetaData.collectAsStateWithLifecycle()
+    val pagerState = rememberPagerState()
     MusicBoxdTheme {
         LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier.fillMaxSize()) {
             item(span = {
@@ -195,12 +207,47 @@ fun SearchScreen(
             item(span = {
                 GridItemSpan(maxLineSpan)
             }) {
-                Spacer(modifier = Modifier.height(5.dp))
-            }
-            item(span = {
-                GridItemSpan(maxLineSpan)
-            }) {
-
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(300.dp)
+                        .padding(15.dp)
+                        .clip(CardDefaults.shape)
+                ) {
+                    Box(Modifier.fillMaxSize()) {
+                        HorizontalPager(state = pagerState, count = 3) {
+                            Box(Modifier.fillMaxSize()) {
+                                CoilImage(
+                                    imgUrl = try {
+                                        spotifyChartsData.value.chartEntryViewResponses[it].highlights[0].displayImageUri
+                                    } catch (_: Exception) {
+                                        ""
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .fadedEdges(MaterialTheme.colorScheme)
+                                        .fadedEdges(MaterialTheme.colorScheme),
+                                    contentDescription = ""
+                                )
+                                Text(
+                                    text = spotifyChartsData.value.chartEntryViewResponses[it].highlights[0].text,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(15.dp)
+                                        .align(Alignment.BottomStart),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontSize = 18.sp,
+                                    textAlign = TextAlign.Start
+                                )
+                            }
+                        }
+                        LinearProgressIndicator(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .align(Alignment.BottomCenter)
+                        )
+                    }
+                }
             }
             itemsIndexed(spotifyChartsData.value.chartEntryViewResponses) { index, data ->
                 ChartCard(
