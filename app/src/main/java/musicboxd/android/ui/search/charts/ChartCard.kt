@@ -1,5 +1,6 @@
 package musicboxd.android.ui.search.charts
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,7 +19,7 @@ import musicboxd.android.ui.common.CoilImage
 import musicboxd.android.ui.common.fadedEdges
 
 @Composable
-fun ChartCard(text: String, imgURL: String, index: Int) {
+fun ChartCard(text: String, imgURL: String, index: Int, onClick: () -> Unit = {}) {
     val colorScheme = MaterialTheme.colorScheme
     Column(
         modifier = Modifier
@@ -30,6 +31,7 @@ fun ChartCard(text: String, imgURL: String, index: Int) {
                 bottom = 7.5.dp
             )
             .clip(CardDefaults.shape)
+            .clickable { onClick() }
     ) {
         Box {
             CoilImage(

@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -62,7 +61,11 @@ import musicboxd.android.R
 import musicboxd.android.ui.common.CoilImage
 import musicboxd.android.ui.common.fadedEdges
 import musicboxd.android.ui.details.DetailsViewModel
+import musicboxd.android.ui.navigation.NavigationRoutes
 import musicboxd.android.ui.search.charts.ChartCard
+import musicboxd.android.ui.search.charts.ChartUIEvent
+import musicboxd.android.ui.search.charts.ChartsScreenViewModel
+import musicboxd.android.ui.search.charts.billboard.BillBoardChartType
 import musicboxd.android.ui.theme.MusicBoxdTheme
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
@@ -70,7 +73,8 @@ import musicboxd.android.ui.theme.MusicBoxdTheme
 fun SearchScreen(
     searchScreenViewModel: SearchScreenViewModel,
     navController: NavController,
-    detailsViewModel: DetailsViewModel
+    detailsViewModel: DetailsViewModel,
+    chartsScreenViewModel: ChartsScreenViewModel
 ) {
     val searchQuery = searchScreenViewModel.searchQuery.collectAsStateWithLifecycle()
     val isSearchActive = rememberSaveable {
@@ -87,6 +91,9 @@ fun SearchScreen(
         mutableFloatStateOf(0f)
     }
     val coroutineScope = rememberCoroutineScope()
+    val randomInt = rememberSaveable {
+        (0..2).random()
+    }
     LaunchedEffect(key1 = isHighlightPagerTouched.value) {
         var currentPage = 0
         while (!isHighlightPagerTouched.value) {
@@ -187,28 +194,27 @@ fun SearchScreen(
                 ChartCard(
                     text = chartMetaData.chartName,
                     imgURL = chartMetaData.chartImgURL.value,
-                    index
+                    index,
+                    onClick = {
+                        chartsScreenViewModel.onUiEvent(
+                            ChartUIEvent.OnBillBoardChartClick(
+                                when (chartMetaData.chartName) {
+                                    "Artist 100" -> BillBoardChartType.ARTIST_100
+                                    "Billboard 200" -> BillBoardChartType.BILLBOARD_200
+                                    "Global 200" -> BillBoardChartType.GLOBAL_200
+                                    else -> BillBoardChartType.HOT_100
+                                }
+                            )
+                        )
+                        navController.navigate(NavigationRoutes.CHARTS_SCREEN.name)
+                    }
                 )
             }
             item(span = {
                 GridItemSpan(maxLineSpan)
             }) {
-                FilledTonalButton(
-                    onClick = { },
-                    modifier = Modifier.padding(
-                        start = 15.dp,
-                        end = 15.dp,
-                        bottom = 15.dp,
-                        top = 7.5.dp
-                    )
-                ) {
-                    Text(
-                        text = "View All BillBoard Charts",
-                        style = MaterialTheme.typography.titleSmall
-                    )
-                }
+                Spacer(modifier = Modifier.height(10.dp))
             }
-
             item(span = {
                 GridItemSpan(maxLineSpan)
             }) {
@@ -256,7 +262,7 @@ fun SearchScreen(
                                 Box(Modifier.fillMaxSize()) {
                                     CoilImage(
                                         imgUrl = try {
-                                            spotifyChartsData.value.chartEntryViewResponses[it].highlights[0].displayImageUri
+                                            spotifyChartsData.value.chartEntryViewResponses[it].highlights[randomInt].displayImageUri
                                         } catch (_: Exception) {
                                             ""
                                         },
@@ -267,7 +273,7 @@ fun SearchScreen(
                                         contentDescription = ""
                                     )
                                     Text(
-                                        text = spotifyChartsData.value.chartEntryViewResponses[it].highlights[0].text,
+                                        text = spotifyChartsData.value.chartEntryViewResponses[it].highlights[randomInt].text,
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .padding(start = 15.dp, end = 15.dp, bottom = 35.dp)
