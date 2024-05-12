@@ -84,6 +84,7 @@ class DetailsViewModel @Inject constructor(
     val topTracksDTO = _topTracksDTO.asStateFlow()
     private val _lastFMImage = MutableStateFlow("")
     val lastFMImage = _lastFMImage.asStateFlow()
+
     fun loadAlbumInfo(
         artistID: String,
         albumName: String,
@@ -182,9 +183,20 @@ class DetailsViewModel @Inject constructor(
             artistID, accessToken
         )) {
             is APIResult.Failure -> TODO()
-            is APIResult.Success -> _artistAlbums.emit(
-                getAlbumsOfAnArtistData.data
-            )
+            is APIResult.Success -> {
+                val sortedReleases = getAlbumsOfAnArtistData.data.items.sortedByDescending {
+                    it.release_date.replace("-", "").trim().toLong()
+                }
+                _artistAlbums.emit(
+                    Albums(
+                        items = sortedReleases,
+                        limit = getAlbumsOfAnArtistData.data.limit,
+                        offset = getAlbumsOfAnArtistData.data.offset,
+                        total = getAlbumsOfAnArtistData.data.total
+                    )
+                )
+            }
+
         }
     }
 

@@ -57,6 +57,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -219,6 +220,70 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                         }
                     }
                 }
+            }
+        }
+        item {
+            Divider(
+                modifier = Modifier.padding(start = 15.dp, bottom = 15.dp, end = 15.dp),
+                color = MaterialTheme.colorScheme.outline.copy(0.25f)
+            )
+        }
+        item {
+            Text(
+                text = "Latest Release",
+                style = MaterialTheme.typography.titleMedium,
+                color = LocalContentColor.current,
+                modifier = Modifier.padding(start = 10.dp)
+            )
+        }
+        if (albums.isNotEmpty()) {
+            item {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(start = 10.dp, bottom = 15.dp, end = 15.dp, top = 15.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CoilImage(
+                        imgUrl = albums[0].images.first().url,
+                        modifier = Modifier
+                            .size(100.dp)
+                            .clip(RoundedCornerShape(5.dp)),
+                        contentDescription = ""
+                    )
+                    Spacer(modifier = Modifier.width(15.dp))
+                    Column {
+                        Text(
+                            text = albums[0].name,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Black
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = albums[0].album_type.capitalize(),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = LocalContentColor.current.copy(0.85f)
+                        )
+                        if (albums[0].artists.joinToString { it.name } != specificArtistFromSpotifyDTO.value.name) {
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                color = LocalContentColor.current.copy(0.85f),
+                                text = albums[0].artists.joinToString { it.name },
+                                style = MaterialTheme.typography.titleSmall,
+                            )
+                        }
+                    }
+                    Box(modifier = Modifier.fillMaxWidth()) {
+
+                    }
+                }
+                Text(
+                    modifier = Modifier.padding(start = 10.dp, bottom = 15.dp),
+                    color = LocalContentColor.current.copy(0.85f),
+                    text = "Released on " + albums[0].release_date,
+                    style = MaterialTheme.typography.titleSmall,
+                )
             }
         }
         item {
