@@ -101,7 +101,7 @@ class DetailsViewModel @Inject constructor(
                 }, async {
                     loadPalette(loadArtistImg, artistID, it)
                 }, async {
-                    loadTrackListOfAnAlbumData(it, albumID)
+                    loadTrackListOfAnAlbum(albumID)
                 }, async {
                     loadExternalLinks(false, "", albumID)
                 })
@@ -200,17 +200,20 @@ class DetailsViewModel @Inject constructor(
         }
     }
 
-    private suspend fun loadTrackListOfAnAlbumData(authorizationToken: String, albumID: String) {
-        when (val getTrackListOfAnAlbumData = spotifyAPIRepo.getTrackListOfAnAlbum(
-            authorizationToken = authorizationToken, albumID = albumID
-        )) {
-            is APIResult.Failure -> TODO()
-            is APIResult.Success -> albumScreenState =
-                albumScreenState.copy(trackList = flow {
-                    emit(
-                        getTrackListOfAnAlbumData.data.items
-                    )
-                })
+    suspend fun loadTrackListOfAnAlbum(albumID: String) {
+        albumScreenState = albumScreenState.copy(trackList = flow { })
+        spotifyToken?.accessToken?.let {
+            when (val getTrackListOfAnAlbumData = spotifyAPIRepo.getTrackListOfAnAlbum(
+                authorizationToken = it, albumID = albumID
+            )) {
+                is APIResult.Failure -> TODO()
+                is APIResult.Success -> albumScreenState =
+                    albumScreenState.copy(trackList = flow {
+                        emit(
+                            getTrackListOfAnAlbumData.data.items
+                        )
+                    })
+            }
         }
     }
 

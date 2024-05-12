@@ -128,9 +128,6 @@ fun AlbumDetailScreen(
         mutableFloatStateOf(0f)
     }
     val localUriHandler = LocalUriHandler.current
-    val artistImg = albumDetailScreenState.covertArtImgUrl.collectAsStateWithLifecycle(
-        initialValue = ""
-    )
     LaunchedEffect(key1 = isAnyTrackIsPlayingState.value) {
         while (isAnyTrackIsPlayingState.value) {
             currentPlayingTrackDurationAsFloat.floatValue =
@@ -167,7 +164,7 @@ fun AlbumDetailScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Image(
                             painter = painterResource(id = R.drawable.lastfm),
-                            contentDescription = "Wikipedia Logo",
+                            contentDescription = "LastFM Logo",
                             modifier = Modifier
                                 .padding(start = 15.dp)
                                 .clip(CircleShape)

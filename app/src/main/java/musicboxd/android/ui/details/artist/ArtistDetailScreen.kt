@@ -30,11 +30,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Audiotrack
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
@@ -44,6 +48,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -71,6 +76,7 @@ import kotlinx.coroutines.launch
 import musicboxd.android.data.remote.api.spotify.model.album.Albums
 import musicboxd.android.data.remote.api.spotify.model.album.Item
 import musicboxd.android.data.remote.api.spotify.model.topTracks.TopTracksDTO
+import musicboxd.android.data.remote.api.spotify.model.tracklist.Artist
 import musicboxd.android.ui.common.AlbumxTrackHorizontalPreview
 import musicboxd.android.ui.common.ArtistCoverArt
 import musicboxd.android.ui.common.ArtistCoverArtState
@@ -98,6 +104,14 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
         )
     ).value.items
     val specificArtistFromSpotifyDTO = detailsViewModel.artistInfo
+    LaunchedEffect(key1 = albums.size) {
+        if (albums.isNotEmpty()) {
+            detailsViewModel.loadTrackListOfAnAlbum(albums.first().id)
+        }
+    }
+    val latestReleases = detailsViewModel.albumScreenState.trackList.collectAsStateWithLifecycle(
+        initialValue = emptyList()
+    ).value
     val isGenresExpanded = rememberSaveable {
         mutableStateOf(false)
     }
@@ -134,6 +148,9 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
     val isBtmSheetVisible = rememberSaveable {
         mutableStateOf(false)
     }
+    val currentTrackID = rememberSaveable {
+        mutableStateOf("")
+    }
     val coroutineScope = rememberCoroutineScope()
     LaunchedEffect(key1 = isAnyTrackIsPlayingState.value) {
         while (isAnyTrackIsPlayingState.value) {
@@ -164,6 +181,39 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
         )
         navController.navigate(NavigationRoutes.ALBUM_DETAILS.name)
     }
+
+    fun onPlayClick(it: musicboxd.android.data.remote.api.spotify.model.tracklist.Item) {
+        if (it.id == selectedTrackId.value && (isAnyTrackIsPlayingState.value || isAnyTrackInLoadingState.value)) {
+            isAnyTrackInLoadingState.value = false
+            isAnyTrackIsPlayingState.value = false
+            mediaPlayer.stop()
+            mediaPlayer.reset()
+            return
+        }
+        Toast
+            .makeText(localContext, "Fetching Audio", Toast.LENGTH_SHORT)
+            .show()
+        selectedTrackId.value = it.id
+        if (latestReleases.isNotEmpty() && latestReleases.first().id == it.id) {
+            currentTrackID.value = it.id
+        }
+        isAnyTrackInLoadingState.value = true
+        mediaPlayer.stop()
+        mediaPlayer.reset()
+        mediaPlayer.setDataSource(it.preview_url)
+        mediaPlayer.prepareAsync()
+        mediaPlayer.setOnPreparedListener {
+            it.start()
+            isAnyTrackInLoadingState.value = false
+            isAnyTrackIsPlayingState.value = true
+        }
+        mediaPlayer.setOnCompletionListener {
+            it.stop()
+            it.reset()
+            isAnyTrackIsPlayingState.value = false
+            isAnyTrackInLoadingState.value = false
+        }
+    }
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         item {
             ArtistCoverArt(
@@ -177,46 +227,68 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
         item {
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        isGenresExpanded.value = !isGenresExpanded.value
-                    },
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Genres",
+                    text = specificArtistFromSpotifyDTO.value.followers.total.toString()
+                        .plus(" Followers •"),
                     style = MaterialTheme.typography.titleMedium,
                     color = LocalContentColor.current,
                     modifier = Modifier.padding(start = 10.dp)
                 )
-                IconButton(onClick = {
-                    isGenresExpanded.value = !isGenresExpanded.value
-                }) {
-                    Icon(
-                        imageVector = if (!isGenresExpanded.value) Icons.Default.ExpandMore else Icons.Default.ExpandLess,
-                        contentDescription = null
+                TextButton(onClick = { }) {
+                    Text(
+                        text = "Follow",
+                        style = MaterialTheme.typography.titleMedium
                     )
                 }
             }
-            Box(modifier = Modifier.animateContentSize()) {
-                if (isGenresExpanded.value) {
-                    FlowRow(
-                        modifier = Modifier
-                            .padding(start = 10.dp, bottom = 10.dp)
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    ) {
-                        specificArtistFromSpotifyDTO.value.genres.forEach {
-                            AssistChip(onClick = {
-                            }, label = {
-                                Text(
-                                    text = it,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = LocalContentColor.current,
-                                    modifier = Modifier.padding(10.dp)
-                                )
-                            })
+        }
+        if (specificArtistFromSpotifyDTO.value.genres.isNotEmpty()) {
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            isGenresExpanded.value = !isGenresExpanded.value
+                        },
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Genres",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = LocalContentColor.current,
+                        modifier = Modifier.padding(start = 10.dp)
+                    )
+                    IconButton(onClick = {
+                        isGenresExpanded.value = !isGenresExpanded.value
+                    }) {
+                        Icon(
+                            imageVector = if (!isGenresExpanded.value) Icons.Default.ExpandMore else Icons.Default.ExpandLess,
+                            contentDescription = null
+                        )
+                    }
+                }
+                Box(modifier = Modifier.animateContentSize()) {
+                    if (isGenresExpanded.value) {
+                        FlowRow(
+                            modifier = Modifier
+                                .padding(start = 10.dp, bottom = 10.dp)
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        ) {
+                            specificArtistFromSpotifyDTO.value.genres.forEach {
+                                AssistChip(onClick = {
+                                }, label = {
+                                    Text(
+                                        text = it,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = LocalContentColor.current,
+                                        modifier = Modifier.padding(10.dp)
+                                    )
+                                })
+                            }
                         }
                     }
                 }
@@ -240,6 +312,9 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
             item {
                 Row(
                     Modifier
+                        .clickable {
+                            onDiscographyItemClick(albums.first())
+                        }
                         .fillMaxWidth()
                         .padding(start = 10.dp, bottom = 15.dp, end = 15.dp, top = 15.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -252,7 +327,7 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                         contentDescription = ""
                     )
                     Spacer(modifier = Modifier.width(15.dp))
-                    Column {
+                    Column(modifier = Modifier.fillMaxWidth(if (albums.first().album_type.contains("single")) 0.75f else 1f)) {
                         Text(
                             text = albums[0].name,
                             style = MaterialTheme.typography.titleLarge,
@@ -274,8 +349,34 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                             )
                         }
                     }
-                    Box(modifier = Modifier.fillMaxWidth()) {
-
+                    if (latestReleases.isNotEmpty() && albums.first().album_type.contains("single")) {
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (selectedTrackId.value == currentTrackID.value && (isAnyTrackIsPlayingState.value || isAnyTrackInLoadingState.value)) {
+                                if (isAnyTrackIsPlayingState.value) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(30.dp),
+                                        strokeWidth = 2.5.dp,
+                                        progress = currentPlayingTrackDurationAsFloat.floatValue
+                                    )
+                                } else {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(30.dp),
+                                        strokeWidth = 2.5.dp
+                                    )
+                                }
+                            }
+                            IconButton(onClick = {
+                                onPlayClick(latestReleases.first())
+                            }) {
+                                Icon(
+                                    imageVector = if (isAnyTrackInLoadingState.value && selectedTrackId.value == currentTrackID.value) Icons.Default.Audiotrack else if (isAnyTrackIsPlayingState.value && selectedTrackId.value == currentTrackID.value) Icons.Default.Stop else Icons.Default.PlayArrow,
+                                    contentDescription = null
+                                )
+                            }
+                        }
                     }
                 }
                 Text(
@@ -313,33 +414,26 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                 isAnyTrackIsPlayingState = isAnyTrackIsPlayingState,
                 isAnyTrackInLoadingState = isAnyTrackInLoadingState,
                 onPlayClick = {
-                    if (it.id == selectedTrackId.value && (isAnyTrackIsPlayingState.value || isAnyTrackInLoadingState.value)) {
-                        isAnyTrackInLoadingState.value = false
-                        isAnyTrackIsPlayingState.value = false
-                        mediaPlayer.stop()
-                        mediaPlayer.reset()
-                        return@HorizontalTrackPreview
-                    }
-                    Toast
-                        .makeText(localContext, "Fetching Audio", Toast.LENGTH_SHORT)
-                        .show()
-                    selectedTrackId.value = it.id
-                    isAnyTrackInLoadingState.value = true
-                    mediaPlayer.stop()
-                    mediaPlayer.reset()
-                    mediaPlayer.setDataSource(it.preview_url)
-                    mediaPlayer.prepareAsync()
-                    mediaPlayer.setOnPreparedListener {
-                        it.start()
-                        isAnyTrackInLoadingState.value = false
-                        isAnyTrackIsPlayingState.value = true
-                    }
-                    mediaPlayer.setOnCompletionListener {
-                        it.stop()
-                        it.reset()
-                        isAnyTrackIsPlayingState.value = false
-                        isAnyTrackInLoadingState.value = false
-                    }
+                    onPlayClick(
+                        musicboxd.android.data.remote.api.spotify.model.tracklist.Item(
+                            artists = it.artists.map {
+                                Artist(
+                                    href = it.href,
+                                    id = it.id,
+                                    name = it.name,
+                                    type = it.type,
+                                    uri = it.uri
+                                )
+                            },
+                            explicit = it.explicit,
+                            id = it.id,
+                            name = it.name,
+                            preview_url = it.preview_url,
+                            track_number = it.track_number,
+                            type = it.type,
+                            uri = it.uri
+                        )
+                    )
                 },
                 currentPlayingTrackDurationAsFloat = currentPlayingTrackDurationAsFloat,
                 trackImgUrl = it.album.images.first().url
