@@ -20,8 +20,9 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import musicboxd.android.data.remote.api.APIResult
 import musicboxd.android.data.remote.api.spotify.SpotifyAPIRepo
+import musicboxd.android.data.remote.api.spotify.charts.SpotifyChartsAPIRepo
+import musicboxd.android.data.remote.api.spotify.charts.model.SpotifyChartsDTO
 import musicboxd.android.data.remote.api.spotify.model.artist_search.Item
-import musicboxd.android.data.remote.api.spotify.model.charts.SpotifyChartsDTO
 import musicboxd.android.data.remote.api.spotify.model.token.SpotifyToken
 import musicboxd.android.ui.search.charts.ChartMetaData
 import musicboxd.android.utils.customConfig
@@ -32,7 +33,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 open class SearchScreenViewModel @Inject constructor(
-    private val spotifyAPIRepo: SpotifyAPIRepo
+    private val spotifyAPIRepo: SpotifyAPIRepo,
+    private val spotifyChartsAPIRepo: SpotifyChartsAPIRepo
 ) :
     ViewModel() {
     private val _searchArtistsResult = MutableStateFlow(emptyList<Item>())
@@ -112,12 +114,13 @@ open class SearchScreenViewModel @Inject constructor(
                     }
                 }
             }, async {
-                val okHttpClient = OkHttpClient()
-                val request = Request.Builder()
-                    .url("https://charts-spotify-com-service.spotify.com/public/v0/charts").build()
-                withContext(Dispatchers.IO) {
-                    okHttpClient.newCall(request).execute().body?.string()?.let {
-                        _spotifyChartsMetaData.emit(json.decodeFromString(it))
+                when (val spotifyChartsData = spotifyChartsAPIRepo.getCharts()) {
+                    is APIResult.Failure -> {
+
+                    }
+
+                    is APIResult.Success -> {
+                        _spotifyChartsMetaData.emit(spotifyChartsData.data)
                     }
                 }
             })

@@ -14,7 +14,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
@@ -48,7 +47,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
             val detailsViewModel: DetailsViewModel = hiltViewModel()
-            val chartsScreenViewModel: ChartsScreenViewModel = viewModel()
+            val chartsScreenViewModel: ChartsScreenViewModel = hiltViewModel()
             MusicBoxdTheme {
                 Surface {
                     Scaffold(Modifier.fillMaxSize()) {

@@ -1,6 +1,7 @@
 package musicboxd.android.ui.search.charts
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,6 +21,7 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -41,6 +43,7 @@ import musicboxd.android.ui.search.charts.billboard.model.Data
 @Composable
 fun ChartsScreen(chartsScreenViewModel: ChartsScreenViewModel) {
     val billBoardChartsData = chartsScreenViewModel.billBoardData.collectAsStateWithLifecycle()
+    val spotifyChartsData = chartsScreenViewModel.spotifyChartsData.collectAsStateWithLifecycle()
     val topAppBarScrollBehaviour = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
         modifier = Modifier.nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
@@ -50,7 +53,10 @@ fun ChartsScreen(chartsScreenViewModel: ChartsScreenViewModel) {
                     text = chartsScreenViewModel.chartTitle.value,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.ExtraBold,
-                    fontSize = 24.sp
+                    fontSize = 24.sp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(end = 15.dp)
                 )
             })
         }) { paddingValues ->
@@ -81,12 +87,64 @@ fun ChartsScreen(chartsScreenViewModel: ChartsScreenViewModel) {
                     }
                 }
             }
-            itemsIndexed(billBoardChartsData.value.data) { index, data ->
-                ChartItem(
-                    data = data,
-                    index = index,
-                    isArtist = chartsScreenViewModel.chartTitle.value.contains("Artist")
-                )
+            if ((chartsScreenViewModel.chartTitle.value.lowercase()
+                    .contains("weekly")
+                        && spotifyChartsData.value.entries.isEmpty()) || (!chartsScreenViewModel.chartTitle.value.lowercase()
+                    .contains("weekly")
+                        && billBoardChartsData.value.data.isEmpty())
+            ) {
+                item {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.CenterEnd) {
+                        LinearProgressIndicator(modifier = Modifier.padding(65.dp))
+                    }
+                }
+                return@LazyColumn
+            }
+            if (chartsScreenViewModel.chartTitle.value.lowercase().contains("weekly")) {
+                itemsIndexed(spotifyChartsData.value.entries) { index, data ->
+                    ChartItem(
+                        data = when {
+                            chartsScreenViewModel.chartTitle.value.lowercase()
+                                .contains("songs") -> Data(
+                                itemImgURL = data.trackMetadata.displayImageUri,
+                                itemTitle = data.trackMetadata.trackName,
+                                itemArtists = data.trackMetadata.artists.joinToString { it.name },
+                                itemLastWeek = data.chartEntryData.previousRank.toString(),
+                                itemPeakPosition = data.chartEntryData.peakRank.toString(),
+                                itemWeeksOnChart = data.chartEntryData.consecutiveAppearancesOnChart.toString()
+                            )
+
+                            chartsScreenViewModel.chartTitle.value.lowercase()
+                                .contains("albums") -> Data(
+                                itemImgURL = data.albumMetadata.displayImageUri,
+                                itemTitle = data.albumMetadata.albumName,
+                                itemArtists = data.albumMetadata.artists.joinToString { it.name },
+                                itemLastWeek = data.chartEntryData.previousRank.toString(),
+                                itemPeakPosition = data.chartEntryData.peakRank.toString(),
+                                itemWeeksOnChart = data.chartEntryData.consecutiveAppearancesOnChart.toString()
+                            )
+
+                            else -> Data(
+                                itemImgURL = data.artistMetadata.displayImageUri,
+                                itemTitle = data.artistMetadata.artistName,
+                                itemArtists = "",
+                                itemLastWeek = data.chartEntryData.previousRank.toString(),
+                                itemPeakPosition = data.chartEntryData.peakRank.toString(),
+                                itemWeeksOnChart = data.chartEntryData.consecutiveAppearancesOnChart.toString()
+                            )
+                        },
+                        index = index,
+                        isArtist = chartsScreenViewModel.chartTitle.value.contains("Artist")
+                    )
+                }
+            } else {
+                itemsIndexed(billBoardChartsData.value.data) { index, data ->
+                    ChartItem(
+                        data = data,
+                        index = index,
+                        isArtist = chartsScreenViewModel.chartTitle.value.contains("Artist")
+                    )
+                }
             }
         }
     }

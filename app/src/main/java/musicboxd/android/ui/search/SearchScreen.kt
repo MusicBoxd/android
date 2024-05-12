@@ -66,6 +66,7 @@ import musicboxd.android.ui.search.charts.ChartCard
 import musicboxd.android.ui.search.charts.ChartUIEvent
 import musicboxd.android.ui.search.charts.ChartsScreenViewModel
 import musicboxd.android.ui.search.charts.billboard.BillBoardChartType
+import musicboxd.android.ui.search.charts.spotify.SpotifyChartType
 import musicboxd.android.ui.theme.MusicBoxdTheme
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
@@ -105,222 +106,239 @@ fun SearchScreen(
         }
     }
     MusicBoxdTheme {
-        LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier.fillMaxSize()) {
-            item(span = {
-                GridItemSpan(maxLineSpan)
-            }) {
-                ProvideTextStyle(value = MaterialTheme.typography.titleSmall) {
-                    SearchBar(
-                        colors = SearchBarDefaults.colors(dividerColor = Color.Transparent),
-                        leadingIcon = {
-                            IconButton(onClick = {
-                                isSearchActive.value = false;searchScreenViewModel.onUiEvent(
-                                SearchScreenUiEvent.OnQueryChange("")
-                            )
-                            }) {
-                                Icon(
-                                    imageVector = if (isSearchActive.value) Icons.Default.ArrowBack else Icons.Default.Search,
-                                    contentDescription = if (isSearchActive.value) "Arrow Back Icon" else "Search Icon"
-                                )
-                            }
-                        },
-                        trailingIcon = {
-                            if (isSearchActive.value) {
-                                IconButton(onClick = {
-                                    if (searchQuery.value.isNotBlank()) searchScreenViewModel.onUiEvent(
-                                        SearchScreenUiEvent.OnQueryChange("")
-                                    ) else isSearchActive.value = false
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Cancel,
-                                        contentDescription = "Cancel Icon"
-                                    )
-                                }
-                            }
-                        },
-                        placeholder = {
-                            Text(
-                                text = "Search MusicBoxd",
-                                style = MaterialTheme.typography.titleSmall
-                            )
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(if (isSearchActive.value) 0.dp else 15.dp)
-                            .animateContentSize(),
-                        query = searchQuery.value,
-                        onQueryChange = {
-                            searchScreenViewModel.onUiEvent(SearchScreenUiEvent.OnQueryChange(it))
-                        },
-                        onSearch = {
-
-                        },
-                        active = isSearchActive.value,
-                        onActiveChange = {
-                            isSearchActive.value = it
-                        },
-                        content = {
-                            SearchContent(
-                                searchScreenViewModel = searchScreenViewModel,
-                                navController,
-                                detailsViewModel
+        Column {
+            ProvideTextStyle(value = MaterialTheme.typography.titleSmall) {
+                SearchBar(
+                    colors = SearchBarDefaults.colors(dividerColor = Color.Transparent),
+                    leadingIcon = {
+                        IconButton(onClick = {
+                            isSearchActive.value = false;searchScreenViewModel.onUiEvent(
+                            SearchScreenUiEvent.OnQueryChange("")
+                        )
+                        }) {
+                            Icon(
+                                imageVector = if (isSearchActive.value) Icons.Default.ArrowBack else Icons.Default.Search,
+                                contentDescription = if (isSearchActive.value) "Arrow Back Icon" else "Search Icon"
                             )
                         }
-                    )
-                }
-            }
-            item(span = {
-                GridItemSpan(maxLineSpan)
-            }) {
-                Row(
+                    },
+                    trailingIcon = {
+                        if (isSearchActive.value) {
+                            IconButton(onClick = {
+                                if (searchQuery.value.isNotBlank()) searchScreenViewModel.onUiEvent(
+                                    SearchScreenUiEvent.OnQueryChange("")
+                                ) else isSearchActive.value = false
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.Cancel,
+                                    contentDescription = "Cancel Icon"
+                                )
+                            }
+                        }
+                    },
+                    placeholder = {
+                        Text(
+                            text = "Search MusicBoxd",
+                            style = MaterialTheme.typography.titleSmall
+                        )
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 5.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Spacer(modifier = Modifier.width(15.dp))
-                    Image(
-                        modifier = Modifier
-                            .size(28.dp)
-                            .clip(CircleShape)
-                            .border(1.dp, LocalContentColor.current, CircleShape),
-                        painter = painterResource(id = R.drawable.billboard_logo),
-                        contentDescription = ""
-                    )
-                    Text(text = " • Charts", style = MaterialTheme.typography.titleSmall)
-                }
-            }
-            itemsIndexed(billBoardMetaData) { index, chartMetaData ->
-                ChartCard(
-                    text = chartMetaData.chartName,
-                    imgURL = chartMetaData.chartImgURL.value,
-                    index,
-                    onClick = {
-                        chartsScreenViewModel.onUiEvent(
-                            ChartUIEvent.OnBillBoardChartClick(
-                                when (chartMetaData.chartName) {
-                                    "Artist 100" -> BillBoardChartType.ARTIST_100
-                                    "Billboard 200" -> BillBoardChartType.BILLBOARD_200
-                                    "Global 200" -> BillBoardChartType.GLOBAL_200
-                                    else -> BillBoardChartType.HOT_100
-                                }
-                            )
+                        .padding(if (isSearchActive.value) 0.dp else 15.dp)
+                        .animateContentSize(),
+                    query = searchQuery.value,
+                    onQueryChange = {
+                        searchScreenViewModel.onUiEvent(SearchScreenUiEvent.OnQueryChange(it))
+                    },
+                    onSearch = {
+
+                    },
+                    active = isSearchActive.value,
+                    onActiveChange = {
+                        isSearchActive.value = it
+                    },
+                    content = {
+                        SearchContent(
+                            searchScreenViewModel = searchScreenViewModel,
+                            navController,
+                            detailsViewModel
                         )
-                        navController.navigate(NavigationRoutes.CHARTS_SCREEN.name)
                     }
                 )
             }
-            item(span = {
-                GridItemSpan(maxLineSpan)
-            }) {
-                Spacer(modifier = Modifier.height(10.dp))
-            }
-            item(span = {
-                GridItemSpan(maxLineSpan)
-            }) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 5.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Spacer(modifier = Modifier.width(15.dp))
-                    Image(
-                        modifier = Modifier
-                            .size(28.dp)
-                            .clip(CircleShape),
-                        painter = painterResource(id = R.drawable.spotify_logo),
-                        contentDescription = ""
-                    )
-                    Text(text = " • Charts", style = MaterialTheme.typography.titleSmall)
-                }
-            }
-            if (spotifyChartsData.value.chartEntryViewResponses.isNotEmpty()) {
+
+            LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier.fillMaxSize()) {
                 item(span = {
                     GridItemSpan(maxLineSpan)
                 }) {
-                    Column(
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(320.dp)
-                            .padding(15.dp)
-                            .clip(CardDefaults.shape)
-                            .pointerInput(isHighlightPagerTouched.value) {
-                                detectTapGestures(
-                                    onPress = { isHighlightPagerTouched.value = true })
-                            }
+                            .padding(bottom = 5.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Box(modifier = Modifier.fillMaxSize()) {
-                            HorizontalPager(state = pagerState, count = 3) {
-                                LaunchedEffect(pagerState.currentPage) {
-                                    when (pagerState.currentPage) {
-                                        0 -> sliderValue.floatValue = 0.0f
-                                        1 -> sliderValue.floatValue = 0.5f
-                                        2 -> sliderValue.floatValue = 1f
+                        Spacer(modifier = Modifier.width(15.dp))
+                        Image(
+                            modifier = Modifier
+                                .size(28.dp)
+                                .clip(CircleShape)
+                                .border(1.dp, LocalContentColor.current, CircleShape),
+                            painter = painterResource(id = R.drawable.billboard_logo),
+                            contentDescription = ""
+                        )
+                        Text(text = " • Charts", style = MaterialTheme.typography.titleSmall)
+                    }
+                }
+                itemsIndexed(billBoardMetaData) { index, chartMetaData ->
+                    ChartCard(
+                        text = chartMetaData.chartName,
+                        imgURL = chartMetaData.chartImgURL.value,
+                        index,
+                        onClick = {
+                            navController.navigate(NavigationRoutes.CHARTS_SCREEN.name)
+                            chartsScreenViewModel.onUiEvent(
+                                ChartUIEvent.OnBillBoardChartClick(
+                                    when (chartMetaData.chartName) {
+                                        "Artist 100" -> BillBoardChartType.ARTIST_100
+                                        "Billboard 200" -> BillBoardChartType.BILLBOARD_200
+                                        "Global 200" -> BillBoardChartType.GLOBAL_200
+                                        else -> BillBoardChartType.HOT_100
                                     }
-                                }
-                                Box(Modifier.fillMaxSize()) {
-                                    CoilImage(
-                                        imgUrl = try {
-                                            spotifyChartsData.value.chartEntryViewResponses[it].highlights[randomInt].displayImageUri
-                                        } catch (_: Exception) {
-                                            ""
-                                        },
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .fadedEdges(MaterialTheme.colorScheme)
-                                            .fadedEdges(MaterialTheme.colorScheme),
-                                        contentDescription = ""
-                                    )
-                                    Text(
-                                        text = spotifyChartsData.value.chartEntryViewResponses[it].highlights[randomInt].text,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(start = 15.dp, end = 15.dp, bottom = 35.dp)
-                                            .align(Alignment.BottomStart),
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontSize = 18.sp,
-                                        textAlign = TextAlign.Start
-                                    )
-                                }
-                            }
-                            Slider(steps = 1, modifier = Modifier
-                                .align(Alignment.BottomCenter)
+                                )
+                            )
+                        }
+                    )
+                }
+                item(span = {
+                    GridItemSpan(maxLineSpan)
+                }) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
+                item(span = {
+                    GridItemSpan(maxLineSpan)
+                }) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 5.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Spacer(modifier = Modifier.width(15.dp))
+                        Image(
+                            modifier = Modifier
+                                .size(28.dp)
+                                .clip(CircleShape),
+                            painter = painterResource(id = R.drawable.spotify_logo),
+                            contentDescription = ""
+                        )
+                        Text(text = " • Charts", style = MaterialTheme.typography.titleSmall)
+                    }
+                }
+                if (spotifyChartsData.value.chartEntryViewResponses.isNotEmpty()) {
+                    item(span = {
+                        GridItemSpan(maxLineSpan)
+                    }) {
+                        Column(
+                            modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(start = 75.dp, end = 75.dp),
-                                thumb = {}, value = sliderValue.floatValue, onValueChange = {
-                                    sliderValue.floatValue = it
-                                    when (sliderValue.floatValue) {
-                                        0.0f -> coroutineScope.launch {
-                                            pagerState.animateScrollToPage(0)
-                                        }
-
-                                        0.5f -> coroutineScope.launch {
-                                            pagerState.animateScrollToPage(1)
-                                        }
-
-                                        1.0f -> coroutineScope.launch {
-                                            pagerState.animateScrollToPage(2)
+                                .height(320.dp)
+                                .padding(15.dp)
+                                .clip(CardDefaults.shape)
+                                .pointerInput(isHighlightPagerTouched.value) {
+                                    detectTapGestures(
+                                        onPress = { isHighlightPagerTouched.value = true })
+                                }
+                        ) {
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                HorizontalPager(state = pagerState, count = 3) {
+                                    LaunchedEffect(pagerState.currentPage) {
+                                        when (pagerState.currentPage) {
+                                            0 -> sliderValue.floatValue = 0.0f
+                                            1 -> sliderValue.floatValue = 0.5f
+                                            2 -> sliderValue.floatValue = 1f
                                         }
                                     }
-                                })
+                                    Box(Modifier.fillMaxSize()) {
+                                        CoilImage(
+                                            imgUrl = try {
+                                                spotifyChartsData.value.chartEntryViewResponses[it].highlights[randomInt].displayImageUri
+                                            } catch (_: Exception) {
+                                                ""
+                                            },
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .fadedEdges(MaterialTheme.colorScheme)
+                                                .fadedEdges(MaterialTheme.colorScheme),
+                                            contentDescription = ""
+                                        )
+                                        Text(
+                                            text = spotifyChartsData.value.chartEntryViewResponses[it].highlights[randomInt].text,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(start = 15.dp, end = 15.dp, bottom = 35.dp)
+                                                .align(Alignment.BottomStart),
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontSize = 18.sp,
+                                            textAlign = TextAlign.Start
+                                        )
+                                    }
+                                }
+                                Slider(steps = 1, modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .fillMaxWidth()
+                                    .padding(start = 75.dp, end = 75.dp),
+                                    thumb = {}, value = sliderValue.floatValue, onValueChange = {
+                                        sliderValue.floatValue = it
+                                        when (sliderValue.floatValue) {
+                                            0.0f -> coroutineScope.launch {
+                                                pagerState.animateScrollToPage(0)
+                                            }
+
+                                            0.5f -> coroutineScope.launch {
+                                                pagerState.animateScrollToPage(1)
+                                            }
+
+                                            1.0f -> coroutineScope.launch {
+                                                pagerState.animateScrollToPage(2)
+                                            }
+                                        }
+                                    })
+                            }
                         }
                     }
                 }
-            }
-            itemsIndexed(spotifyChartsData.value.chartEntryViewResponses) { index, data ->
-                ChartCard(
-                    text = data.displayChart.chartMetadata.readableTitle, imgURL = when (index) {
-                        0 -> data.entries[0].trackMetadata.displayImageUri
-                        1 -> data.entries[0].albumMetadata.displayImageUri
-                        else -> data.entries[0].artistMetadata.displayImageUri
-                    }, index = index
-                )
-            }
-            item(span = {
-                GridItemSpan(maxLineSpan)
-            }) {
-                Spacer(modifier = Modifier.height(150.dp))
+                itemsIndexed(spotifyChartsData.value.chartEntryViewResponses) { index, data ->
+                    ChartCard(
+                        text = data.displayChart.chartMetadata.readableTitle,
+                        imgURL = when (index) {
+                            0 -> data.entries[0].trackMetadata.displayImageUri
+                            1 -> data.entries[0].albumMetadata.displayImageUri
+                            else -> data.entries[0].artistMetadata.displayImageUri
+                        },
+                        index = index,
+                        onClick = {
+                            navController.navigate(NavigationRoutes.CHARTS_SCREEN.name)
+                            chartsScreenViewModel.onUiEvent(
+                                ChartUIEvent.OnSpotifyChartClick(
+                                    when {
+                                        data.displayChart.chartMetadata.readableTitle.lowercase()
+                                            .contains("songs") -> SpotifyChartType.WEEKLY_TOP_SONGS_GLOBAL
+
+                                        data.displayChart.chartMetadata.readableTitle.lowercase()
+                                            .contains("albums") -> SpotifyChartType.WEEKLY_TOP_ALBUMS_GLOBAL
+
+                                        else -> SpotifyChartType.WEEKLY_TOP_ARTISTS_GLOBAL
+                                    }
+                                )
+                            )
+                        }
+                    )
+                }
+                item(span = {
+                    GridItemSpan(maxLineSpan)
+                }) {
+                    Spacer(modifier = Modifier.height(150.dp))
+                }
             }
         }
     }

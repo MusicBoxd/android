@@ -18,6 +18,9 @@ import musicboxd.android.data.remote.api.songlink.SongLinkRepo
 import musicboxd.android.data.remote.api.spotify.SpotifyAPIImpl
 import musicboxd.android.data.remote.api.spotify.SpotifyAPIRepo
 import musicboxd.android.data.remote.api.spotify.SpotifyAPIService
+import musicboxd.android.data.remote.api.spotify.charts.SpotifyChartsAPIImpl
+import musicboxd.android.data.remote.api.spotify.charts.SpotifyChartsAPIRepo
+import musicboxd.android.data.remote.api.spotify.charts.SpotifyChartsAPIService
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -90,11 +93,30 @@ object AppModule {
             .build().create(SpotifyAPIService::class.java)
     }
 
+    @Provides
+    @Singleton
+    fun provideSpotifyChartsAPIInstance(): SpotifyChartsAPIService {
+        return Retrofit.Builder()
+            .baseUrl("https://charts-spotify-com-service.spotify.com/public/v0/")
+            .addConverterFactory(
+                json.asConverterFactory(
+                    "application/json".toMediaType()
+                )
+            )
+            .build().create(SpotifyChartsAPIService::class.java)
+    }
+
 
     @Provides
     @Singleton
     fun provideSpotifyAPIRepo(spotifyAPIService: SpotifyAPIService): SpotifyAPIRepo {
         return SpotifyAPIImpl(spotifyAPIService)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSpotifyChartsAPIRepo(spotifyChartsAPIService: SpotifyChartsAPIService): SpotifyChartsAPIRepo {
+        return SpotifyChartsAPIImpl(spotifyChartsAPIService)
     }
 
     @Provides

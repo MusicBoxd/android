@@ -3,20 +3,52 @@ package musicboxd.android.ui.search.charts
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import musicboxd.android.data.remote.api.APIResult
+import musicboxd.android.data.remote.api.spotify.charts.SpotifyChartsAPIRepo
+import musicboxd.android.data.remote.api.spotify.charts.model.ChartEntryViewResponse
+import musicboxd.android.data.remote.api.spotify.charts.model.ChartMetadata
+import musicboxd.android.data.remote.api.spotify.charts.model.Dimensions
+import musicboxd.android.data.remote.api.spotify.charts.model.DisplayChart
 import musicboxd.android.ui.search.charts.billboard.BillBoardChartType
 import musicboxd.android.ui.search.charts.billboard.model.BillBoardCharts
 import musicboxd.android.ui.search.charts.billboard.model.Data
+import musicboxd.android.ui.search.charts.spotify.SpotifyChartType
 import musicboxd.android.utils.customConfig
 import org.jsoup.Jsoup
+import javax.inject.Inject
 
-class ChartsScreenViewModel : ViewModel() {
+@HiltViewModel
+class ChartsScreenViewModel @Inject constructor(
+    private val spotifyChartsAPIRepo: SpotifyChartsAPIRepo
+) : ViewModel() {
     private val _billBoardChartData = MutableStateFlow(BillBoardCharts(date = "", data = listOf()))
     val billBoardData = _billBoardChartData.asStateFlow()
+
+    private val _spotifyChartsData = MutableStateFlow(
+        ChartEntryViewResponse(
+            displayChart = DisplayChart(
+                ChartMetadata(
+                    alias = "", backgroundColor = "", dimensions = Dimensions(
+                        chartType = "",
+                        city = "",
+                        country = "",
+                        earliestDate = "",
+                        genre = "",
+                        latestDate = "",
+                        recurrence = "",
+                    ), entityType = "", readableTitle = "", textColor = "", uri = ""
+                ), "", ""
+            ), entries = listOf(), highlights = listOf()
+        )
+    )
+    val spotifyChartsData = _spotifyChartsData.asStateFlow()
+
     val chartTitle = mutableStateOf("")
     fun onUiEvent(chartUIEvent: ChartUIEvent) {
         when (chartUIEvent) {
@@ -49,6 +81,43 @@ class ChartsScreenViewModel : ViewModel() {
                         )
                     )
 
+                }
+            }
+
+            is ChartUIEvent.OnSpotifyChartClick -> {
+                viewModelScope.launch {
+                    val spotifyChartsData = spotifyChartsAPIRepo.getCharts()
+                    when (chartUIEvent.spotifyChartType) {
+                        SpotifyChartType.WEEKLY_TOP_SONGS_GLOBAL -> {
+                            when (spotifyChartsData) {
+                                is APIResult.Failure -> TODO()
+                                is APIResult.Success -> {
+                                    chartTitle.value = "Weekly Top Songs: Global"
+                                    _spotifyChartsData.emit(spotifyChartsData.data.chartEntryViewResponses[0])
+                                }
+                            }
+                        }
+
+                        SpotifyChartType.WEEKLY_TOP_ALBUMS_GLOBAL -> {
+                            when (spotifyChartsData) {
+                                is APIResult.Failure -> TODO()
+                                is APIResult.Success -> {
+                                    chartTitle.value = "Weekly Top Albums: Global"
+                                    _spotifyChartsData.emit(spotifyChartsData.data.chartEntryViewResponses[1])
+                                }
+                            }
+                        }
+
+                        SpotifyChartType.WEEKLY_TOP_ARTISTS_GLOBAL -> {
+                            when (spotifyChartsData) {
+                                is APIResult.Failure -> TODO()
+                                is APIResult.Success -> {
+                                    chartTitle.value = "Weekly Top Artist: Global"
+                                    _spotifyChartsData.emit(spotifyChartsData.data.chartEntryViewResponses[2])
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

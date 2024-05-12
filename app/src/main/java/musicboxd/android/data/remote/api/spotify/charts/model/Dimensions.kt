@@ -1,4 +1,4 @@
-package musicboxd.android.data.remote.api.spotify.model.charts
+package musicboxd.android.data.remote.api.spotify.charts.model
 
 import kotlinx.serialization.Serializable
 

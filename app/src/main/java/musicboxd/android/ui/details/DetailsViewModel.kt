@@ -22,6 +22,7 @@ import musicboxd.android.data.remote.api.APIResult
 import musicboxd.android.data.remote.api.lastfm.LastFMAPIRepo
 import musicboxd.android.data.remote.api.songlink.SongLinkRepo
 import musicboxd.android.data.remote.api.spotify.SpotifyAPIRepo
+import musicboxd.android.data.remote.api.spotify.charts.SpotifyChartsAPIRepo
 import musicboxd.android.data.remote.api.spotify.model.album.Albums
 import musicboxd.android.data.remote.api.spotify.model.artist_search.ExternalUrls
 import musicboxd.android.data.remote.api.spotify.model.artist_search.Followers
@@ -39,8 +40,9 @@ import javax.inject.Inject
 class DetailsViewModel @Inject constructor(
     private val spotifyAPIRepo: SpotifyAPIRepo,
     private val songLinkRepo: SongLinkRepo,
-    private val lastFMAPIRepo: LastFMAPIRepo
-) : SearchScreenViewModel(spotifyAPIRepo) {
+    private val lastFMAPIRepo: LastFMAPIRepo,
+    spotifyChartsAPIRepo: SpotifyChartsAPIRepo
+) : SearchScreenViewModel(spotifyAPIRepo, spotifyChartsAPIRepo) {
     var albumScreenState = AlbumDetailScreenState(
         covertArtImgUrl = flow { },
         albumImgUrl = "",
