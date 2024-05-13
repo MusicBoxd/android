@@ -16,13 +16,18 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequest
+import androidx.work.WorkManager
 import dagger.hilt.android.AndroidEntryPoint
+import musicboxd.android.data.RefreshReleasesWorker
 import musicboxd.android.ui.details.DetailsViewModel
 import musicboxd.android.ui.navigation.BottomNavigationBar
 import musicboxd.android.ui.navigation.MainNavigation
 import musicboxd.android.ui.navigation.NavigationRoutes
 import musicboxd.android.ui.search.charts.ChartsScreenViewModel
 import musicboxd.android.ui.theme.MusicBoxdTheme
+import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -69,5 +74,13 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        val latestReleasesNotificationWorker =
+            PeriodicWorkRequest.Builder(RefreshReleasesWorker::class.java, 15, TimeUnit.MINUTES)
+                .build()
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "releaseChecker",
+            ExistingPeriodicWorkPolicy.REPLACE,
+            latestReleasesNotificationWorker
+        )
     }
 }

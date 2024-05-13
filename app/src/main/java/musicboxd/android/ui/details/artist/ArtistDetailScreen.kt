@@ -5,6 +5,7 @@ import android.media.MediaPlayer
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -48,7 +49,6 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -62,6 +62,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -73,6 +74,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
+import musicboxd.android.R
 import musicboxd.android.data.remote.api.spotify.model.album.Albums
 import musicboxd.android.data.remote.api.spotify.model.album.Item
 import musicboxd.android.data.remote.api.spotify.model.topTracks.TopTracksDTO
@@ -225,23 +227,31 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
             )
         }
         item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Spacer(modifier = Modifier.width(10.dp))
+                Image(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clip(CircleShape),
+                    painter = painterResource(id = R.drawable.spotify_logo),
+                    contentDescription = ""
+                )
                 Text(
-                    text = specificArtistFromSpotifyDTO.value.followers.total.toString()
-                        .plus(" Followers •"),
+                    text = "•  " + specificArtistFromSpotifyDTO.value.followers.total.toString()
+                        .plus(" Followers"),
                     style = MaterialTheme.typography.titleMedium,
                     color = LocalContentColor.current,
                     modifier = Modifier.padding(start = 10.dp)
                 )
-                TextButton(onClick = { }) {
-                    Text(
-                        text = "Follow",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                }
+            }
+            FilledTonalButton(
+                onClick = { },
+                modifier = Modifier.padding(10.dp)
+            ) {
+                Text(
+                    text = "Follow",
+                    style = MaterialTheme.typography.titleMedium
+                )
             }
         }
         if (specificArtistFromSpotifyDTO.value.genres.isNotEmpty()) {
