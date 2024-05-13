@@ -118,8 +118,9 @@ dependencies {
 
     implementation("androidx.palette:palette-ktx:1.0.0")
 
-    implementation ("com.google.android.exoplayer:exoplayer:2.19.1")
-    implementation ("io.coil-kt:coil-gif:2.1.0")
+    implementation("com.google.android.exoplayer:exoplayer:2.19.1")
+    implementation("io.coil-kt:coil-gif:2.1.0")
     implementation("org.jsoup:jsoup:1.14.3")
     implementation("androidx.work:work-runtime-ktx:2.9.0")
+    implementation("com.google.accompanist:accompanist-permissions:0.35.0-alpha")
 }

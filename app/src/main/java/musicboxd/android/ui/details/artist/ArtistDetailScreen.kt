@@ -1,9 +1,14 @@
 package musicboxd.android.ui.details.artist
 
+import android.Manifest
+import android.app.NotificationManager
+import android.content.Context
 import android.media.AudioAttributes
 import android.media.MediaPlayer
+import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -35,19 +40,26 @@ import androidx.compose.material.icons.filled.Audiotrack
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -69,6 +81,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.shouldShowRationale
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
@@ -88,8 +104,13 @@ import musicboxd.android.ui.common.fadedEdges
 import musicboxd.android.ui.details.DetailsViewModel
 import musicboxd.android.ui.details.album.AlbumDetailScreenState
 import musicboxd.android.ui.navigation.NavigationRoutes
+import musicboxd.android.utils.showNotificationSettings
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+@OptIn(
+    ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class,
+    ExperimentalPermissionsApi::class
+)
 @Composable
 fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavController) {
     val topTracks = detailsViewModel.topTracksDTO.collectAsStateWithLifecycle(
@@ -144,8 +165,8 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
     val lastFmImage = detailsViewModel.lastFMImage.collectAsStateWithLifecycle()
     val localUriHandler = LocalUriHandler.current
     val bottomModalSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val isDiscographyBtmSheetEnabled = rememberSaveable {
-        mutableStateOf(false)
+    val bottomSheetType = rememberSaveable {
+        mutableStateOf(ArtistScreenBtmSheetType.DISCOGRAPHY.name)
     }
     val isBtmSheetVisible = rememberSaveable {
         mutableStateOf(false)
@@ -154,6 +175,9 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
         mutableStateOf("")
     }
     val coroutineScope = rememberCoroutineScope()
+    val isPermissionDeniedDialogBoxVisible = rememberSaveable {
+        mutableStateOf(false)
+    }
     LaunchedEffect(key1 = isAnyTrackIsPlayingState.value) {
         while (isAnyTrackIsPlayingState.value) {
             currentPlayingTrackDurationAsFloat.floatValue =
@@ -216,6 +240,9 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
             isAnyTrackInLoadingState.value = false
         }
     }
+
+    val notificationPermissionState =
+        rememberPermissionState(permission = Manifest.permission.POST_NOTIFICATIONS)
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         item {
             ArtistCoverArt(
@@ -244,14 +271,55 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                     modifier = Modifier.padding(start = 10.dp)
                 )
             }
-            FilledTonalButton(
-                onClick = { },
-                modifier = Modifier.padding(10.dp)
-            ) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                FilledTonalButton(
+                    onClick = {
+                        if (Build.VERSION.SDK_INT >= 33) {
+                            if (notificationPermissionState.status.shouldShowRationale) {
+                                isPermissionDeniedDialogBoxVisible.value = true
+                                return@FilledTonalButton
+                            }
+                            if (notificationPermissionState.status.isGranted) {
+                                val notificationManager =
+                                    localContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                                val channel = notificationManager.getNotificationChannel("1")
+                                if (channel.importance == NotificationManager.IMPORTANCE_NONE) {
+                                    isPermissionDeniedDialogBoxVisible.value = true
+                                    return@FilledTonalButton
+                                }
+                                isBtmSheetVisible.value = true
+                                bottomSheetType.value = ArtistScreenBtmSheetType.SUBSCRIBE.name
+                                coroutineScope.launch {
+                                    bottomModalSheetState.expand()
+                                }
+                                return@FilledTonalButton
+                            } else {
+                                notificationPermissionState.launchPermissionRequest()
+                                return@FilledTonalButton
+                            }
+                        }
+                        isBtmSheetVisible.value = true
+                        bottomSheetType.value = ArtistScreenBtmSheetType.SUBSCRIBE.name
+                        coroutineScope.launch {
+                            bottomModalSheetState.expand()
+                        }
+                    },
+                    modifier = Modifier.padding(10.dp)
+                ) {
+                    Text(
+                        text = "Subscribe",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+                Spacer(modifier = Modifier.width(5.dp))
                 Text(
-                    text = "Follow",
+                    text = "•",
                     style = MaterialTheme.typography.titleMedium
                 )
+                Spacer(modifier = Modifier.width(10.dp))
+                FilledTonalIconButton(onClick = { }) {
+                    Icon(imageVector = Icons.Default.Share, contentDescription = "")
+                }
             }
         }
         if (specificArtistFromSpotifyDTO.value.genres.isNotEmpty()) {
@@ -449,12 +517,6 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                 trackImgUrl = it.album.images.first().url
             )
         }
-        /*  item {
-              Divider(
-                  modifier = Modifier.padding(start = 15.dp, top = 10.dp, end = 15.dp),
-                  color = MaterialTheme.colorScheme.outline.copy(0.25f)
-              )
-          }*/
         item {
             Text(
                 text = "Discography",
@@ -519,7 +581,7 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                 .fillMaxWidth()
                 .padding(15.dp), onClick = {
                 isBtmSheetVisible.value = true
-                isDiscographyBtmSheetEnabled.value = true
+                bottomSheetType.value = ArtistScreenBtmSheetType.DISCOGRAPHY.name
                 coroutineScope.launch {
                     bottomModalSheetState.expand()
                 }
@@ -531,12 +593,6 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                 )
             }
         }
-        /* item {
-             Divider(
-                 modifier = Modifier.padding(start = 15.dp, end = 15.dp, bottom = 5.dp),
-                 color = MaterialTheme.colorScheme.outline.copy(0.25f)
-             )
-         }*/
         item {
             Text(
                 text = "About",
@@ -569,7 +625,7 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                             MutableInteractionSource()
                         }, indication = null, onClick = {
                             isBtmSheetVisible.value = true
-                            isDiscographyBtmSheetEnabled.value = false
+                            bottomSheetType.value = ArtistScreenBtmSheetType.BIO.name
                             coroutineScope.launch {
                                 bottomModalSheetState.expand()
                             }
@@ -591,7 +647,7 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                     )
                     IconButton(onClick = {
                         isBtmSheetVisible.value = true
-                        isDiscographyBtmSheetEnabled.value = false
+                        bottomSheetType.value = ArtistScreenBtmSheetType.BIO.name
                         coroutineScope.launch {
                             bottomModalSheetState.expand()
                         }
@@ -647,7 +703,7 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                                 ), contentDescription = ""
                         )
                     }
-                    androidx.compose.material3.Text(
+                    Text(
                         style = MaterialTheme.typography.titleSmall,
                         text = when {
                             it.lowercase()
@@ -672,10 +728,9 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
     }
     if (isBtmSheetVisible.value) {
         ModalBottomSheet(dragHandle = {
-            if (isDiscographyBtmSheetEnabled.value)
+            if (bottomSheetType.value == ArtistScreenBtmSheetType.DISCOGRAPHY.name)
                 BottomSheetDefaults.DragHandle()
-            else {
-            }
+
         }, onDismissRequest = {
             coroutineScope.launch {
                 bottomModalSheetState.hide()
@@ -683,8 +738,8 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                 isBtmSheetVisible.value = false
             }
         }) {
-            if (isDiscographyBtmSheetEnabled.value) {
-                LazyColumn(
+            when (bottomSheetType.value) {
+                ArtistScreenBtmSheetType.DISCOGRAPHY.name -> LazyColumn(
                     Modifier
                         .fillMaxWidth()
                         .wrapContentHeight()
@@ -711,8 +766,8 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                         )
                     }
                 }
-            } else {
-                Column(
+
+                ArtistScreenBtmSheetType.BIO.name -> Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState())
@@ -732,8 +787,137 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                             .padding(10.dp)
                     )
                 }
+
+                ArtistScreenBtmSheetType.SUBSCRIBE.name -> Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    ArtistCoverArt(
+                        artistCoverArtState = ArtistCoverArtState(
+                            specificArtistFromSpotifyDTO.value.name,
+                            lastFmImage.value
+                        )
+                    )
+                    Text(
+                        text = "Subscribe to",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = LocalContentColor.current,
+                        modifier = Modifier.padding(start = 15.dp),
+                        fontWeight = FontWeight.ExtraLight
+                    )
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(start = 15.dp, end = 15.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "All releases", style = MaterialTheme.typography.titleLarge,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Switch(checked = true, onCheckedChange = {})
+                    }
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(start = 15.dp, end = 15.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Albums", style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 16.sp,
+                        )
+                        Switch(checked = true, onCheckedChange = {})
+                    }
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(start = 15.dp, end = 15.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Singles", style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 16.sp,
+                        )
+                        Switch(checked = true, onCheckedChange = {})
+                    }
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(start = 15.dp, end = 15.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            fontWeight = FontWeight.SemiBold,
+                            text = "Tours", style = MaterialTheme.typography.titleLarge,
+                            fontSize = 16.sp,
+                        )
+                        Switch(checked = true, onCheckedChange = {})
+                    }
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(15.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(imageVector = Icons.Default.Info, contentDescription = "")
+                        Spacer(modifier = Modifier.width(15.dp))
+                        Text(
+                            fontWeight = FontWeight.Normal,
+                            text = "MusicBoxd currently only retrieves the latest releases from Spotify. But hold up! We're gonna cook on this. Next updates will include the integration of other services too :)",
+                            style = MaterialTheme.typography.titleLarge,
+                        )
+                    }
+                }
             }
         }
+    }
+    if (isPermissionDeniedDialogBoxVisible.value) {
+        AlertDialog(
+            onDismissRequest = { isPermissionDeniedDialogBoxVisible.value = false },
+            confirmButton = {
+                Button(onClick = {
+                    showNotificationSettings(
+                        localContext,
+                        if (notificationPermissionState.status.isGranted) "1" else null
+                    )
+                }, modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Enable it",
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                }
+            }, dismissButton = {
+                OutlinedButton(onClick = {
+                    isPermissionDeniedDialogBoxVisible.value = false
+                }, modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Cancel",
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                }
+            }, title = {
+                Text(
+                    fontWeight = FontWeight.Black,
+                    text = "Let MusicBoxd slide into your notifications 😏",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontSize = 18.sp
+                )
+            }, text = {
+                Text(
+                    text = "It seems you've disabled notifications.\n\nEnable notifications to stay updated on releases from your favorite artists!\n\nWe don't send any other stupid notifications.",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontSize = 16.sp
+                )
+            })
     }
     BackHandler {
         coroutineScope.launch {
