@@ -25,7 +25,6 @@ import musicboxd.android.ui.details.DetailsViewModel
 import musicboxd.android.ui.navigation.BottomNavigationBar
 import musicboxd.android.ui.navigation.MainNavigation
 import musicboxd.android.ui.navigation.NavigationRoutes
-import musicboxd.android.ui.search.charts.ChartsScreenViewModel
 import musicboxd.android.ui.theme.MusicBoxdTheme
 import java.util.concurrent.TimeUnit
 
@@ -52,7 +51,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
             val detailsViewModel: DetailsViewModel = hiltViewModel()
-            val chartsScreenViewModel: ChartsScreenViewModel = hiltViewModel()
             MusicBoxdTheme {
                 Surface {
                     Scaffold(Modifier.fillMaxSize()) {
@@ -64,8 +62,7 @@ class MainActivity : ComponentActivity() {
                             Scaffold {
                                 MainNavigation(
                                     navController = navController,
-                                    detailsViewModel,
-                                    chartsScreenViewModel
+                                    detailsViewModel
                                 )
                             }
                         }

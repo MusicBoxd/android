@@ -3,7 +3,6 @@ package musicboxd.android.ui.search
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +24,7 @@ import musicboxd.android.data.remote.api.spotify.charts.model.SpotifyChartsDTO
 import musicboxd.android.data.remote.api.spotify.model.artist_search.Item
 import musicboxd.android.data.remote.api.spotify.model.token.SpotifyToken
 import musicboxd.android.ui.search.charts.ChartMetaData
+import musicboxd.android.ui.search.charts.ChartsScreenViewModel
 import musicboxd.android.utils.customConfig
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -36,7 +36,7 @@ open class SearchScreenViewModel @Inject constructor(
     private val spotifyAPIRepo: SpotifyAPIRepo,
     private val spotifyChartsAPIRepo: SpotifyChartsAPIRepo
 ) :
-    ViewModel() {
+    ChartsScreenViewModel(spotifyChartsAPIRepo) {
     private val _searchArtistsResult = MutableStateFlow(emptyList<Item>())
     val searchArtistsResult = _searchArtistsResult.asStateFlow()
 
@@ -64,7 +64,7 @@ open class SearchScreenViewModel @Inject constructor(
 
 
     init {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.Default) {
             awaitAll(async {
                 spotifyToken = withContext(Dispatchers.Default) {
                     try {
@@ -123,6 +123,8 @@ open class SearchScreenViewModel @Inject constructor(
                         _spotifyChartsMetaData.emit(spotifyChartsData.data)
                     }
                 }
+            }, async {
+                loadAllBillBoardChartsData()
             })
         }
     }

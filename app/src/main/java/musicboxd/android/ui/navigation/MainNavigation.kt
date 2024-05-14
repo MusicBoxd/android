@@ -11,13 +11,11 @@ import musicboxd.android.ui.details.artist.ArtistDetailScreen
 import musicboxd.android.ui.details.canvas.VideoCanvas
 import musicboxd.android.ui.search.SearchScreen
 import musicboxd.android.ui.search.charts.ChartsScreen
-import musicboxd.android.ui.search.charts.ChartsScreenViewModel
 
 @Composable
 fun MainNavigation(
     navController: NavHostController,
-    detailsViewModel: DetailsViewModel,
-    chartsScreenViewModel: ChartsScreenViewModel
+    detailsViewModel: DetailsViewModel
 ) {
     NavHost(
         navController = navController,
@@ -38,7 +36,7 @@ fun MainNavigation(
                 navController = navController,
                 detailsViewModel = detailsViewModel,
                 searchScreenViewModel = detailsViewModel,
-                chartsScreenViewModel = chartsScreenViewModel
+                chartsScreenViewModel = detailsViewModel
             )
         }
         composable(route = NavigationRoutes.ALBUM_DETAILS.name) {
@@ -51,7 +49,7 @@ fun MainNavigation(
             VideoCanvas(detailsViewModel, navController)
         }
         composable(route = NavigationRoutes.CHARTS_SCREEN.name) {
-            ChartsScreen(chartsScreenViewModel, detailsViewModel, navController)
+            ChartsScreen(detailsViewModel, navController)
         }
     }
 }

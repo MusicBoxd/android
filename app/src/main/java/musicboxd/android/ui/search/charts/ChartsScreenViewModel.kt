@@ -5,8 +5,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import musicboxd.android.data.remote.api.APIResult
@@ -24,10 +28,10 @@ import org.jsoup.Jsoup
 import javax.inject.Inject
 
 @HiltViewModel
-class ChartsScreenViewModel @Inject constructor(
+open class ChartsScreenViewModel @Inject constructor(
     private val spotifyChartsAPIRepo: SpotifyChartsAPIRepo
 ) : ViewModel() {
-    private val _billBoardChartData = MutableStateFlow(BillBoardCharts(date = "", data = listOf()))
+    private var _billBoardChartData = MutableStateFlow(BillBoardCharts(date = "", data = listOf()))
     val billBoardData = _billBoardChartData.asStateFlow()
 
     private val _spotifyChartsData = MutableStateFlow(
@@ -49,43 +53,60 @@ class ChartsScreenViewModel @Inject constructor(
     )
     val spotifyChartsData = _spotifyChartsData.asStateFlow()
 
+    private val _billBoardArtist100 = MutableStateFlow(BillBoardCharts(date = "", data = listOf()))
+
+    private val _billBoard200 = MutableStateFlow(BillBoardCharts(date = "", data = listOf()))
+
+    private val _billBoardGlobal200 = MutableStateFlow(BillBoardCharts(date = "", data = listOf()))
+
+    private val _billBoardHot100 = MutableStateFlow(BillBoardCharts(date = "", data = listOf()))
+
     val chartTitle = mutableStateOf("")
+
     fun onUiEvent(chartUIEvent: ChartUIEvent) {
         when (chartUIEvent) {
             is ChartUIEvent.OnBillBoardChartClick -> {
-                viewModelScope.launch {
-                    _billBoardChartData.emit(BillBoardCharts(date = "", data = listOf()))
-                    _billBoardChartData.emit(
-                        scrapeBillBoardChartsData(
-                            when (chartUIEvent.billBoardChartType) {
-                                BillBoardChartType.ARTIST_100 -> {
-                                    chartTitle.value = "Artist 100"
-                                    "https://www.billboard.com/charts/artist-100/"
-                                }
-
-                                BillBoardChartType.BILLBOARD_200 -> {
-                                    chartTitle.value = "Billboard 200"
-                                    "https://www.billboard.com/charts/billboard-200/"
-                                }
-
-                                BillBoardChartType.GLOBAL_200 -> {
-                                    chartTitle.value = "Global 200"
-                                    "https://www.billboard.com/charts/billboard-global-200/"
-                                }
-
-                                BillBoardChartType.HOT_100 -> {
-                                    chartTitle.value = "Hot 100"
-                                    "https://www.billboard.com/charts/hot-100/"
-                                }
+                when (chartUIEvent.billBoardChartType) {
+                    BillBoardChartType.ARTIST_100 -> {
+                        chartTitle.value = "Artist 100"
+                        viewModelScope.launch {
+                            _billBoardArtist100.collectLatest {
+                                _billBoardChartData.emit(it)
                             }
-                        )
-                    )
+                        }
+                    }
 
+                    BillBoardChartType.BILLBOARD_200 -> {
+                        chartTitle.value = "Billboard 200"
+                        viewModelScope.launch {
+                            _billBoard200.collectLatest {
+                                _billBoardChartData.emit(it)
+                            }
+                        }
+                    }
+
+                    BillBoardChartType.GLOBAL_200 -> {
+                        chartTitle.value = "Global 200"
+                        viewModelScope.launch {
+                            _billBoardGlobal200.collectLatest {
+                                _billBoardChartData.emit(it)
+                            }
+                        }
+                    }
+
+                    BillBoardChartType.HOT_100 -> {
+                        chartTitle.value = "Hot 100"
+                        viewModelScope.launch {
+                            _billBoardHot100.collectLatest {
+                                _billBoardChartData.emit(it)
+                            }
+                        }
+                    }
                 }
             }
 
             is ChartUIEvent.OnSpotifyChartClick -> {
-                viewModelScope.launch {
+                viewModelScope.launch(Dispatchers.Default) {
                     val spotifyChartsData = spotifyChartsAPIRepo.getCharts()
                     when (chartUIEvent.spotifyChartType) {
                         SpotifyChartType.WEEKLY_TOP_SONGS_GLOBAL -> {
@@ -123,7 +144,24 @@ class ChartsScreenViewModel @Inject constructor(
         }
     }
 
-    private suspend fun scrapeBillBoardChartsData(url: String): BillBoardCharts {
+    protected suspend fun loadAllBillBoardChartsData() = coroutineScope {
+        awaitAll(
+            async {
+                _billBoard200.emit(scrapeBillBoardChartsData("https://www.billboard.com/charts/billboard-200/"))
+            },
+            async {
+                _billBoardHot100.emit(scrapeBillBoardChartsData("https://www.billboard.com/charts/hot-100/"))
+            },
+            async {
+                _billBoardArtist100.emit(scrapeBillBoardChartsData("https://www.billboard.com/charts/artist-100/"))
+            },
+            async {
+                _billBoardGlobal200.emit(scrapeBillBoardChartsData("https://www.billboard.com/charts/billboard-global-200/"))
+            },
+        )
+    }
+
+    private suspend fun scrapeBillBoardChartsData(url: String): BillBoardCharts = coroutineScope {
         val billBoardDoc = withContext(Dispatchers.IO) {
             Jsoup.connect(url).customConfig().get()
         }
@@ -176,7 +214,7 @@ class ChartsScreenViewModel @Inject constructor(
                         false
                     }
                 }.chunked(3)
-        return BillBoardCharts(date = dateOfTheChart, data = List(itemTitles.size) {
+        return@coroutineScope BillBoardCharts(date = dateOfTheChart, data = List(itemTitles.size) {
             Data(
                 itemImgURL = try {
                     itemImages[it]

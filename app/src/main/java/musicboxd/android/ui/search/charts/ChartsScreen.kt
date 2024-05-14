@@ -60,19 +60,18 @@ import musicboxd.android.ui.search.charts.billboard.model.Data
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChartsScreen(
-    chartsScreenViewModel: ChartsScreenViewModel,
     detailsViewModel: DetailsViewModel,
     navController: NavController
 ) {
-    val billBoardChartsData = chartsScreenViewModel.billBoardData.collectAsStateWithLifecycle()
-    val spotifyChartsData = chartsScreenViewModel.spotifyChartsData.collectAsStateWithLifecycle()
+    val billBoardChartsData = detailsViewModel.billBoardData.collectAsStateWithLifecycle()
+    val spotifyChartsData = detailsViewModel.spotifyChartsData.collectAsStateWithLifecycle()
     val topAppBarScrollBehaviour = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
         modifier = Modifier.nestedScroll(topAppBarScrollBehaviour.nestedScrollConnection),
         topBar = {
             LargeTopAppBar(scrollBehavior = topAppBarScrollBehaviour, title = {
                 Text(
-                    text = chartsScreenViewModel.chartTitle.value,
+                    text = detailsViewModel.chartTitle.value,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 24.sp,
@@ -109,9 +108,9 @@ fun ChartsScreen(
                     }
                 }
             }
-            if ((chartsScreenViewModel.chartTitle.value.lowercase()
+            if ((detailsViewModel.chartTitle.value.lowercase()
                     .contains("weekly")
-                        && spotifyChartsData.value.entries.isEmpty()) || (!chartsScreenViewModel.chartTitle.value.lowercase()
+                        && spotifyChartsData.value.entries.isEmpty()) || (!detailsViewModel.chartTitle.value.lowercase()
                     .contains("weekly")
                         && billBoardChartsData.value.data.isEmpty())
             ) {
@@ -122,11 +121,11 @@ fun ChartsScreen(
                 }
                 return@LazyColumn
             }
-            if (chartsScreenViewModel.chartTitle.value.lowercase().contains("weekly")) {
+            if (detailsViewModel.chartTitle.value.lowercase().contains("weekly")) {
                 itemsIndexed(spotifyChartsData.value.entries) { index, data ->
                     ChartItem(
                         artists = when {
-                            chartsScreenViewModel.chartTitle.value.lowercase()
+                            detailsViewModel.chartTitle.value.lowercase()
                                 .contains("songs") -> {
                                 Artists(href = "", items = data.trackMetadata.artists.map {
                                     Item(
@@ -171,7 +170,7 @@ fun ChartsScreen(
                         },
                         onItemClick = {
                             when {
-                                chartsScreenViewModel.chartTitle.value.lowercase()
+                                detailsViewModel.chartTitle.value.lowercase()
                                     .contains("songs") -> {
                                     detailsViewModel.albumScreenState = AlbumDetailScreenState(
                                         covertArtImgUrl = flowOf(),
@@ -198,7 +197,7 @@ fun ChartsScreen(
                                     navController.navigate(NavigationRoutes.ALBUM_DETAILS.name)
                                 }
 
-                                chartsScreenViewModel.chartTitle.value.lowercase()
+                                detailsViewModel.chartTitle.value.lowercase()
                                     .contains("albums") -> {
                                     detailsViewModel.albumScreenState = AlbumDetailScreenState(
                                         covertArtImgUrl = flowOf(),
@@ -281,7 +280,7 @@ fun ChartsScreen(
                             navController.navigate(NavigationRoutes.ARTIST_DETAILS.name)
                         },
                         data = when {
-                            chartsScreenViewModel.chartTitle.value.lowercase()
+                            detailsViewModel.chartTitle.value.lowercase()
                                 .contains("songs") -> Data(
                                 itemImgURL = data.trackMetadata.displayImageUri,
                                 itemTitle = data.trackMetadata.trackName,
@@ -291,7 +290,7 @@ fun ChartsScreen(
                                 itemWeeksOnChart = data.chartEntryData.consecutiveAppearancesOnChart.toString()
                             )
 
-                            chartsScreenViewModel.chartTitle.value.lowercase()
+                            detailsViewModel.chartTitle.value.lowercase()
                                 .contains("albums") -> Data(
                                 itemImgURL = data.albumMetadata.displayImageUri,
                                 itemTitle = data.albumMetadata.albumName,
@@ -311,7 +310,7 @@ fun ChartsScreen(
                             )
                         },
                         index = index,
-                        isArtist = chartsScreenViewModel.chartTitle.value.contains("Artist")
+                        isArtist = detailsViewModel.chartTitle.value.contains("Artist")
                     )
                 }
             } else {
@@ -319,7 +318,7 @@ fun ChartsScreen(
                     ChartItem(
                         data = data,
                         index = index,
-                        isArtist = chartsScreenViewModel.chartTitle.value.contains("Artist")
+                        isArtist = detailsViewModel.chartTitle.value.contains("Artist")
                     )
                 }
             }
