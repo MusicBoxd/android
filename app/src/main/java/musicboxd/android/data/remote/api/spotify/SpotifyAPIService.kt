@@ -60,4 +60,10 @@ interface SpotifyAPIService {
         @Path("id") artistId: String,
         @Header("Authorization") authorizationToken: String
     ): Albums
+
+    @GET("tracks/{id}")
+    suspend fun getATrack(
+        @Path("id") trackID: String,
+        @Header("Authorization") authorizationToken: String
+    ): musicboxd.android.data.remote.api.spotify.model.tracklist.Item
 }

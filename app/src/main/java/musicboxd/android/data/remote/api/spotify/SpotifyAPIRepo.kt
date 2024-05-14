@@ -8,6 +8,8 @@ import musicboxd.android.data.remote.api.spotify.model.specific_artist.SpecificA
 import musicboxd.android.data.remote.api.spotify.model.topTracks.TopTracksDTO
 import musicboxd.android.data.remote.api.spotify.model.track.SpotifyTrackSearchDTO
 import musicboxd.android.data.remote.api.spotify.model.tracklist.SpotifyAlbumTrackListDTO
+import retrofit2.http.Header
+import retrofit2.http.Path
 
 interface SpotifyAPIRepo {
     suspend fun searchArtists(
@@ -47,4 +49,9 @@ interface SpotifyAPIRepo {
         artistId: String,
         authorizationToken: String
     ): APIResult<Albums>
+
+    suspend fun getATrack(
+        @Path("id") trackID: String,
+        @Header("Authorization") authorizationToken: String
+    ): APIResult<musicboxd.android.data.remote.api.spotify.model.tracklist.Item>
 }

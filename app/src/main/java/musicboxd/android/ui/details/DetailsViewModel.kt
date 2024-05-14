@@ -24,6 +24,8 @@ import musicboxd.android.data.remote.api.songlink.SongLinkRepo
 import musicboxd.android.data.remote.api.spotify.SpotifyAPIRepo
 import musicboxd.android.data.remote.api.spotify.charts.SpotifyChartsAPIRepo
 import musicboxd.android.data.remote.api.spotify.model.album.Albums
+import musicboxd.android.data.remote.api.spotify.model.album.Artist
+import musicboxd.android.data.remote.api.spotify.model.album.ExternalUrlsX
 import musicboxd.android.data.remote.api.spotify.model.artist_search.ExternalUrls
 import musicboxd.android.data.remote.api.spotify.model.artist_search.Followers
 import musicboxd.android.data.remote.api.spotify.model.artist_search.Item
@@ -110,6 +112,61 @@ class DetailsViewModel @Inject constructor(
             }.invokeOnCompletion {
                 loadCanvases()
             }
+        }
+    }
+
+    fun loadReleaseDate(isTrack: Boolean, trackID: String, albumID: String) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                val itemType = if (isTrack) "track" else "album"
+                val itemID = if (isTrack) trackID else albumID
+                Jsoup.connect("https://open.spotify.com/$itemType/$itemID").customConfig().get()
+                    .toString().substringAfter("<meta name=\"music:release_date\" content=\"")
+                    .substringBefore("\">").let {
+                        albumScreenState = albumScreenState.copy(releaseDate = it)
+                    }
+            }
+        }
+    }
+
+    fun loadATrack(trackID: String) {
+        viewModelScope.launch {
+            awaitAll(
+                async {
+                    spotifyToken?.let {
+                        when (val track = spotifyAPIRepo.getATrack(trackID, it.accessToken)) {
+                            is APIResult.Failure -> TODO()
+                            is APIResult.Success -> {
+                                val artistImage = spotifyAPIRepo.getArtistData(
+                                    track.data.artists.random().id,
+                                    it.accessToken
+                                )
+                                albumScreenState = albumScreenState.copy(
+                                    covertArtImgUrl = flowOf(if (artistImage is APIResult.Success) artistImage.data.images.first().url else ""),
+                                    albumTitle = track.data.name,
+                                    artists = track.data.artists.map {
+                                        Artist(
+                                            external_urls = ExternalUrlsX(spotify = it.uri),
+                                            href = it.href,
+                                            id = it.id,
+                                            name = it.name,
+                                            type = it.type,
+                                            uri = it.uri
+                                        )
+                                    },
+                                    albumWiki = flowOf(),
+                                    trackList = flowOf(listOf(track.data.copy(track_number = 1))),
+                                    itemType = "Track"
+                                )
+                            }
+                        }
+                    }
+                },
+                async {
+                    loadExternalLinks(true, trackID, "")
+                }
+            )
+
         }
     }
 
@@ -233,7 +290,7 @@ class DetailsViewModel @Inject constructor(
     fun loadArtistInfo(
         artistID: String,
         artistName: String,
-        navigatingFromAlbumScreen: Boolean = false
+        loadArtistMetaData: Boolean = false
     ) {
         artistSocials.value = emptyList()
         viewModelScope.launch {
@@ -244,7 +301,7 @@ class DetailsViewModel @Inject constructor(
         viewModelScope.launch {
             spotifyToken?.let {
                 awaitAll(async {
-                    if (navigatingFromAlbumScreen) {
+                    if (loadArtistMetaData) {
                         loadArtistMetaData(artistID)
                     }
                 }, async {
@@ -297,7 +354,7 @@ class DetailsViewModel @Inject constructor(
             val itemId = if (isTrack) trackID else albumID
             when (val albumExternalLinksAPIData =
                 songLinkRepo.getLinks("https://open.spotify.com/$itemType/$itemId")) {
-                is APIResult.Failure -> TODO()
+                is APIResult.Failure -> {}
                 is APIResult.Success -> {
                     albumExternalLinks.value = listOf(
                         ItemExternalLink(

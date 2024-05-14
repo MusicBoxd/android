@@ -93,7 +93,7 @@ fun AlbumxTrackCover(
                                 detailsViewModel.loadArtistInfo(
                                     detailsViewModel.albumScreenState.artists[index].id,
                                     detailsViewModel.albumScreenState.artists[index].name,
-                                    navigatingFromAlbumScreen = true
+                                    loadArtistMetaData = true
                                 )
                                 navController.navigate(NavigationRoutes.ARTIST_DETAILS.name)
                             }

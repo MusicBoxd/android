@@ -205,7 +205,9 @@ fun AlbumDetailScreen(
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurface
                     )
-                    Text(text = "• Released on ${albumDetailScreenState.releaseDate}",
+                    Text(text = rememberSaveable(albumDetailScreenState.releaseDate) {
+                        "• Released on ${albumDetailScreenState.releaseDate}"
+                    },
                         style = MaterialTheme.typography.titleSmall,
                         modifier = Modifier
                             .clickable {

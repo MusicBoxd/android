@@ -51,7 +51,7 @@ fun MainNavigation(
             VideoCanvas(detailsViewModel, navController)
         }
         composable(route = NavigationRoutes.CHARTS_SCREEN.name) {
-            ChartsScreen(chartsScreenViewModel)
+            ChartsScreen(chartsScreenViewModel, detailsViewModel, navController)
         }
     }
 }

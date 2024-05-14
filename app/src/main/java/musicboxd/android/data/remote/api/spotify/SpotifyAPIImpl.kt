@@ -7,6 +7,7 @@ import musicboxd.android.data.remote.api.spotify.model.artist_search.SpotifyArti
 import musicboxd.android.data.remote.api.spotify.model.specific_artist.SpecificArtistFromSpotifyDTO
 import musicboxd.android.data.remote.api.spotify.model.topTracks.TopTracksDTO
 import musicboxd.android.data.remote.api.spotify.model.track.SpotifyTrackSearchDTO
+import musicboxd.android.data.remote.api.spotify.model.tracklist.Item
 import musicboxd.android.data.remote.api.spotify.model.tracklist.SpotifyAlbumTrackListDTO
 import javax.inject.Inject
 
@@ -121,6 +122,16 @@ class SpotifyAPIImpl @Inject constructor(private val spotifyAPIService: SpotifyA
             )
         } catch (_: Exception) {
             APIResult.Failure("Cannot fetch getAlbumsOfAnArtist in SpotifyImpl")
+        }
+    }
+
+    override suspend fun getATrack(trackID: String, authorizationToken: String): APIResult<Item> {
+        return try {
+            APIResult.Success(
+                spotifyAPIService.getATrack(trackID, "Bearer ".plus(authorizationToken))
+            )
+        } catch (_: Exception) {
+            APIResult.Failure("Cannot fetch getATrack in SpotifyImpl")
         }
     }
 
