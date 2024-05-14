@@ -56,8 +56,7 @@ class MainActivity : ComponentActivity() {
             MusicBoxdTheme {
                 Surface {
                     Scaffold(Modifier.fillMaxSize()) {
-                        androidx.compose.material.BottomSheetScaffold(
-                            sheetPeekHeight = 0.dp,
+                        androidx.compose.material.BottomSheetScaffold(sheetPeekHeight = 0.dp,
                             scaffoldState = scaffoldState,
                             sheetContent = {
                                 BottomNavigationBar(navController = navController)
@@ -78,9 +77,7 @@ class MainActivity : ComponentActivity() {
             PeriodicWorkRequest.Builder(RefreshReleasesWorker::class.java, 15, TimeUnit.MINUTES)
                 .build()
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "releaseChecker",
-            ExistingPeriodicWorkPolicy.REPLACE,
-            latestReleasesNotificationWorker
+            "releaseChecker", ExistingPeriodicWorkPolicy.REPLACE, latestReleasesNotificationWorker
         )
     }
 }

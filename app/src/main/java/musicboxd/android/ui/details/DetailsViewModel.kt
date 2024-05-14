@@ -82,8 +82,10 @@ class DetailsViewModel @Inject constructor(
     )
     private val _topTracksDTO = MutableStateFlow(TopTracksDTO(listOf()))
     val topTracksDTO = _topTracksDTO.asStateFlow()
-    private val _lastFMImage = MutableStateFlow("")
-    val lastFMImage = _lastFMImage.asStateFlow()
+    private val _alternativeImageOfAnArtist = MutableStateFlow("")
+    val alternativeImageOfAnArtist = _alternativeImageOfAnArtist.asStateFlow()
+    private val _artistMonthlyListeners = MutableStateFlow("")
+    val artistMonthlyListeners = _artistMonthlyListeners.asStateFlow()
 
     fun loadAlbumInfo(
         artistID: String,
@@ -140,6 +142,17 @@ class DetailsViewModel @Inject constructor(
         }
     }
 
+    private suspend fun loadMonthlyListeners(artistID: String) {
+        _artistMonthlyListeners.emit("")
+        withContext(Dispatchers.IO) {
+            Jsoup.connect("https://open.spotify.com/artist/$artistID").customConfig().get()
+                .toString().substringAfter("<meta property=\"og:description\" content=\"Artist · ")
+                .substringBefore(".\">").trim().let {
+                    _artistMonthlyListeners.emit(it)
+                }
+        }
+    }
+
     private suspend fun loadArtistImageFromLastFM(artistName: String) {
         val imageItem = withContext(Dispatchers.IO) {
             Jsoup.connect(
@@ -163,7 +176,7 @@ class DetailsViewModel @Inject constructor(
             ).customConfig().get()
         }.toString().substringAfter("src=\"https://lastfm.freetls.fastly.net")
             .substringBefore("\">")
-        _lastFMImage.emit(imgURL)
+        _alternativeImageOfAnArtist.emit(imgURL)
     }
 
     private suspend fun loadArtistSocialHandles(artistID: String) {
@@ -224,7 +237,7 @@ class DetailsViewModel @Inject constructor(
     ) {
         artistSocials.value = emptyList()
         viewModelScope.launch {
-            _lastFMImage.emit("")
+            _alternativeImageOfAnArtist.emit("")
         }
         _topTracksDTO.value = TopTracksDTO(tracks = listOf())
         _artistAlbums.value = Albums(items = listOf(), limit = 0, offset = 0, total = 0)
@@ -244,6 +257,8 @@ class DetailsViewModel @Inject constructor(
                     loadArtistSocialHandles(artistID)
                 }, async {
                     loadArtistImageFromLastFM(artistName)
+                }, async {
+                    loadMonthlyListeners(artistID)
                 })
             }
         }

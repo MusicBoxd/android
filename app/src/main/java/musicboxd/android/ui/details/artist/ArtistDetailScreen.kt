@@ -162,7 +162,8 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
     }
     val artistBio = detailsViewModel.artistBio.collectAsStateWithLifecycle()
     val localContext = LocalContext.current
-    val lastFmImage = detailsViewModel.lastFMImage.collectAsStateWithLifecycle()
+    val alternativeImageOfAnArtist =
+        detailsViewModel.alternativeImageOfAnArtist.collectAsStateWithLifecycle()
     val localUriHandler = LocalUriHandler.current
     val bottomModalSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val bottomSheetType = rememberSaveable {
@@ -178,6 +179,7 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
     val isPermissionDeniedDialogBoxVisible = rememberSaveable {
         mutableStateOf(false)
     }
+    val monthlyListeners = detailsViewModel.artistMonthlyListeners.collectAsStateWithLifecycle()
     LaunchedEffect(key1 = isAnyTrackIsPlayingState.value) {
         while (isAnyTrackIsPlayingState.value) {
             currentPlayingTrackDurationAsFloat.floatValue =
@@ -264,12 +266,27 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                     contentDescription = ""
                 )
                 Text(
-                    text = "•  " + specificArtistFromSpotifyDTO.value.followers.total.toString()
-                        .plus(" Followers"),
+                    text = "•   ",
                     style = MaterialTheme.typography.titleMedium,
                     color = LocalContentColor.current,
                     modifier = Modifier.padding(start = 10.dp)
                 )
+                Column(modifier = Modifier.animateContentSize()) {
+                    if (monthlyListeners.value.isNotEmpty()) {
+                        Text(
+                            text = monthlyListeners.value,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = LocalContentColor.current
+                        )
+                        Spacer(modifier = Modifier.height(5.dp))
+                    }
+                    Text(
+                        text = specificArtistFromSpotifyDTO.value.followers.total.toString()
+                            .plus(" Followers"),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = LocalContentColor.current
+                    )
+                }
             }
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 FilledTonalButton(
@@ -609,7 +626,7 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                     .clip(RoundedCornerShape(10.dp))
             ) {
                 CoilImage(
-                    imgUrl = lastFmImage.value,
+                    imgUrl = alternativeImageOfAnArtist.value,
                     modifier = Modifier
                         .fillMaxWidth()
                         .wrapContentHeight()
@@ -796,7 +813,7 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                     ArtistCoverArt(
                         artistCoverArtState = ArtistCoverArtState(
                             specificArtistFromSpotifyDTO.value.name,
-                            lastFmImage.value
+                            alternativeImageOfAnArtist.value
                         )
                     )
                     Text(
