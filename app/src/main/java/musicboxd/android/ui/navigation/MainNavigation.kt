@@ -11,6 +11,7 @@ import musicboxd.android.ui.details.artist.ArtistDetailScreen
 import musicboxd.android.ui.details.canvas.VideoCanvas
 import musicboxd.android.ui.search.SearchScreen
 import musicboxd.android.ui.search.charts.ChartsScreen
+import musicboxd.android.ui.user.profile.UserProfile
 
 @Composable
 fun MainNavigation(
@@ -19,7 +20,7 @@ fun MainNavigation(
 ) {
     NavHost(
         navController = navController,
-        startDestination = NavigationRoutes.SEARCH.name
+        startDestination = NavigationRoutes.YOU.name
     ) {
         composable(route = NavigationRoutes.HOME.name) {
             Column {
@@ -30,6 +31,19 @@ fun MainNavigation(
             Column {
 
             }
+        }
+        composable(route = NavigationRoutes.ADD.name) {
+            Column {
+
+            }
+        }
+        composable(route = NavigationRoutes.CUES.name) {
+            Column {
+
+            }
+        }
+        composable(route = NavigationRoutes.YOU.name) {
+            UserProfile()
         }
         composable(route = NavigationRoutes.SEARCH.name) {
             SearchScreen(

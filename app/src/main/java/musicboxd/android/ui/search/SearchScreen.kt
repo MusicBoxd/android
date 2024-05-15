@@ -68,6 +68,7 @@ import musicboxd.android.ui.search.charts.ChartsScreenViewModel
 import musicboxd.android.ui.search.charts.billboard.BillBoardChartType
 import musicboxd.android.ui.search.charts.spotify.SpotifyChartType
 import musicboxd.android.ui.theme.MusicBoxdTheme
+import musicboxd.android.utils.Spacing
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
 @Composable
@@ -337,7 +338,7 @@ fun SearchScreen(
                 item(span = {
                     GridItemSpan(maxLineSpan)
                 }) {
-                    Spacer(modifier = Modifier.height(150.dp))
+                    Spacer(modifier = Modifier.height(Spacing.BOTTOM_NAV_BAR_SPACING))
                 }
             }
         }
