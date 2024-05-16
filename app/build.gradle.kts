@@ -123,4 +123,6 @@ dependencies {
     implementation("org.jsoup:jsoup:1.14.3")
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("com.google.accompanist:accompanist-permissions:0.35.0-alpha")
+
+    implementation("com.vanniktech:android-image-cropper:4.5.0")
 }

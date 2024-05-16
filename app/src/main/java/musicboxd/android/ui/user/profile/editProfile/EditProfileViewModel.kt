@@ -1,5 +1,6 @@
-package musicboxd.android.ui.user.profile
+package musicboxd.android.ui.user.profile.editProfile
 
+import android.net.Uri
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import musicboxd.android.ui.user.profile.model.EditProfileState
@@ -17,4 +18,8 @@ class EditProfileViewModel : ViewModel() {
         EditProfileState("Location", profileLocation),
         EditProfileState("Website", profileWebsite),
     )
+
+    val profilePicUri = mutableStateOf(Uri.EMPTY)
+    val headerPicUri = mutableStateOf(Uri.EMPTY)
+
 }

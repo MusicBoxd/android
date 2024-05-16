@@ -8,12 +8,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.rememberBottomSheetScaffoldState
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -26,7 +26,7 @@ import musicboxd.android.ui.navigation.BottomNavigationBar
 import musicboxd.android.ui.navigation.MainNavigation
 import musicboxd.android.ui.navigation.NavigationRoutes
 import musicboxd.android.ui.theme.MusicBoxdTheme
-import musicboxd.android.ui.user.profile.EditProfile
+import musicboxd.android.ui.user.profile.editProfile.EditProfileViewModel
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -44,30 +44,37 @@ class MainActivity : ComponentActivity() {
             ) {
                 currentBackStackEntry.value?.destination?.route.toString()
             }
+            val mainNavRoutes = rememberSaveable {
+                listOf(
+                    NavigationRoutes.HOME.name,
+                    NavigationRoutes.SEARCH.name,
+                    NavigationRoutes.ADD.name,
+                    NavigationRoutes.CUES.name,
+                    NavigationRoutes.PROFILE.name
+                )
+            }
             LaunchedEffect(key1 = currentNavRoute) {
-                if (currentNavRoute != NavigationRoutes.VIDEO_CANVAS.name && currentNavRoute != NavigationRoutes.CHARTS_SCREEN.name && currentNavRoute != NavigationRoutes.ALBUM_DETAILS.name && currentNavRoute != NavigationRoutes.ARTIST_DETAILS.name) {
+                if (mainNavRoutes.contains(currentNavRoute)) {
                     scaffoldState.bottomSheetState.expand()
                 } else {
                     scaffoldState.bottomSheetState.collapse()
                 }
             }
             val detailsViewModel: DetailsViewModel = hiltViewModel()
+            val editProfileViewModel: EditProfileViewModel = viewModel()
             MusicBoxdTheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    EditProfile()
-                    return@Surface
-                    Scaffold(Modifier.fillMaxSize()) {
-                        androidx.compose.material.BottomSheetScaffold(sheetPeekHeight = 0.dp,
-                            scaffoldState = scaffoldState,
-                            sheetContent = {
-                                BottomNavigationBar(navController = navController)
-                            }) {
-                            Scaffold {
-                                MainNavigation(
-                                    navController = navController,
-                                    detailsViewModel
-                                )
-                            }
+                Scaffold(Modifier.fillMaxSize()) {
+                    androidx.compose.material.BottomSheetScaffold(sheetPeekHeight = 0.dp,
+                        scaffoldState = scaffoldState,
+                        sheetContent = {
+                            BottomNavigationBar(navController = navController)
+                        }) {
+                        Scaffold {
+                            MainNavigation(
+                                navController = navController,
+                                detailsViewModel,
+                                editProfileViewModel
+                            )
                         }
                     }
                 }

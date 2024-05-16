@@ -12,15 +12,18 @@ import musicboxd.android.ui.details.canvas.VideoCanvas
 import musicboxd.android.ui.search.SearchScreen
 import musicboxd.android.ui.search.charts.ChartsScreen
 import musicboxd.android.ui.user.profile.UserProfile
+import musicboxd.android.ui.user.profile.editProfile.EditProfile
+import musicboxd.android.ui.user.profile.editProfile.EditProfileViewModel
 
 @Composable
 fun MainNavigation(
     navController: NavHostController,
-    detailsViewModel: DetailsViewModel
+    detailsViewModel: DetailsViewModel,
+    editProfileViewModel: EditProfileViewModel
 ) {
     NavHost(
         navController = navController,
-        startDestination = NavigationRoutes.YOU.name
+        startDestination = NavigationRoutes.PROFILE.name
     ) {
         composable(route = NavigationRoutes.HOME.name) {
             Column {
@@ -42,8 +45,8 @@ fun MainNavigation(
 
             }
         }
-        composable(route = NavigationRoutes.YOU.name) {
-            UserProfile()
+        composable(route = NavigationRoutes.PROFILE.name) {
+            UserProfile(navController)
         }
         composable(route = NavigationRoutes.SEARCH.name) {
             SearchScreen(
@@ -64,6 +67,9 @@ fun MainNavigation(
         }
         composable(route = NavigationRoutes.CHARTS_SCREEN.name) {
             ChartsScreen(detailsViewModel, navController)
+        }
+        composable(route = NavigationRoutes.EDIT_PROFILE.name) {
+            EditProfile(editProfileViewModel, navController)
         }
     }
 }

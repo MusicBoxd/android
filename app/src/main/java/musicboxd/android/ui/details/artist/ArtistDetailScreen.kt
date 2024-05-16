@@ -8,7 +8,6 @@ import android.media.MediaPlayer
 import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.annotation.RequiresApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -106,7 +105,6 @@ import musicboxd.android.ui.details.album.AlbumDetailScreenState
 import musicboxd.android.ui.navigation.NavigationRoutes
 import musicboxd.android.utils.showNotificationSettings
 
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @OptIn(
     ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class,
     ExperimentalPermissionsApi::class

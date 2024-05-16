@@ -47,6 +47,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
@@ -54,275 +55,281 @@ import kotlinx.coroutines.launch
 import musicboxd.android.ui.common.AlbumxTrackHorizontalPreview
 import musicboxd.android.ui.common.CoilImage
 import musicboxd.android.ui.common.fadedEdges
+import musicboxd.android.ui.navigation.NavigationRoutes
+import musicboxd.android.ui.theme.MusicBoxdTheme
 import musicboxd.android.utils.Spacing
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun UserProfile() {
+fun UserProfile(navController: NavController) {
     val pagerState = rememberPagerState()
     val coroutineScope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
-    BoxWithConstraints {
-        val screenHeight = maxHeight
-        val screenWidth = maxWidth
-        Column(
-            Modifier
-                .fillMaxSize()
-                .verticalScroll(scrollState)
-        ) {
-            Column {
-                Box(
-                    Modifier
-                        .fillMaxWidth()
-                        .height(165.dp)
-                ) {
-                    CoilImage(
-                        imgUrl = "https://image-cdn.hypb.st/https%3A%2F%2Fhypebeast.com%2Fimage%2F2018%2F08%2Fkanye-west-saint-pablo-tour-features-floating-stage-001.jpg?cbr=1&q=90",
-                        modifier = Modifier
+    MusicBoxdTheme {
+        BoxWithConstraints {
+            val screenHeight = maxHeight
+            val screenWidth = maxWidth
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+            ) {
+                Column {
+                    Box(
+                        Modifier
                             .fillMaxWidth()
-                            .height(120.dp)
-                            .fadedEdges(MaterialTheme.colorScheme),
-                        contentDescription = "",
-                        alignment = Alignment.Center
-                    )
-                    Row(
-                        modifier = Modifier
-                            .align(Alignment.BottomStart),
-                        verticalAlignment = Alignment.CenterVertically
+                            .height(165.dp)
                     ) {
                         CoilImage(
-                            imgUrl = "https://yt3.googleusercontent.com/ytc/AIdro_nG4kBTH_JqCA5PUmjKbJZBTj3M6TsAJ0lfd-k3liFnVcE=s900-c-k-c0x00ffffff-no-rj",
+                            imgUrl = "https://image-cdn.hypb.st/https%3A%2F%2Fhypebeast.com%2Fimage%2F2018%2F08%2Fkanye-west-saint-pablo-tour-features-floating-stage-001.jpg?cbr=1&q=90",
                             modifier = Modifier
-                                .padding(start = 15.dp)
-                                .size(85.dp)
-                                .clip(CircleShape)
-                                .border(
-                                    BorderStroke(2.5.dp, LocalContentColor.current), CircleShape
-                                ),
+                                .fillMaxWidth()
+                                .height(120.dp)
+                                .fadedEdges(MaterialTheme.colorScheme),
                             contentDescription = "",
-                            alignment = Alignment.TopCenter
+                            alignment = Alignment.Center
                         )
-                        Box(
-                            modifier = Modifier.fillMaxWidth(),
-                            contentAlignment = Alignment.Center
+                        Row(
+                            modifier = Modifier
+                                .align(Alignment.BottomStart),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text(
-                                        text = "0",
-                                        fontSize = 20.sp,
-                                        style = MaterialTheme.typography.titleLarge,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Spacer(modifier = Modifier.height(2.dp))
-                                    Text(
-                                        text = "Reviews",
-                                        style = MaterialTheme.typography.titleSmall
-                                    )
-                                }
-                                Spacer(modifier = Modifier.width(15.dp))
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text(
-                                        text = "191",
-                                        fontSize = 20.sp,
-                                        style = MaterialTheme.typography.titleLarge,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Spacer(modifier = Modifier.height(2.dp))
-                                    Text(
-                                        text = "Followers",
-                                        style = MaterialTheme.typography.titleSmall
-                                    )
-                                }
-                                Spacer(modifier = Modifier.width(15.dp))
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text(
-                                        text = "994",
-                                        fontSize = 20.sp,
-                                        style = MaterialTheme.typography.titleSmall,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Spacer(modifier = Modifier.height(2.dp))
-                                    Text(
-                                        text = "Following",
-                                        style = MaterialTheme.typography.titleSmall
-                                    )
+                            CoilImage(
+                                imgUrl = "https://yt3.googleusercontent.com/ytc/AIdro_nG4kBTH_JqCA5PUmjKbJZBTj3M6TsAJ0lfd-k3liFnVcE=s900-c-k-c0x00ffffff-no-rj",
+                                modifier = Modifier
+                                    .padding(start = 15.dp)
+                                    .size(85.dp)
+                                    .clip(CircleShape)
+                                    .border(
+                                        BorderStroke(2.5.dp, LocalContentColor.current), CircleShape
+                                    ),
+                                contentDescription = "",
+                                alignment = Alignment.TopCenter
+                            )
+                            Box(
+                                modifier = Modifier.fillMaxWidth(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text(
+                                            text = "0",
+                                            fontSize = 20.sp,
+                                            style = MaterialTheme.typography.titleLarge,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text(
+                                            text = "Reviews",
+                                            style = MaterialTheme.typography.titleSmall
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(15.dp))
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text(
+                                            text = "191",
+                                            fontSize = 20.sp,
+                                            style = MaterialTheme.typography.titleLarge,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text(
+                                            text = "Followers",
+                                            style = MaterialTheme.typography.titleSmall
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(15.dp))
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text(
+                                            text = "994",
+                                            fontSize = 20.sp,
+                                            style = MaterialTheme.typography.titleSmall,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text(
+                                            text = "Following",
+                                            style = MaterialTheme.typography.titleSmall
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Column(modifier = Modifier.width(screenWidth - 130.dp)) {
-                        Text(
-                            text = "Nasty Nas",
-                            fontSize = 18.sp,
-                            modifier = Modifier.padding(start = 15.dp, top = 15.dp),
-                            style = MaterialTheme.typography.titleLarge,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.width(screenWidth - 130.dp)) {
+                            Text(
+                                text = "Nasty Nas",
+                                fontSize = 18.sp,
+                                modifier = Modifier.padding(start = 15.dp, top = 15.dp),
+                                style = MaterialTheme.typography.titleLarge,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "@nas",
+                                fontSize = 16.sp,
+                                modifier = Modifier.padding(start = 15.dp),
+                                style = MaterialTheme.typography.titleSmall,
+                                color = LocalContentColor.current.copy(0.75f),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(end = 10.dp)
+                        ) {
+                            FilledTonalIconButton(onClick = {
+                                navController.navigate(NavigationRoutes.EDIT_PROFILE.name)
+                            }) {
+                                Icon(imageVector = Icons.Default.Edit, contentDescription = "")
+                            }
+                            Text(
+                                text = "•",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Black,
+                                modifier = Modifier.padding(start = 5.dp, end = 5.dp)
+                            )
+                            FilledTonalIconButton(onClick = { /*TODO*/ }) {
+                                Icon(imageVector = Icons.Default.Settings, contentDescription = "")
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(
+                        text = "I thought Jordans and a gold chain was living it up.",
+                        fontSize = 16.sp,
+                        modifier = Modifier.padding(start = 15.dp, end = 10.dp),
+                        style = MaterialTheme.typography.titleSmall,
+                        maxLines = 4
+                    )
+                    Row(
+                        modifier = Modifier.padding(start = 15.dp, top = 15.dp, end = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.LocationOn,
+                            contentDescription = "",
+                            modifier = Modifier.size(20.dp),
+                            tint = LocalContentColor.current.copy(0.75f)
                         )
-                        Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = "@nas",
-                            fontSize = 16.sp,
-                            modifier = Modifier.padding(start = 15.dp),
+                            text = "Queensbridge, boy! Once again, boy!",
+                            modifier = Modifier.padding(start = 5.dp, end = 15.dp),
                             style = MaterialTheme.typography.titleSmall,
-                            color = LocalContentColor.current.copy(0.75f),
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            color = LocalContentColor.current.copy(0.75f)
                         )
                     }
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(end = 10.dp)
+                        modifier = Modifier.padding(start = 15.dp, top = 10.dp, end = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        FilledTonalIconButton(onClick = { /*TODO*/ }) {
-                            Icon(imageVector = Icons.Default.Edit, contentDescription = "")
-                        }
-                        Text(
-                            text = "•",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Black,
-                            modifier = Modifier.padding(start = 5.dp, end = 5.dp)
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = "",
+                            modifier = Modifier.size(20.dp),
+                            tint = LocalContentColor.current.copy(0.75f)
                         )
-                        FilledTonalIconButton(onClick = { /*TODO*/ }) {
-                            Icon(imageVector = Icons.Default.Settings, contentDescription = "")
-                        }
+                        Text(
+                            text = "Joined 19 April 1994",
+                            modifier = Modifier.padding(start = 5.dp, end = 15.dp),
+                            style = MaterialTheme.typography.titleSmall,
+                            maxLines = 1,
+                            color = LocalContentColor.current.copy(0.75f)
+                        )
                     }
+                    Spacer(modifier = Modifier.height(5.dp))
                 }
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(
-                    text = "I thought Jordans and a gold chain was living it up.",
-                    fontSize = 16.sp,
-                    modifier = Modifier.padding(start = 15.dp, end = 10.dp),
-                    style = MaterialTheme.typography.titleSmall,
-                    maxLines = 4
-                )
-                Row(
-                    modifier = Modifier.padding(start = 15.dp, top = 15.dp, end = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(screenHeight)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.LocationOn,
-                        contentDescription = "",
-                        modifier = Modifier.size(20.dp),
-                        tint = LocalContentColor.current.copy(0.75f)
-                    )
-                    Text(
-                        text = "Queensbridge, boy! Once again, boy!",
-                        modifier = Modifier.padding(start = 5.dp, end = 15.dp),
-                        style = MaterialTheme.typography.titleSmall,
-                        maxLines = 1,
-                        color = LocalContentColor.current.copy(0.75f)
-                    )
-                }
-                Row(
-                    modifier = Modifier.padding(start = 15.dp, top = 10.dp, end = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.DateRange,
-                        contentDescription = "",
-                        modifier = Modifier.size(20.dp),
-                        tint = LocalContentColor.current.copy(0.75f)
-                    )
-                    Text(
-                        text = "Joined 19 April 1994",
-                        modifier = Modifier.padding(start = 5.dp, end = 15.dp),
-                        style = MaterialTheme.typography.titleSmall,
-                        maxLines = 1,
-                        color = LocalContentColor.current.copy(0.75f)
-                    )
-                }
-                Spacer(modifier = Modifier.height(5.dp))
-            }
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(screenHeight)
-            ) {
-                ScrollableTabRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    selectedTabIndex = pagerState.currentPage
-                ) {
-                    listOf(
-                        "Reviews",
-                        "Recommendations",
-                        "Lists",
-                        "Likes"
-                    ).forEachIndexed { index, item ->
-                        Tab(selected = pagerState.currentPage == index, onClick = {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(index)
-                            }
-                        }) {
-                            Text(
-                                text = item,
-                                style = MaterialTheme.typography.titleLarge,
-                                fontSize = 15.sp,
-                                modifier = Modifier.padding(15.dp),
-                                color = if (pagerState.currentPage == index) TabRowDefaults.contentColor else MaterialTheme.colorScheme.onSurface.copy(
-                                    0.70f
-                                )
-                            )
-                        }
-                    }
-                }
-                HorizontalPager(
-                    count = 4, state = pagerState, modifier = Modifier
-                        .fillMaxHeight()
-                        .nestedScroll(remember {
-                            object : NestedScrollConnection {
-                                override fun onPreScroll(
-                                    available: Offset,
-                                    source: NestedScrollSource
-                                ): Offset {
-                                    return if (available.y > 0) Offset.Zero else Offset(
-                                        x = 0f,
-                                        y = -scrollState.dispatchRawDelta(-available.y)
-                                    )
+                    ScrollableTabRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        selectedTabIndex = pagerState.currentPage
+                    ) {
+                        listOf(
+                            "Reviews",
+                            "Recommendations",
+                            "Lists",
+                            "Likes"
+                        ).forEachIndexed { index, item ->
+                            Tab(selected = pagerState.currentPage == index, onClick = {
+                                coroutineScope.launch {
+                                    pagerState.animateScrollToPage(index)
                                 }
+                            }) {
+                                Text(
+                                    text = item,
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontSize = 15.sp,
+                                    modifier = Modifier.padding(15.dp),
+                                    color = if (pagerState.currentPage == index) TabRowDefaults.contentColor else MaterialTheme.colorScheme.onSurface.copy(
+                                        0.70f
+                                    )
+                                )
                             }
-                        })
-                ) {
-                    LazyColumn {
-                        items(25) {
-                            AlbumxTrackHorizontalPreview(
-                                onClick = { /*TODO*/ },
-                                itemType = listOf("Album", "Track").random(),
-                                albumImgUrl = listOf(
-                                    "https://media.gq-magazine.co.uk/photos/62bb1ff22176d0b26a09d6c7/master/w_1600,c_limit/MMLP1_alternate_cover.jpg",
-                                    "https://media.gq-magazine.co.uk/photos/62bb1f2d916a16217c0cec49/master/w_1600,c_limit/c2dbe79ace8a4998c9955214bf6ee345.jpg",
-                                    "https://media.gq-magazine.co.uk/photos/5eb94fa161ee223ac16caad2/master/w_1600,c_limit/20200511-album-14.jpg",
-                                    "https://media.gq-magazine.co.uk/photos/5eb94fa31578fa0ec3478b81/master/w_1600,c_limit/20200511-album-04.jpg",
-                                    "https://media.gq-magazine.co.uk/photos/61f007542bcbf0978c2b7b2d/master/w_1600,c_limit/250122_hiphop_04.jpg",
-                                    "https://media.gq-magazine.co.uk/photos/61f007543d7efe70a7943d28/master/w_1600,c_limit/250122_hiphop_01.jpg"
-                                ).random(),
-                                albumTitle = listOf(
-                                    "Yeezus",
-                                    "Illmatic",
-                                    "GKMC",
-                                    "It Was Written",
-                                    "DAMN",
-                                    "Dr Dre"
-                                ).random(),
-                                artistName = listOf(
-                                    "2Pac",
-                                    "Kanye West",
-                                    "Nas",
-                                    "Kendrick Lamar"
-                                ).random(),
-                                isExplicit = true
-                            )
                         }
-                        item {
-                            Spacer(modifier = Modifier.height(Spacing.BOTTOM_NAV_BAR_SPACING))
+                    }
+                    HorizontalPager(
+                        count = 4, state = pagerState, modifier = Modifier
+                            .fillMaxHeight()
+                            .nestedScroll(remember {
+                                object : NestedScrollConnection {
+                                    override fun onPreScroll(
+                                        available: Offset,
+                                        source: NestedScrollSource
+                                    ): Offset {
+                                        return if (available.y > 0) Offset.Zero else Offset(
+                                            x = 0f,
+                                            y = -scrollState.dispatchRawDelta(-available.y)
+                                        )
+                                    }
+                                }
+                            })
+                    ) {
+                        LazyColumn {
+                            items(25) {
+                                AlbumxTrackHorizontalPreview(
+                                    onClick = { /*TODO*/ },
+                                    itemType = listOf("Album", "Track").random(),
+                                    albumImgUrl = listOf(
+                                        "https://media.gq-magazine.co.uk/photos/62bb1ff22176d0b26a09d6c7/master/w_1600,c_limit/MMLP1_alternate_cover.jpg",
+                                        "https://media.gq-magazine.co.uk/photos/62bb1f2d916a16217c0cec49/master/w_1600,c_limit/c2dbe79ace8a4998c9955214bf6ee345.jpg",
+                                        "https://media.gq-magazine.co.uk/photos/5eb94fa161ee223ac16caad2/master/w_1600,c_limit/20200511-album-14.jpg",
+                                        "https://media.gq-magazine.co.uk/photos/5eb94fa31578fa0ec3478b81/master/w_1600,c_limit/20200511-album-04.jpg",
+                                        "https://media.gq-magazine.co.uk/photos/61f007542bcbf0978c2b7b2d/master/w_1600,c_limit/250122_hiphop_04.jpg",
+                                        "https://media.gq-magazine.co.uk/photos/61f007543d7efe70a7943d28/master/w_1600,c_limit/250122_hiphop_01.jpg"
+                                    ).random(),
+                                    albumTitle = listOf(
+                                        "Yeezus",
+                                        "Illmatic",
+                                        "GKMC",
+                                        "It Was Written",
+                                        "DAMN",
+                                        "Dr Dre"
+                                    ).random(),
+                                    artistName = listOf(
+                                        "2Pac",
+                                        "Kanye West",
+                                        "Nas",
+                                        "Kendrick Lamar"
+                                    ).random(),
+                                    isExplicit = true
+                                )
+                            }
+                            item {
+                                Spacer(modifier = Modifier.height(Spacing.BOTTOM_NAV_BAR_SPACING))
+                            }
                         }
                     }
                 }

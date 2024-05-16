@@ -53,7 +53,7 @@ class NavigationVM : ViewModel() {
             itemName = "You",
             selectedIcon = Icons.Filled.AccountCircle,
             nonSelectedIcon = Icons.Outlined.AccountCircle,
-            navigationRoute = NavigationRoutes.YOU
+            navigationRoute = NavigationRoutes.PROFILE
         ),
     )
 
