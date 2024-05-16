@@ -1,0 +1,344 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "28a23a769f43143a37e3029bdb8a77a3",
+    "entities": [
+      {
+        "tableName": "user",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `userProfileName` TEXT NOT NULL, `userName` TEXT NOT NULL, `userBio` TEXT NOT NULL, `userWebsite` TEXT NOT NULL, `profilePicBase64Data` TEXT NOT NULL, `profileHeaderBase64Data` TEXT NOT NULL, `userLocation` TEXT NOT NULL, `userJoinedDate` TEXT NOT NULL, `followingCount` INTEGER NOT NULL, `followersCount` INTEGER NOT NULL, `reviewsCount` INTEGER NOT NULL, `reviews` TEXT NOT NULL, `recommendations` TEXT NOT NULL, `likedReleases` TEXT NOT NULL, `listenedReleases` TEXT NOT NULL, `optedInNotifications` TEXT NOT NULL, `accountStatus` TEXT NOT NULL, `lastActive` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userProfileName",
+            "columnName": "userProfileName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userName",
+            "columnName": "userName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userBio",
+            "columnName": "userBio",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userWebsite",
+            "columnName": "userWebsite",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "profilePicBase64Data",
+            "columnName": "profilePicBase64Data",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "profileHeaderBase64Data",
+            "columnName": "profileHeaderBase64Data",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userLocation",
+            "columnName": "userLocation",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userJoinedDate",
+            "columnName": "userJoinedDate",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "followingCount",
+            "columnName": "followingCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "followersCount",
+            "columnName": "followersCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reviewsCount",
+            "columnName": "reviewsCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reviews",
+            "columnName": "reviews",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recommendations",
+            "columnName": "recommendations",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "likedReleases",
+            "columnName": "likedReleases",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "listenedReleases",
+            "columnName": "listenedReleases",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "optedInNotifications",
+            "columnName": "optedInNotifications",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "accountStatus",
+            "columnName": "accountStatus",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastActive",
+            "columnName": "lastActive",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "userId"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "release",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `releaseType` TEXT NOT NULL, `releaseName` TEXT NOT NULL, `artists` TEXT NOT NULL, `imageUrl` TEXT NOT NULL, `spotifyUri` TEXT NOT NULL, `isExplicit` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "localId",
+            "columnName": "localId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "releaseType",
+            "columnName": "releaseType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "releaseName",
+            "columnName": "releaseName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "artists",
+            "columnName": "artists",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "imageUrl",
+            "columnName": "imageUrl",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "spotifyUri",
+            "columnName": "spotifyUri",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isExplicit",
+            "columnName": "isExplicit",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "localId"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "review",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `releaseType` TEXT NOT NULL, `releaseName` TEXT NOT NULL, `artists` TEXT NOT NULL, `spotifyUri` TEXT NOT NULL, `isExplicit` INTEGER NOT NULL, `reviewContent` TEXT NOT NULL, `isLiked` INTEGER NOT NULL, `isRecommended` INTEGER NOT NULL, `gotAddedIntoAnyLists` INTEGER NOT NULL, `listIds` TEXT, `reviewedByUserID` INTEGER NOT NULL, `reviewedOnDate` TEXT NOT NULL, `reviewTitle` TEXT NOT NULL, `rating` REAL NOT NULL, `timeStamp` INTEGER NOT NULL, `genres` TEXT NOT NULL, `noOfLikesForThisReview` INTEGER NOT NULL, `reviewTags` TEXT NOT NULL, `reviewMood` TEXT, FOREIGN KEY(`reviewedByUserID`) REFERENCES `user`(`userId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "releaseType",
+            "columnName": "releaseType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "releaseName",
+            "columnName": "releaseName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "artists",
+            "columnName": "artists",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "spotifyUri",
+            "columnName": "spotifyUri",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isExplicit",
+            "columnName": "isExplicit",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reviewContent",
+            "columnName": "reviewContent",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isLiked",
+            "columnName": "isLiked",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isRecommended",
+            "columnName": "isRecommended",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gotAddedIntoAnyLists",
+            "columnName": "gotAddedIntoAnyLists",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "listIds",
+            "columnName": "listIds",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "reviewedByUserID",
+            "columnName": "reviewedByUserID",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reviewedOnDate",
+            "columnName": "reviewedOnDate",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reviewTitle",
+            "columnName": "reviewTitle",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rating",
+            "columnName": "rating",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timeStamp",
+            "columnName": "timeStamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "genres",
+            "columnName": "genres",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "noOfLikesForThisReview",
+            "columnName": "noOfLikesForThisReview",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reviewTags",
+            "columnName": "reviewTags",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reviewMood",
+            "columnName": "reviewMood",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": [
+          {
+            "table": "user",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "reviewedByUserID"
+            ],
+            "referencedColumns": [
+              "userId"
+            ]
+          }
+        ]
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '28a23a769f43143a37e3029bdb8a77a3')"
+    ]
+  }
+}

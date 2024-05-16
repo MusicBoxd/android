@@ -21,12 +21,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ScrollableTabRow
@@ -91,8 +94,7 @@ fun UserProfile(navController: NavController) {
                             alignment = Alignment.Center
                         )
                         Row(
-                            modifier = Modifier
-                                .align(Alignment.BottomStart),
+                            modifier = Modifier.align(Alignment.BottomStart),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             CoilImage(
@@ -155,6 +157,28 @@ fun UserProfile(navController: NavController) {
                                     }
                                 }
                             }
+                        }
+                        FilledTonalIconButton(
+                            colors = IconButtonDefaults.filledTonalIconButtonColors(
+                                containerColor = IconButtonDefaults.filledTonalIconButtonColors().containerColor.copy(
+                                    0.75f
+                                )
+                            ), onClick = { /*TODO*/ }, modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(5.dp)
+                        ) {
+                            Icon(imageVector = Icons.Default.MoreVert, contentDescription = "")
+                        }
+                        FilledTonalIconButton(
+                            colors = IconButtonDefaults.filledTonalIconButtonColors(
+                                containerColor = IconButtonDefaults.filledTonalIconButtonColors().containerColor.copy(
+                                    0.75f
+                                )
+                            ), onClick = { /*TODO*/ }, modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .padding(5.dp)
+                        ) {
+                            Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "")
                         }
                     }
                     Row(
@@ -258,10 +282,7 @@ fun UserProfile(navController: NavController) {
                         selectedTabIndex = pagerState.currentPage
                     ) {
                         listOf(
-                            "Reviews",
-                            "Recommendations",
-                            "Lists",
-                            "Likes"
+                            "Reviews", "Recommendations", "Listened", "Lists", "Liked"
                         ).forEachIndexed { index, item ->
                             Tab(selected = pagerState.currentPage == index, onClick = {
                                 coroutineScope.launch {
@@ -281,17 +302,17 @@ fun UserProfile(navController: NavController) {
                         }
                     }
                     HorizontalPager(
-                        count = 4, state = pagerState, modifier = Modifier
+                        count = 4,
+                        state = pagerState,
+                        modifier = Modifier
                             .fillMaxHeight()
                             .nestedScroll(remember {
                                 object : NestedScrollConnection {
                                     override fun onPreScroll(
-                                        available: Offset,
-                                        source: NestedScrollSource
+                                        available: Offset, source: NestedScrollSource
                                     ): Offset {
                                         return if (available.y > 0) Offset.Zero else Offset(
-                                            x = 0f,
-                                            y = -scrollState.dispatchRawDelta(-available.y)
+                                            x = 0f, y = -scrollState.dispatchRawDelta(-available.y)
                                         )
                                     }
                                 }
@@ -319,10 +340,7 @@ fun UserProfile(navController: NavController) {
                                         "Dr Dre"
                                     ).random(),
                                     artistName = listOf(
-                                        "2Pac",
-                                        "Kanye West",
-                                        "Nas",
-                                        "Kendrick Lamar"
+                                        "2Pac", "Kanye West", "Nas", "Kendrick Lamar"
                                     ).random(),
                                     isExplicit = true
                                 )

@@ -1,11 +1,14 @@
 package musicboxd.android.di
 
+import android.app.Application
+import androidx.room.Room
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
+import musicboxd.android.data.local.LocalDatabase
 import musicboxd.android.data.remote.api.lastfm.LastFMAPIImpl
 import musicboxd.android.data.remote.api.lastfm.LastFMAPIRepo
 import musicboxd.android.data.remote.api.lastfm.LastFMAPIService
@@ -129,5 +132,11 @@ object AppModule {
     @Singleton
     fun provideSongLinkRepo(songLinkAPIService: SongLinkAPIService): SongLinkRepo {
         return SongLinkImpl(songLinkAPIService)
+    }
+
+    @Provides
+    @Singleton
+    fun provideLocalDatabase(app: Application): LocalDatabase {
+        return Room.databaseBuilder(app, LocalDatabase::class.java, "MusicBoxdDB").build()
     }
 }
