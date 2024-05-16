@@ -26,6 +26,7 @@ import musicboxd.android.ui.navigation.BottomNavigationBar
 import musicboxd.android.ui.navigation.MainNavigation
 import musicboxd.android.ui.navigation.NavigationRoutes
 import musicboxd.android.ui.theme.MusicBoxdTheme
+import musicboxd.android.ui.user.profile.EditProfile
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -52,7 +53,9 @@ class MainActivity : ComponentActivity() {
             }
             val detailsViewModel: DetailsViewModel = hiltViewModel()
             MusicBoxdTheme {
-                Surface {
+                Surface(modifier = Modifier.fillMaxSize()) {
+                    EditProfile()
+                    return@Surface
                     Scaffold(Modifier.fillMaxSize()) {
                         androidx.compose.material.BottomSheetScaffold(sheetPeekHeight = 0.dp,
                             scaffoldState = scaffoldState,
