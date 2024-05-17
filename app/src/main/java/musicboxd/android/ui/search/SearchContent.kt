@@ -49,9 +49,14 @@ fun SearchContent(
     val searchAlbumsResult = searchScreenViewModel.searchAlbumsResult.collectAsStateWithLifecycle()
     val pagerState = rememberPagerState()
     val coroutineScope = rememberCoroutineScope()
+    val tabsList = if (inSearchScreen) {
+        listOf("Artists", "Albums", "Tracks")
+    } else {
+        listOf("Albums", "Tracks")
+    }
     Column(Modifier.fillMaxSize()) {
         TabRow(selectedTabIndex = pagerState.currentPage) {
-            listOf("Artists", "Albums", "Tracks").forEachIndexed { index, item ->
+            tabsList.forEachIndexed { index, item ->
                 Tab(selected = pagerState.currentPage == index, onClick = {
                     coroutineScope.launch {
                         pagerState.animateScrollToPage(index)
@@ -75,28 +80,28 @@ fun SearchContent(
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.surface)
             ) {
-                when (it) {
-                    0 -> itemsIndexed(searchArtistsResult.value, key = { index, it ->
-                        it.id
-                    }) { index, it ->
+                when {
+                    it == 0 && inSearchScreen -> itemsIndexed(
+                        searchArtistsResult.value,
+                        key = { index, it ->
+                            it.id
+                        }) { index, it ->
                         ArtistHorizontalPreview(
                             onClick = {
                                 detailsViewModel.artistInfo.value = it
                                 detailsViewModel.loadArtistInfo(it.id, it.name)
-                                if (inSearchScreen) {
-                                    navController.navigate(NavigationRoutes.ARTIST_DETAILS.name)
-                                    return@ArtistHorizontalPreview
-                                }
-                                onSelectingAnItem("Artist")
+                                navController.navigate(NavigationRoutes.ARTIST_DETAILS.name)
                             },
                             artistImgUrl = if (it.images.isNotEmpty()) it.images.last().url else "",
                             artistName = it.name
                         )
                     }
 
-                    1 -> itemsIndexed(searchAlbumsResult.value, key = { index, it ->
-                        it.id
-                    }) { index, it ->
+                    it == 0 || (inSearchScreen && it == 1) -> itemsIndexed(
+                        searchAlbumsResult.value,
+                        key = { index, it ->
+                            it.id
+                        }) { index, it ->
                         AlbumxTrackHorizontalPreview(
                             onClick = {
                                 detailsViewModel.albumScreenState = AlbumDetailScreenState(
@@ -107,7 +112,8 @@ fun SearchContent(
                                     albumWiki = flowOf(),
                                     releaseDate = it.release_date,
                                     trackList = flowOf(),
-                                    itemType = it.album_type.capitalize()
+                                    itemType = it.album_type.capitalize(),
+                                    itemUri = it.uri
                                 )
                                 detailsViewModel.loadAlbumInfo(
                                     albumID = it.id,
@@ -129,9 +135,11 @@ fun SearchContent(
                         )
                     }
 
-                    2 -> itemsIndexed(searchTracksResult.value, key = { index, it ->
-                        it.id
-                    }) { index, it ->
+                    else -> itemsIndexed(
+                        searchTracksResult.value,
+                        key = { index, it ->
+                            it.id
+                        }) { index, it ->
                         AlbumxTrackHorizontalPreview(
                             onClick = {
                                 detailsViewModel.albumScreenState = AlbumDetailScreenState(
@@ -170,7 +178,8 @@ fun SearchContent(
                                             )
                                         )
                                     ),
-                                    itemType = "Track"
+                                    itemType = "Track",
+                                    itemUri = it.uri
                                 )
                                 detailsViewModel.loadArtistMetaData(it.artists.first().id)
                                 if (inSearchScreen) {

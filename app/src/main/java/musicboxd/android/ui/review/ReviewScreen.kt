@@ -166,8 +166,8 @@ fun ReviewScreen(
     }) {
         Column(
             Modifier
-                .padding(it)
                 .fillMaxSize()
+                .padding(it)
                 .verticalScroll(rememberScrollState())
         ) {
             if (currentlySelectedItem.value.isEmpty()) {
@@ -202,269 +202,318 @@ fun ReviewScreen(
                                 style = MaterialTheme.typography.titleSmall
                             )
                         }
-                        Spacer(modifier = Modifier.height(5.dp))
-                        FilledTonalButton(
-                            onClick = { /*TODO*/ },
+                        Spacer(modifier = Modifier.height(15.dp))
+                        Text(
+                            text = "Drafts",
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(start = 30.dp, end = 30.dp)
+                                .padding(15.dp),
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Black,
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 15.dp, end = 15.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = "See Drafts", style = MaterialTheme.typography.titleSmall)
+                            CoilImage(
+                                imgUrl = "https://i.scdn.co/image/ab67616d0000b2735ad8ab24fd5d0988af1f6fb7",
+                                modifier = Modifier
+                                    .size(65.dp)
+                                    .clip(RoundedCornerShape(15.dp)),
+                                contentDescription = ""
+                            )
+                            Spacer(modifier = Modifier.width(15.dp))
+                            Column {
+                                Text(
+                                    text = "Draft Title",
+                                    fontSize = 18.sp,
+                                    style = MaterialTheme.typography.titleLarge,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(end = 20.dp),
+                                    fontWeight = FontWeight.Black,
+                                    maxLines = 3,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Spacer(modifier = Modifier.height(5.dp))
+                                Text(
+                                    text = "Draft Sample",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(end = 20.dp),
+                                    color = LocalContentColor.current.copy(0.8f)
+                                )
+                            }
                         }
                     }
                 }
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                CoilImage(
-                    imgUrl = "https://i.scdn.co/image/ab67616d0000b2735ad8ab24fd5d0988af1f6fb7",
-                    modifier = Modifier
-                        .padding(15.dp)
-                        .size(100.dp)
-                        .clip(RoundedCornerShape(15.dp)),
-                    contentDescription = ""
-                )
-                Column {
-                    Text(
-                        text = "Beloved! Paradise! Jazz!?",
-                        fontSize = 18.sp,
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(end = 20.dp),
-                        fontWeight = FontWeight.Black,
-                        maxLines = 3,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Spacer(modifier = Modifier.height(5.dp))
-                    Text(
-                        text = "McKinley Dixon",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(end = 20.dp),
-                        color = LocalContentColor.current.copy(0.8f)
-                    )
-                }
-            }
-            val reviewTitle = rememberSaveable {
-                mutableStateOf("")
-            }
-            val reviewTitleInteractionSource = remember {
-                MutableInteractionSource()
-            }
-            val reviewContent = rememberSaveable {
-                mutableStateOf("")
-            }
-            val reviewContentInteractionSource = remember {
-                MutableInteractionSource()
-            }
-            Text(
-                text = "Review Title",
-                modifier = Modifier.padding(15.dp),
-                style = MaterialTheme.typography.titleMedium
-            )
-
-            BasicTextField(
-                interactionSource = reviewTitleInteractionSource,
-                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 15.dp, end = 15.dp),
-                value = reviewTitle.value,
-                onValueChange = { newValue ->
-                    reviewTitle.value = newValue
-                },
-                textStyle = TextStyle(
-                    fontFamily = fonts,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 16.sp,
-                    color = LocalContentColor.current
-                )
-            )
-            Divider(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 15.dp, end = 15.dp, top = 5.dp),
-                color = if (reviewTitleInteractionSource.collectIsFocusedAsState().value) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(
-                    0.65f
-                )
-            )
-
-            Text(
-                text = "Review",
-                modifier = Modifier.padding(15.dp),
-                style = MaterialTheme.typography.titleMedium
-            )
-
-            BasicTextField(
-                interactionSource = reviewContentInteractionSource,
-                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .defaultMinSize(minHeight = 100.dp)
-                    .padding(start = 15.dp, end = 15.dp),
-                value = reviewContent.value,
-                onValueChange = { newValue ->
-                    reviewContent.value = newValue
-                },
-                textStyle = TextStyle(
-                    fontFamily = fonts,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 16.sp,
-                    color = LocalContentColor.current
-                )
-            )
-            Divider(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 15.dp, end = 15.dp, top = 5.dp),
-                color = if (reviewContentInteractionSource.collectIsFocusedAsState().value) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(
-                    0.65f
-                )
-            )
-            val albumLikeStatus: MutableState<Boolean?> = rememberSaveable {
-                mutableStateOf(null)
-            }
-            val albumRecommendationStatus: MutableState<Boolean?> = rememberSaveable {
-                mutableStateOf(null)
-            }
-            Text(
-                text = "Did you like this album? ${albumLikeStatus.value}",
-                modifier = Modifier.padding(
-                    start = 15.dp,
-                    top = 15.dp,
-                    bottom = 10.dp,
-                    end = 15.dp
-                ),
-                style = MaterialTheme.typography.titleMedium
-            )
-            BooleanPreferenceGroup(preference = {
-                albumLikeStatus.value = it
-            })
-            Text(
-                text = "Would you recommend this to other people? ${albumRecommendationStatus.value}",
-                modifier = Modifier.padding(
-                    start = 15.dp,
-                    top = 15.dp,
-                    bottom = 10.dp,
-                    end = 15.dp
-                ),
-                style = MaterialTheme.typography.titleMedium
-            )
-            BooleanPreferenceGroup(preference = {
-                albumRecommendationStatus.value = it
-            })
-            val ratingValue = rememberSaveable {
-                mutableFloatStateOf(0f)
-            }
-            Text(
-                text = "How much would you rate this record?",
-                modifier = Modifier.padding(
-                    start = 15.dp,
-                    top = 15.dp,
-                    bottom = 10.dp,
-                    end = 15.dp
-                ),
-                style = MaterialTheme.typography.titleMedium
-            )
-            Row(verticalAlignment = Alignment.Bottom) {
-                RatingBar(
-                    modifier = Modifier.padding(start = 15.dp, top = 5.dp),
-                    config = RatingBarConfig().inactiveColor(MaterialTheme.colorScheme.outline)
-                        .activeColor(MaterialTheme.colorScheme.primary).padding(5.dp)
-                        .stepSize(StepSize.HALF).style(RatingBarStyle.HighLighted),
-                    value = ratingValue.floatValue,
-                    onValueChange = {
-                        ratingValue.floatValue = it
-                    },
-                    onRatingChanged = {
-
-                    })
-                Spacer(modifier = Modifier.width(5.dp))
-                Text(
-                    text = "${ratingValue.floatValue}/5.0",
-                    style = MaterialTheme.typography.titleMedium,
-                )
-            }
-            val reviewTags = rememberSaveable {
-                mutableStateOf("")
-            }
-            val reviewTagsInteractionSource = remember {
-                MutableInteractionSource()
-            }
-            Text(
-                text = "Tags",
-                modifier = Modifier.padding(start = 15.dp, top = 15.dp, end = 15.dp, bottom = 5.dp),
-                style = MaterialTheme.typography.titleMedium
-            )
-            Text(
-                modifier = Modifier.padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
-                text = buildAnnotatedString {
-                    append("Separate multiple tags by adding a comma")
-                    append(" (")
-                    withStyle(SpanStyle(fontWeight = FontWeight.Black)) {
-                        append(" ,")
-                    }
-                    append(" )")
-                },
-                style = MaterialTheme.typography.titleSmall
-            )
-
-            BasicTextField(
-                interactionSource = reviewTagsInteractionSource,
-                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 15.dp, end = 15.dp),
-                value = reviewTags.value,
-                onValueChange = { newValue ->
-                    reviewTags.value = newValue
-                },
-                textStyle = TextStyle(
-                    fontFamily = fonts,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 16.sp,
-                    color = LocalContentColor.current
-                )
-            )
-            Divider(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 15.dp, end = 15.dp, top = 5.dp),
-                color = if (reviewTagsInteractionSource.collectIsFocusedAsState().value) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(
-                    0.65f
-                )
-            )
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(15.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(imageVector = Icons.Default.Info, contentDescription = "")
-                Spacer(modifier = Modifier.width(15.dp))
-                Text(
-                    text = buildAnnotatedString {
-                        append("Your review has already been auto-saved locally on your device. If you want to make improvements, always go back to ")
-                        withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
-                            append("Drafts")
-                        }
-                        append(".\n\nOnce you post your review, it cannot be changed.")
-                    },
-                    style = MaterialTheme.typography.titleSmall
-                )
-            }
-            Button(
-                onClick = { /*TODO*/ }, modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 15.dp, end = 15.dp, bottom = 15.dp)
-            ) {
-                Text(text = "Post Review", style = MaterialTheme.typography.titleMedium)
+            } else {
+                ReviewUI(detailsViewModel, currentlySelectedItem)
             }
         }
+    }
+}
+
+
+@Composable
+private fun ReviewUI(
+    detailsViewModel: DetailsViewModel,
+    currentSelectedItem: MutableState<String>
+) {
+    val selectedAlbumData = detailsViewModel.albumScreenState
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        CoilImage(
+            imgUrl = selectedAlbumData.albumImgUrl,
+            modifier = Modifier
+                .padding(15.dp)
+                .size(100.dp)
+                .clip(RoundedCornerShape(15.dp)),
+            contentDescription = ""
+        )
+        Column {
+            Text(
+                text = selectedAlbumData.albumTitle,
+                fontSize = 18.sp,
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(end = 20.dp),
+                fontWeight = FontWeight.Black,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis
+            )
+            Spacer(modifier = Modifier.height(5.dp))
+            Text(
+                text = selectedAlbumData.artists.map { it.name }.joinToString { it },
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(end = 20.dp),
+                color = LocalContentColor.current.copy(0.8f)
+            )
+        }
+    }
+    val reviewTitle = rememberSaveable {
+        mutableStateOf("")
+    }
+    val reviewTitleInteractionSource = remember {
+        MutableInteractionSource()
+    }
+    val reviewContent = rememberSaveable {
+        mutableStateOf("")
+    }
+    val reviewContentInteractionSource = remember {
+        MutableInteractionSource()
+    }
+    Text(
+        text = "Review Title",
+        modifier = Modifier.padding(15.dp),
+        style = MaterialTheme.typography.titleMedium
+    )
+
+    BasicTextField(
+        interactionSource = reviewTitleInteractionSource,
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 15.dp, end = 15.dp),
+        value = reviewTitle.value,
+        onValueChange = { newValue ->
+            reviewTitle.value = newValue
+        },
+        textStyle = TextStyle(
+            fontFamily = fonts,
+            fontWeight = FontWeight.Normal,
+            fontSize = 16.sp,
+            color = LocalContentColor.current
+        )
+    )
+    Divider(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 15.dp, end = 15.dp, top = 5.dp),
+        color = if (reviewTitleInteractionSource.collectIsFocusedAsState().value) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(
+            0.65f
+        )
+    )
+
+    Text(
+        text = "Review",
+        modifier = Modifier.padding(15.dp),
+        style = MaterialTheme.typography.titleMedium
+    )
+
+    BasicTextField(
+        interactionSource = reviewContentInteractionSource,
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+        modifier = Modifier
+            .fillMaxWidth()
+            .defaultMinSize(minHeight = 100.dp)
+            .padding(start = 15.dp, end = 15.dp),
+        value = reviewContent.value,
+        onValueChange = { newValue ->
+            reviewContent.value = newValue
+        },
+        textStyle = TextStyle(
+            fontFamily = fonts,
+            fontWeight = FontWeight.Normal,
+            fontSize = 16.sp,
+            color = LocalContentColor.current
+        )
+    )
+    Divider(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 15.dp, end = 15.dp, top = 5.dp),
+        color = if (reviewContentInteractionSource.collectIsFocusedAsState().value) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(
+            0.65f
+        )
+    )
+    val albumLikeStatus: MutableState<Boolean?> = rememberSaveable {
+        mutableStateOf(null)
+    }
+    val albumRecommendationStatus: MutableState<Boolean?> = rememberSaveable {
+        mutableStateOf(null)
+    }
+    Text(
+        text = "Did you like this album? ${albumLikeStatus.value}",
+        modifier = Modifier.padding(
+            start = 15.dp,
+            top = 15.dp,
+            bottom = 10.dp,
+            end = 15.dp
+        ),
+        style = MaterialTheme.typography.titleMedium
+    )
+    BooleanPreferenceGroup(preference = {
+        albumLikeStatus.value = it
+    })
+    Text(
+        text = "Would you recommend this to other people? ${albumRecommendationStatus.value}",
+        modifier = Modifier.padding(
+            start = 15.dp,
+            top = 15.dp,
+            bottom = 10.dp,
+            end = 15.dp
+        ),
+        style = MaterialTheme.typography.titleMedium
+    )
+    BooleanPreferenceGroup(preference = {
+        albumRecommendationStatus.value = it
+    })
+    val ratingValue = rememberSaveable {
+        mutableFloatStateOf(0f)
+    }
+    Text(
+        text = "How much would you rate this record?",
+        modifier = Modifier.padding(
+            start = 15.dp,
+            top = 15.dp,
+            bottom = 10.dp,
+            end = 15.dp
+        ),
+        style = MaterialTheme.typography.titleMedium
+    )
+    Row(verticalAlignment = Alignment.Bottom) {
+        RatingBar(
+            modifier = Modifier.padding(start = 15.dp, top = 5.dp),
+            config = RatingBarConfig().inactiveColor(MaterialTheme.colorScheme.outline)
+                .activeColor(MaterialTheme.colorScheme.primary).padding(5.dp)
+                .stepSize(StepSize.HALF).style(RatingBarStyle.HighLighted),
+            value = ratingValue.floatValue,
+            onValueChange = {
+                ratingValue.floatValue = it
+            },
+            onRatingChanged = {
+
+            })
+        Spacer(modifier = Modifier.width(5.dp))
+        Text(
+            text = "${ratingValue.floatValue}/5.0",
+            style = MaterialTheme.typography.titleMedium,
+        )
+    }
+    val reviewTags = rememberSaveable {
+        mutableStateOf("")
+    }
+    val reviewTagsInteractionSource = remember {
+        MutableInteractionSource()
+    }
+    Text(
+        text = "Tags",
+        modifier = Modifier.padding(start = 15.dp, top = 15.dp, end = 15.dp, bottom = 5.dp),
+        style = MaterialTheme.typography.titleMedium
+    )
+    Text(
+        modifier = Modifier.padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
+        text = buildAnnotatedString {
+            append("Separate multiple tags by adding a comma")
+            append(" (")
+            withStyle(SpanStyle(fontWeight = FontWeight.Black)) {
+                append(" ,")
+            }
+            append(" )")
+        },
+        style = MaterialTheme.typography.titleSmall
+    )
+
+    BasicTextField(
+        interactionSource = reviewTagsInteractionSource,
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 15.dp, end = 15.dp),
+        value = reviewTags.value,
+        onValueChange = { newValue ->
+            reviewTags.value = newValue
+        },
+        textStyle = TextStyle(
+            fontFamily = fonts,
+            fontWeight = FontWeight.Normal,
+            fontSize = 16.sp,
+            color = LocalContentColor.current
+        )
+    )
+    Divider(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 15.dp, end = 15.dp, top = 5.dp),
+        color = if (reviewTagsInteractionSource.collectIsFocusedAsState().value) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(
+            0.65f
+        )
+    )
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(15.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(imageVector = Icons.Default.Info, contentDescription = "")
+        Spacer(modifier = Modifier.width(15.dp))
+        Text(
+            text = buildAnnotatedString {
+                append("Your review has already been auto-saved locally on your device. If you want to make improvements, always go back to ")
+                withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
+                    append("Drafts")
+                }
+                append(".\n\nOnce you post your review, it cannot be changed.")
+            },
+            style = MaterialTheme.typography.titleSmall
+        )
+    }
+    Button(
+        onClick = { /*TODO*/ }, modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 15.dp, end = 15.dp, bottom = 15.dp)
+    ) {
+        Text(text = "Post Review", style = MaterialTheme.typography.titleMedium)
     }
 }
 
