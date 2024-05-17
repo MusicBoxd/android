@@ -9,6 +9,7 @@ import musicboxd.android.ui.details.DetailsViewModel
 import musicboxd.android.ui.details.album.AlbumDetailScreen
 import musicboxd.android.ui.details.artist.ArtistDetailScreen
 import musicboxd.android.ui.details.canvas.VideoCanvas
+import musicboxd.android.ui.review.ReviewScreen
 import musicboxd.android.ui.search.SearchScreen
 import musicboxd.android.ui.search.charts.ChartsScreen
 import musicboxd.android.ui.user.profile.UserProfile
@@ -36,9 +37,11 @@ fun MainNavigation(
             }
         }
         composable(route = NavigationRoutes.ADD.name) {
-            Column {
-
-            }
+            ReviewScreen(
+                navController = navController,
+                detailsViewModel = detailsViewModel,
+                searchScreenViewModel = detailsViewModel
+            )
         }
         composable(route = NavigationRoutes.CUES.name) {
             Column {

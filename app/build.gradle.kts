@@ -124,5 +124,6 @@ dependencies {
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("com.google.accompanist:accompanist-permissions:0.35.0-alpha")
 
+    implementation ("io.github.a914-gowtham:compose-ratingbar:1.2.3")
     implementation("com.vanniktech:android-image-cropper:4.5.0")
 }

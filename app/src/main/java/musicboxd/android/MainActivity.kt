@@ -48,7 +48,6 @@ class MainActivity : ComponentActivity() {
                 listOf(
                     NavigationRoutes.HOME.name,
                     NavigationRoutes.SEARCH.name,
-                    NavigationRoutes.ADD.name,
                     NavigationRoutes.CUES.name,
                     NavigationRoutes.PROFILE.name
                 )

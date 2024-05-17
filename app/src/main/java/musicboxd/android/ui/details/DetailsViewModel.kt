@@ -147,10 +147,10 @@ class DetailsViewModel @Inject constructor(
                                     artists = track.data.artists.map {
                                         Artist(
                                             external_urls = ExternalUrlsX(spotify = it.uri),
-                                            href = it.href,
+                                            href = "",
                                             id = it.id,
                                             name = it.name,
-                                            type = it.type,
+                                            type = "",
                                             uri = it.uri
                                         )
                                     },

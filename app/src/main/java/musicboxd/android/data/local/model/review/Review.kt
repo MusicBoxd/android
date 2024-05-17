@@ -15,7 +15,9 @@ import musicboxd.android.data.remote.api.spotify.model.tracklist.Artist
     )]
 )
 data class Review(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    @PrimaryKey(autoGenerate = true)
+    val localReviewId: Long = 0,
+    val remoteReviewId: Long,
     val releaseType: String,
     val releaseName: String,
     val artists: List<Artist>,
@@ -33,6 +35,5 @@ data class Review(
     val timeStamp: Long,
     val genres: List<String>,
     val noOfLikesForThisReview: Long,
-    val reviewTags: List<String>,
-    val reviewMood: String?
+    val reviewTags: List<String>
 )

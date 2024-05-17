@@ -38,8 +38,11 @@ import musicboxd.android.ui.navigation.NavigationRoutes
 fun SearchContent(
     searchScreenViewModel: SearchScreenViewModel,
     navController: NavController,
-    detailsViewModel: DetailsViewModel
+    detailsViewModel: DetailsViewModel,
+    inSearchScreen: Boolean = true,
+    onSelectingAnItem: (String) -> Unit = {}
 ) {
+    onSelectingAnItem("")
     val searchArtistsResult =
         searchScreenViewModel.searchArtistsResult.collectAsStateWithLifecycle()
     val searchTracksResult = searchScreenViewModel.searchTracksResult.collectAsStateWithLifecycle()
@@ -80,7 +83,11 @@ fun SearchContent(
                             onClick = {
                                 detailsViewModel.artistInfo.value = it
                                 detailsViewModel.loadArtistInfo(it.id, it.name)
-                                navController.navigate(NavigationRoutes.ARTIST_DETAILS.name)
+                                if (inSearchScreen) {
+                                    navController.navigate(NavigationRoutes.ARTIST_DETAILS.name)
+                                    return@ArtistHorizontalPreview
+                                }
+                                onSelectingAnItem("Artist")
                             },
                             artistImgUrl = if (it.images.isNotEmpty()) it.images.last().url else "",
                             artistName = it.name
@@ -108,7 +115,11 @@ fun SearchContent(
                                     artistID = it.artists.map { it.id }.random(),
                                     artistName = it.artists.first().name
                                 )
-                                navController.navigate(NavigationRoutes.ALBUM_DETAILS.name)
+                                if (inSearchScreen) {
+                                    navController.navigate(NavigationRoutes.ALBUM_DETAILS.name)
+                                    return@AlbumxTrackHorizontalPreview
+                                }
+                                onSelectingAnItem("Album")
                             },
                             isExplicit = false,
                             itemType = it.album_type.capitalize(),
@@ -144,10 +155,8 @@ fun SearchContent(
                                             Item(
                                                 artists = it.artists.map {
                                                     Artist(
-                                                        href = it.href,
                                                         id = it.id,
                                                         name = it.name,
-                                                        type = it.type,
                                                         uri = it.uri
                                                     )
                                                 },
@@ -164,9 +173,13 @@ fun SearchContent(
                                     itemType = "Track"
                                 )
                                 detailsViewModel.loadArtistMetaData(it.artists.first().id)
-                                detailsViewModel.loadExternalLinks(isTrack = true, it.id, "")
-                                detailsViewModel.loadCanvases()
-                                navController.navigate(NavigationRoutes.ALBUM_DETAILS.name)
+                                if (inSearchScreen) {
+                                    detailsViewModel.loadExternalLinks(isTrack = true, it.id, "")
+                                    detailsViewModel.loadCanvases()
+                                    navController.navigate(NavigationRoutes.ALBUM_DETAILS.name)
+                                    return@AlbumxTrackHorizontalPreview
+                                }
+                                onSelectingAnItem("Track")
                             },
                             isExplicit = it.explicit,
                             itemType = it.type.capitalize(),

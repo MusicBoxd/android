@@ -2,8 +2,6 @@ package musicboxd.android.data.local.model.user
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import musicboxd.android.data.local.model.release.Release
-import musicboxd.android.data.local.model.review.Review
 
 @Entity(tableName = "user")
 data class User(
@@ -19,10 +17,10 @@ data class User(
     val followingCount: Long,
     val followersCount: Long,
     val reviewsCount: Long,
-    val reviews: List<Review>,
-    val recommendations: List<Release>,
-    val likedReleases: List<Release>,
-    val listenedReleases: List<Release>,
+    val reviews: List<Long>, // Long = remoteReviewId from `Review` table
+    val recommendations: List<Long>, // Long = releaseId from `Release` table
+    val likedReleases: List<Long>, // Long = releaseId from `Release` table
+    val listenedReleases: List<Long>, // Long = releaseId from `Release` table
     val optedInNotifications: List<String>,
     val accountStatus: String,
     val lastActive: String

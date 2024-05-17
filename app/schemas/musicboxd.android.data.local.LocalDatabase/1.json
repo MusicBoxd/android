@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "28a23a769f43143a37e3029bdb8a77a3",
+    "identityHash": "f0b2299fdbb02491eb7f0c00880b66be",
     "entities": [
       {
         "tableName": "user",
@@ -134,11 +134,11 @@
       },
       {
         "tableName": "release",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `releaseType` TEXT NOT NULL, `releaseName` TEXT NOT NULL, `artists` TEXT NOT NULL, `imageUrl` TEXT NOT NULL, `spotifyUri` TEXT NOT NULL, `isExplicit` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`releaseId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `releaseType` TEXT NOT NULL, `releaseName` TEXT NOT NULL, `artists` TEXT NOT NULL, `imageUrl` TEXT NOT NULL, `spotifyUri` TEXT NOT NULL, `isExplicit` INTEGER NOT NULL)",
         "fields": [
           {
-            "fieldPath": "localId",
-            "columnName": "localId",
+            "fieldPath": "releaseId",
+            "columnName": "releaseId",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -182,7 +182,7 @@
         "primaryKey": {
           "autoGenerate": true,
           "columnNames": [
-            "localId"
+            "releaseId"
           ]
         },
         "indices": [],
@@ -190,11 +190,17 @@
       },
       {
         "tableName": "review",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `releaseType` TEXT NOT NULL, `releaseName` TEXT NOT NULL, `artists` TEXT NOT NULL, `spotifyUri` TEXT NOT NULL, `isExplicit` INTEGER NOT NULL, `reviewContent` TEXT NOT NULL, `isLiked` INTEGER NOT NULL, `isRecommended` INTEGER NOT NULL, `gotAddedIntoAnyLists` INTEGER NOT NULL, `listIds` TEXT, `reviewedByUserID` INTEGER NOT NULL, `reviewedOnDate` TEXT NOT NULL, `reviewTitle` TEXT NOT NULL, `rating` REAL NOT NULL, `timeStamp` INTEGER NOT NULL, `genres` TEXT NOT NULL, `noOfLikesForThisReview` INTEGER NOT NULL, `reviewTags` TEXT NOT NULL, `reviewMood` TEXT, FOREIGN KEY(`reviewedByUserID`) REFERENCES `user`(`userId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localReviewId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `remoteReviewId` INTEGER NOT NULL, `releaseType` TEXT NOT NULL, `releaseName` TEXT NOT NULL, `artists` TEXT NOT NULL, `spotifyUri` TEXT NOT NULL, `isExplicit` INTEGER NOT NULL, `reviewContent` TEXT NOT NULL, `isLiked` INTEGER NOT NULL, `isRecommended` INTEGER NOT NULL, `gotAddedIntoAnyLists` INTEGER NOT NULL, `listIds` TEXT, `reviewedByUserID` INTEGER NOT NULL, `reviewedOnDate` TEXT NOT NULL, `reviewTitle` TEXT NOT NULL, `rating` REAL NOT NULL, `timeStamp` INTEGER NOT NULL, `genres` TEXT NOT NULL, `noOfLikesForThisReview` INTEGER NOT NULL, `reviewTags` TEXT NOT NULL, FOREIGN KEY(`reviewedByUserID`) REFERENCES `user`(`userId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
-            "fieldPath": "id",
-            "columnName": "id",
+            "fieldPath": "localReviewId",
+            "columnName": "localReviewId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "remoteReviewId",
+            "columnName": "remoteReviewId",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -305,18 +311,12 @@
             "columnName": "reviewTags",
             "affinity": "TEXT",
             "notNull": true
-          },
-          {
-            "fieldPath": "reviewMood",
-            "columnName": "reviewMood",
-            "affinity": "TEXT",
-            "notNull": false
           }
         ],
         "primaryKey": {
           "autoGenerate": true,
           "columnNames": [
-            "id"
+            "localReviewId"
           ]
         },
         "indices": [],
@@ -338,7 +338,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '28a23a769f43143a37e3029bdb8a77a3')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f0b2299fdbb02491eb7f0c00880b66be')"
     ]
   }
 }

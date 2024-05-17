@@ -511,10 +511,8 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                         musicboxd.android.data.remote.api.spotify.model.tracklist.Item(
                             artists = it.artists.map {
                                 Artist(
-                                    href = it.href,
                                     id = it.id,
                                     name = it.name,
-                                    type = it.type,
                                     uri = it.uri
                                 )
                             },
