@@ -1,5 +1,6 @@
 package musicboxd.android.ui.review
 
+import android.widget.Toast
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Column
@@ -33,6 +34,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -43,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -51,11 +54,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.gowtham.ratingbar.RatingBar
 import com.gowtham.ratingbar.RatingBarConfig
 import com.gowtham.ratingbar.RatingBarStyle
 import com.gowtham.ratingbar.StepSize
+import kotlinx.coroutines.flow.collectLatest
+import musicboxd.android.data.remote.api.musicboxd.model.ReviewDTO
 import musicboxd.android.ui.common.CoilImage
 import musicboxd.android.ui.details.DetailsViewModel
 import musicboxd.android.ui.theme.fonts
@@ -64,8 +70,22 @@ import musicboxd.android.ui.theme.fonts
 @Composable
 fun AddANewReviewScreen(
     navController: NavController,
-    detailsViewModel: DetailsViewModel
+    detailsViewModel: DetailsViewModel,
+    reviewScreenViewModel: ReviewScreenViewModel = hiltViewModel()
 ) {
+    val uiChannel = reviewScreenViewModel.reviewScreenUIChannel
+    val localContext = LocalContext.current
+    LaunchedEffect(key1 = Unit) {
+        uiChannel.collectLatest {
+            when (it) {
+                is ReviewScreenUIEvent.ShowToast -> {
+                    Toast.makeText(localContext, it.toastMessage, Toast.LENGTH_SHORT).show()
+                }
+
+                is ReviewScreenUIEvent.Nothing -> TODO()
+            }
+        }
+    }
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
         TopAppBar(navigationIcon = {
             IconButton(onClick = { /*TODO*/ }) {
@@ -88,7 +108,7 @@ fun AddANewReviewScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            ReviewUI(detailsViewModel = detailsViewModel, it)
+            ReviewUI(detailsViewModel = detailsViewModel, it, reviewScreenViewModel)
         }
     }
 }
@@ -96,7 +116,8 @@ fun AddANewReviewScreen(
 @Composable
 private fun ReviewUI(
     detailsViewModel: DetailsViewModel,
-    paddingValues: PaddingValues
+    paddingValues: PaddingValues,
+    reviewScreenViewModel: ReviewScreenViewModel
 ) {
     val selectedAlbumData = detailsViewModel.albumScreenState
     Row(
@@ -244,7 +265,7 @@ private fun ReviewUI(
     BooleanPreferenceGroup(preference = {
         albumRecommendationStatus.value = it
     })
-    val ratingValue = rememberSaveable {
+    val albumRatingValue = rememberSaveable {
         mutableFloatStateOf(0f)
     }
     Text(
@@ -263,16 +284,16 @@ private fun ReviewUI(
             config = RatingBarConfig().inactiveColor(MaterialTheme.colorScheme.outline)
                 .activeColor(MaterialTheme.colorScheme.primary).padding(5.dp)
                 .stepSize(StepSize.HALF).style(RatingBarStyle.HighLighted),
-            value = ratingValue.floatValue,
+            value = albumRatingValue.floatValue,
             onValueChange = {
-                ratingValue.floatValue = it
+                albumRatingValue.floatValue = it
             },
             onRatingChanged = {
 
             })
         Spacer(modifier = Modifier.width(5.dp))
         Text(
-            text = "${ratingValue.floatValue}/5.0",
+            text = "${albumRatingValue.floatValue}/5.0",
             style = MaterialTheme.typography.titleMedium,
         )
     }
@@ -345,7 +366,15 @@ private fun ReviewUI(
         )
     }
     Button(
-        onClick = { /*TODO*/ }, modifier = Modifier
+        onClick = {
+            reviewScreenViewModel.postANewReview(
+                ReviewDTO(
+                    reviewContent = reviewContent.value,
+                    albumId = selectedAlbumData.itemUri,
+                    reviewRating = albumRatingValue.floatValue
+                )
+            )
+        }, modifier = Modifier
             .fillMaxWidth()
             .padding(start = 15.dp, end = 15.dp, bottom = 15.dp)
     ) {

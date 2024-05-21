@@ -12,6 +12,9 @@ import musicboxd.android.data.local.LocalDatabase
 import musicboxd.android.data.remote.api.lastfm.LastFMAPIImpl
 import musicboxd.android.data.remote.api.lastfm.LastFMAPIRepo
 import musicboxd.android.data.remote.api.lastfm.LastFMAPIService
+import musicboxd.android.data.remote.api.musicboxd.MusicBoxdAPIImpl
+import musicboxd.android.data.remote.api.musicboxd.MusicBoxdAPIRepo
+import musicboxd.android.data.remote.api.musicboxd.MusicBoxdAPIService
 import musicboxd.android.data.remote.api.musicbrainz.MusicBrainzAPIImpl
 import musicboxd.android.data.remote.api.musicbrainz.MusicBrainzAPIRepo
 import musicboxd.android.data.remote.api.musicbrainz.MusicBrainzAPIService
@@ -109,6 +112,19 @@ object AppModule {
             .build().create(SpotifyChartsAPIService::class.java)
     }
 
+    @Provides
+    @Singleton
+    fun provideMusicBoxdAPIInstance(): MusicBoxdAPIService {
+        return Retrofit.Builder()
+            .baseUrl("https://handsome-unity-production.up.railway.app/")
+            .addConverterFactory(
+                json.asConverterFactory(
+                    "application/json".toMediaType()
+                )
+            )
+            .build().create(MusicBoxdAPIService::class.java)
+    }
+
 
     @Provides
     @Singleton
@@ -132,6 +148,12 @@ object AppModule {
     @Singleton
     fun provideSongLinkRepo(songLinkAPIService: SongLinkAPIService): SongLinkRepo {
         return SongLinkImpl(songLinkAPIService)
+    }
+
+    @Provides
+    @Singleton
+    fun provideMusicBoxdAPIRepo(musicBoxdAPIService: MusicBoxdAPIService): MusicBoxdAPIRepo {
+        return MusicBoxdAPIImpl(musicBoxdAPIService)
     }
 
     @Provides

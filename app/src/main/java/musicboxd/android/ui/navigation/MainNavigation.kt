@@ -9,6 +9,7 @@ import musicboxd.android.ui.details.DetailsViewModel
 import musicboxd.android.ui.details.album.AlbumDetailScreen
 import musicboxd.android.ui.details.artist.ArtistDetailScreen
 import musicboxd.android.ui.details.canvas.VideoCanvas
+import musicboxd.android.ui.home.HomeScreen
 import musicboxd.android.ui.lists.CreateANewListScreen
 import musicboxd.android.ui.review.AddANewReviewScreen
 import musicboxd.android.ui.review.AddScreen
@@ -29,9 +30,7 @@ fun MainNavigation(
         startDestination = NavigationRoutes.PROFILE.name
     ) {
         composable(route = NavigationRoutes.HOME.name) {
-            Column {
-
-            }
+            HomeScreen()
         }
         composable(route = NavigationRoutes.SETTINGS.name) {
             Column {
@@ -77,7 +76,7 @@ fun MainNavigation(
             EditProfile(editProfileViewModel, navController)
         }
         composable(route = NavigationRoutes.CREATE_A_NEW_LIST.name) {
-            CreateANewListScreen()
+            CreateANewListScreen(detailsViewModel, navController)
         }
         composable(route = NavigationRoutes.CREATE_A_NEW_REVIEW.name) {
             AddANewReviewScreen(navController, detailsViewModel)
