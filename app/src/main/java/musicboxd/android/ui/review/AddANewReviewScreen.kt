@@ -1,10 +1,9 @@
 package musicboxd.android.ui.review
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
@@ -20,28 +19,21 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SearchBar
-import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -66,207 +58,51 @@ import com.gowtham.ratingbar.RatingBarStyle
 import com.gowtham.ratingbar.StepSize
 import musicboxd.android.ui.common.CoilImage
 import musicboxd.android.ui.details.DetailsViewModel
-import musicboxd.android.ui.search.SearchContent
-import musicboxd.android.ui.search.SearchScreenUiEvent
-import musicboxd.android.ui.search.SearchScreenViewModel
 import musicboxd.android.ui.theme.fonts
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReviewScreen(
+fun AddANewReviewScreen(
     navController: NavController,
-    detailsViewModel: DetailsViewModel,
-    searchScreenViewModel: SearchScreenViewModel
+    detailsViewModel: DetailsViewModel
 ) {
-    val isSearchActive = rememberSaveable {
-        mutableStateOf(false)
-    }
-    val searchQuery = searchScreenViewModel.searchQuery.collectAsState()
-    val currentlySelectedItem = rememberSaveable {
-        mutableStateOf("")
-    }
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
-        if (currentlySelectedItem.value.isEmpty()) {
-            ProvideTextStyle(value = MaterialTheme.typography.titleSmall) {
-                SearchBar(colors = SearchBarDefaults.colors(dividerColor = Color.Transparent),
-                    leadingIcon = {
-                        IconButton(onClick = {
-                            isSearchActive.value = false;
-                            searchScreenViewModel.onUiEvent(
-                                SearchScreenUiEvent.OnQueryChange("")
-                            )
-                        }) {
-                            Icon(
-                                imageVector = if (isSearchActive.value) Icons.Default.ArrowBack else Icons.Default.Search,
-                                contentDescription = if (isSearchActive.value) "Arrow Back Icon" else "Search Icon"
-                            )
-                        }
-                    },
-                    trailingIcon = {
-                        if (isSearchActive.value) {
-                            IconButton(onClick = {
-                                if (searchQuery.value.isNotBlank()) searchScreenViewModel.onUiEvent(
-                                    SearchScreenUiEvent.OnQueryChange("")
-                                ) else isSearchActive.value = false
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Default.Cancel,
-                                    contentDescription = "Cancel Icon"
-                                )
-                            }
-                        }
-                    },
-                    placeholder = {
-                        Text(
-                            text = "Search MusicBoxd", style = MaterialTheme.typography.titleSmall
-                        )
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(if (isSearchActive.value) 0.dp else 15.dp)
-                        .animateContentSize(),
-                    query = searchQuery.value,
-                    onQueryChange = {
-                        searchScreenViewModel.onUiEvent(SearchScreenUiEvent.OnQueryChange(it))
-                    },
-                    onSearch = {
-
-                    },
-                    active = isSearchActive.value,
-                    onActiveChange = {
-                        isSearchActive.value = it
-                    },
-                    content = {
-                        SearchContent(searchScreenViewModel = searchScreenViewModel,
-                            navController = navController,
-                            detailsViewModel = detailsViewModel,
-                            inSearchScreen = false,
-                            onSelectingAnItem = {
-                                currentlySelectedItem.value = it
-                            })
-                    })
-            }
-        } else {
-            TopAppBar(navigationIcon = {
-                IconButton(onClick = { /*TODO*/ }) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = ""
-                    )
-                }
-            }, title = {
-                Text(
-                    text = "Write a new Review",
-                    fontSize = 16.sp,
-                    style = MaterialTheme.typography.titleLarge
-
+        TopAppBar(navigationIcon = {
+            IconButton(onClick = { /*TODO*/ }) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = ""
                 )
-            })
-        }
+            }
+        }, title = {
+            Text(
+                text = "Write a new Review",
+                fontSize = 16.sp,
+                style = MaterialTheme.typography.titleLarge
+
+            )
+        })
     }) {
         Column(
             Modifier
                 .fillMaxSize()
-                .padding(it)
                 .verticalScroll(rememberScrollState())
         ) {
-            if (currentlySelectedItem.value.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column {
-                        Text(
-                            text = "Search for albums, tracks, or artists and share your reviews!",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(30.dp),
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Text(
-                            text = "Or...",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 30.dp, end = 30.dp, bottom = 30.dp),
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Black,
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        FilledTonalButton(
-                            onClick = { /*TODO*/ },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 30.dp, end = 30.dp)
-                        ) {
-                            Text(
-                                text = "Create a New List",
-                                style = MaterialTheme.typography.titleSmall
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(15.dp))
-                        Text(
-                            text = "Drafts",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(15.dp),
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Black,
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 15.dp, end = 15.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            CoilImage(
-                                imgUrl = "https://i.scdn.co/image/ab67616d0000b2735ad8ab24fd5d0988af1f6fb7",
-                                modifier = Modifier
-                                    .size(65.dp)
-                                    .clip(RoundedCornerShape(15.dp)),
-                                contentDescription = ""
-                            )
-                            Spacer(modifier = Modifier.width(15.dp))
-                            Column {
-                                Text(
-                                    text = "Draft Title",
-                                    fontSize = 18.sp,
-                                    style = MaterialTheme.typography.titleLarge,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(end = 20.dp),
-                                    fontWeight = FontWeight.Black,
-                                    maxLines = 3,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                Spacer(modifier = Modifier.height(5.dp))
-                                Text(
-                                    text = "Draft Sample",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(end = 20.dp),
-                                    color = LocalContentColor.current.copy(0.8f)
-                                )
-                            }
-                        }
-                    }
-                }
-            } else {
-                ReviewUI(detailsViewModel, currentlySelectedItem)
-            }
+            ReviewUI(detailsViewModel = detailsViewModel, it)
         }
     }
 }
 
-
 @Composable
 private fun ReviewUI(
     detailsViewModel: DetailsViewModel,
-    currentSelectedItem: MutableState<String>
+    paddingValues: PaddingValues
 ) {
     val selectedAlbumData = detailsViewModel.albumScreenState
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(paddingValues),
         verticalAlignment = Alignment.CenterVertically
     ) {
         CoilImage(
@@ -518,7 +354,7 @@ private fun ReviewUI(
 }
 
 @Composable
-private fun BooleanPreferenceGroup(preference: (Boolean?) -> Unit) {
+fun BooleanPreferenceGroup(preference: (Boolean?) -> Unit) {
     val firstBooleanPref = rememberSaveable {
         mutableStateOf(false)
     }

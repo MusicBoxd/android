@@ -49,7 +49,8 @@ class MainActivity : ComponentActivity() {
                     NavigationRoutes.HOME.name,
                     NavigationRoutes.SEARCH.name,
                     NavigationRoutes.CUES.name,
-                    NavigationRoutes.PROFILE.name
+                    NavigationRoutes.PROFILE.name,
+                    NavigationRoutes.ADD.name
                 )
             }
             LaunchedEffect(key1 = currentNavRoute) {

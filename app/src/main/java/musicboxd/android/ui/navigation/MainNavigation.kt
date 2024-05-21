@@ -9,7 +9,9 @@ import musicboxd.android.ui.details.DetailsViewModel
 import musicboxd.android.ui.details.album.AlbumDetailScreen
 import musicboxd.android.ui.details.artist.ArtistDetailScreen
 import musicboxd.android.ui.details.canvas.VideoCanvas
-import musicboxd.android.ui.review.ReviewScreen
+import musicboxd.android.ui.lists.CreateANewListScreen
+import musicboxd.android.ui.review.AddANewReviewScreen
+import musicboxd.android.ui.review.AddScreen
 import musicboxd.android.ui.search.SearchScreen
 import musicboxd.android.ui.search.charts.ChartsScreen
 import musicboxd.android.ui.user.profile.UserProfile
@@ -37,7 +39,7 @@ fun MainNavigation(
             }
         }
         composable(route = NavigationRoutes.ADD.name) {
-            ReviewScreen(
+            AddScreen(
                 navController = navController,
                 detailsViewModel = detailsViewModel,
                 searchScreenViewModel = detailsViewModel
@@ -73,6 +75,12 @@ fun MainNavigation(
         }
         composable(route = NavigationRoutes.EDIT_PROFILE.name) {
             EditProfile(editProfileViewModel, navController)
+        }
+        composable(route = NavigationRoutes.CREATE_A_NEW_LIST.name) {
+            CreateANewListScreen()
+        }
+        composable(route = NavigationRoutes.CREATE_A_NEW_REVIEW.name) {
+            AddANewReviewScreen(navController, detailsViewModel)
         }
     }
 }

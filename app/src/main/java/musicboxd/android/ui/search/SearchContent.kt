@@ -42,7 +42,6 @@ fun SearchContent(
     inSearchScreen: Boolean = true,
     onSelectingAnItem: (String) -> Unit = {}
 ) {
-    onSelectingAnItem("")
     val searchArtistsResult =
         searchScreenViewModel.searchArtistsResult.collectAsStateWithLifecycle()
     val searchTracksResult = searchScreenViewModel.searchTracksResult.collectAsStateWithLifecycle()
