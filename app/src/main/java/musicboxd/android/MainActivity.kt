@@ -22,6 +22,7 @@ import androidx.work.WorkManager
 import dagger.hilt.android.AndroidEntryPoint
 import musicboxd.android.data.RefreshReleasesWorker
 import musicboxd.android.ui.details.DetailsViewModel
+import musicboxd.android.ui.lists.CreateANewListScreenViewModel
 import musicboxd.android.ui.navigation.BottomNavigationBar
 import musicboxd.android.ui.navigation.MainNavigation
 import musicboxd.android.ui.navigation.NavigationRoutes
@@ -62,6 +63,7 @@ class MainActivity : ComponentActivity() {
             }
             val detailsViewModel: DetailsViewModel = hiltViewModel()
             val editProfileViewModel: EditProfileViewModel = viewModel()
+            val createANewListScreenViewModel: CreateANewListScreenViewModel = viewModel()
             MusicBoxdTheme {
                 Scaffold(Modifier.fillMaxSize()) {
                     androidx.compose.material.BottomSheetScaffold(sheetPeekHeight = 0.dp,
@@ -73,7 +75,8 @@ class MainActivity : ComponentActivity() {
                             MainNavigation(
                                 navController = navController,
                                 detailsViewModel,
-                                editProfileViewModel
+                                editProfileViewModel,
+                                createANewListScreenViewModel
                             )
                         }
                     }

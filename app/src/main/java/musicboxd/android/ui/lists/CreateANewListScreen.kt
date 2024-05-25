@@ -2,7 +2,6 @@ package musicboxd.android.ui.lists
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -19,6 +18,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -44,20 +44,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import kotlinx.coroutines.launch
 import musicboxd.android.ui.common.CoilImage
-import musicboxd.android.ui.common.fadedEdges
 import musicboxd.android.ui.details.DetailsViewModel
 import musicboxd.android.ui.navigation.NavigationRoutes
 import musicboxd.android.ui.review.BooleanPreferenceGroup
@@ -67,7 +66,11 @@ import musicboxd.android.ui.theme.fonts
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun CreateANewListScreen(detailsViewModel: DetailsViewModel, navController: NavController) {
+fun CreateANewListScreen(
+    detailsViewModel: DetailsViewModel,
+    navController: NavController,
+    createANewListScreenViewModel: CreateANewListScreenViewModel
+) {
     val newListTile = rememberSaveable {
         mutableStateOf("")
     }
@@ -84,7 +87,8 @@ fun CreateANewListScreen(detailsViewModel: DetailsViewModel, navController: NavC
         mutableStateOf(false)
     }
     val searchQuery = detailsViewModel.searchQuery.collectAsState()
-    val data = remember { mutableStateOf(List(100) { "Item $it" }) }
+    val lazyGridState = rememberLazyGridState()
+    val coroutineScope = rememberCoroutineScope()
     Scaffold(Modifier.fillMaxSize(), bottomBar = {
         BottomAppBar(modifier = Modifier.fillMaxWidth()) {
             FilledTonalButton(
@@ -155,7 +159,16 @@ fun CreateANewListScreen(detailsViewModel: DetailsViewModel, navController: NavC
                             detailsViewModel = detailsViewModel,
                             inSearchScreen = false,
                             onSelectingAnItem = {
+                                if (!createANewListScreenViewModel.currentSelection.value.contains(
+                                        detailsViewModel.albumScreenState.albumImgUrl
+                                    )
+                                ) {
+                                    createANewListScreenViewModel.currentSelection.value += detailsViewModel.albumScreenState.albumImgUrl
+                                }
                                 isSearchActive.value = false
+                                coroutineScope.launch {
+                                    lazyGridState.animateScrollToItem(lazyGridState.layoutInfo.totalItemsCount - 1)
+                                }
                             })
                     })
             }
@@ -179,7 +192,8 @@ fun CreateANewListScreen(detailsViewModel: DetailsViewModel, navController: NavC
         LazyVerticalGrid(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(it), columns = GridCells.Fixed(3)
+                .padding(it), columns = GridCells.Fixed(3),
+            state = lazyGridState
         ) {
             item(span = {
                 GridItemSpan(this.maxLineSpan)
@@ -318,28 +332,19 @@ fun CreateANewListScreen(detailsViewModel: DetailsViewModel, navController: NavC
                     }
                 }
             }
-            itemsIndexed(data.value, key = { index, it -> it }) { index, itemData ->
+            itemsIndexed(
+                createANewListScreenViewModel.currentSelection.value,
+                key = { index, it -> it }) { index, itemData ->
                 Column(
                     Modifier
                         .size(150.dp)
-                        .padding(10.dp)
+                        .padding(5.dp)
                 ) {
                     CoilImage(
-                        imgUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSNX77EkKMCk77VEOFeOAYEq2BQHJeD1kif1-HMqHW2iA&s",
+                        imgUrl = itemData,
                         modifier = Modifier
-                            .fillMaxSize()
-                            .fadedEdges(MaterialTheme.colorScheme),
+                            .fillMaxSize(),
                         contentDescription = ""
-                    )
-                    Text(
-                        text = buildAnnotatedString { repeat(5) { append(itemData.plus(" ")) } },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.surface)
-                            .padding(5.dp),
-                        style = MaterialTheme.typography.titleMedium,
-                        maxLines = 3,
-                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }

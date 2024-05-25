@@ -94,7 +94,8 @@ class DetailsViewModel @Inject constructor(
         albumName: String,
         albumID: String,
         artistName: String,
-        loadArtistImg: Boolean = true
+        loadArtistImg: Boolean = true,
+        loadCanvases: Boolean = true
     ) {
         canvasUrl.value = emptyList()
         albumExternalLinks.value = emptyList()
@@ -110,7 +111,9 @@ class DetailsViewModel @Inject constructor(
                     loadExternalLinks(false, "", albumID)
                 })
             }.invokeOnCompletion {
-                loadCanvases()
+                if (loadCanvases) {
+                    loadCanvases()
+                }
             }
         }
     }
@@ -484,9 +487,12 @@ class DetailsViewModel @Inject constructor(
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 albumScreenState.trackList.first().forEach {
-                    val rawHtml =
+                    val rawHtml = try {
                         Jsoup.connect("https://www.canvasdownloader.com/canvas?link=https://open.spotify.com/track/${it.id}")
                             .get().toString()
+                    } catch (_: Exception) {
+                        ""
+                    }
                     if (rawHtml.contains("<source src=\"https://")) {
                         rawHtml.substringAfter("<source src=\"https://")
                             .substringBefore(".mp4\" type=\"video/mp4\">").let { url ->

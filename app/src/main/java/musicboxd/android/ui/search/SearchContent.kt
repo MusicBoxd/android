@@ -118,7 +118,8 @@ fun SearchContent(
                                     albumID = it.id,
                                     albumName = it.name,
                                     artistID = it.artists.map { it.id }.random(),
-                                    artistName = it.artists.first().name
+                                    artistName = it.artists.first().name,
+                                    loadCanvases = inSearchScreen
                                 )
                                 if (inSearchScreen) {
                                     navController.navigate(NavigationRoutes.ALBUM_DETAILS.name)

@@ -11,6 +11,7 @@ import musicboxd.android.ui.details.artist.ArtistDetailScreen
 import musicboxd.android.ui.details.canvas.VideoCanvas
 import musicboxd.android.ui.home.HomeScreen
 import musicboxd.android.ui.lists.CreateANewListScreen
+import musicboxd.android.ui.lists.CreateANewListScreenViewModel
 import musicboxd.android.ui.lists.ReorderMusicContentScreen
 import musicboxd.android.ui.review.AddANewReviewScreen
 import musicboxd.android.ui.review.AddScreen
@@ -24,7 +25,8 @@ import musicboxd.android.ui.user.profile.editProfile.EditProfileViewModel
 fun MainNavigation(
     navController: NavHostController,
     detailsViewModel: DetailsViewModel,
-    editProfileViewModel: EditProfileViewModel
+    editProfileViewModel: EditProfileViewModel,
+    createANewListScreenViewModel: CreateANewListScreenViewModel
 ) {
     NavHost(
         navController = navController,
@@ -77,13 +79,13 @@ fun MainNavigation(
             EditProfile(editProfileViewModel, navController)
         }
         composable(route = NavigationRoutes.CREATE_A_NEW_LIST.name) {
-            CreateANewListScreen(detailsViewModel, navController)
+            CreateANewListScreen(detailsViewModel, navController, createANewListScreenViewModel)
         }
         composable(route = NavigationRoutes.CREATE_A_NEW_REVIEW.name) {
             AddANewReviewScreen(navController, detailsViewModel)
         }
         composable(route = NavigationRoutes.REORDER_MUSIC_CONTENT_SCREEN.name) {
-            ReorderMusicContentScreen()
+            ReorderMusicContentScreen(createANewListScreenViewModel)
         }
     }
 }
