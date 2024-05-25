@@ -11,6 +11,7 @@ import musicboxd.android.ui.details.artist.ArtistDetailScreen
 import musicboxd.android.ui.details.canvas.VideoCanvas
 import musicboxd.android.ui.home.HomeScreen
 import musicboxd.android.ui.lists.CreateANewListScreen
+import musicboxd.android.ui.lists.ReorderMusicContentScreen
 import musicboxd.android.ui.review.AddANewReviewScreen
 import musicboxd.android.ui.review.AddScreen
 import musicboxd.android.ui.search.SearchScreen
@@ -80,6 +81,9 @@ fun MainNavigation(
         }
         composable(route = NavigationRoutes.CREATE_A_NEW_REVIEW.name) {
             AddANewReviewScreen(navController, detailsViewModel)
+        }
+        composable(route = NavigationRoutes.REORDER_MUSIC_CONTENT_SCREEN.name) {
+            ReorderMusicContentScreen()
         }
     }
 }
