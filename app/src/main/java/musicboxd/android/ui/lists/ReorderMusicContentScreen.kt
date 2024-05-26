@@ -1,9 +1,11 @@
 package musicboxd.android.ui.lists
 
 import android.util.Log
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
@@ -18,12 +20,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -49,6 +53,7 @@ fun ReorderMusicContentScreen(createANewListScreenViewModel: CreateANewListScree
     val lazyGridState = rememberLazyGridState()
     val list = createANewListScreenViewModel.currentSelection
     val draggingIndex = remember { mutableIntStateOf(-1) }
+    val targetIndex = remember { mutableIntStateOf(-1) }
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
         TopAppBar(navigationIcon = {
             IconButton(onClick = { /*TODO*/ }) {
@@ -65,18 +70,61 @@ fun ReorderMusicContentScreen(createANewListScreenViewModel: CreateANewListScree
             )
         })
     }, bottomBar = {
-        BottomAppBar(modifier = Modifier.fillMaxWidth()) {
-            FilledTonalButton(
-                onClick = { /*TODO*/ },
-                modifier = Modifier
+        BottomAppBar {
+
+        }
+        Surface(
+            tonalElevation = BottomAppBarDefaults.ContainerElevation,
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(BottomAppBarDefaults.containerColor)
+        ) {
+            val tTile = try {
+                list.value[targetIndex.intValue].albumTitle
+            } catch (_: Exception) {
+                "Start of the list"
+            }
+            Column(
+                Modifier
                     .fillMaxWidth()
-                    .padding(15.dp)
             ) {
-                Text(
-                    text = "Save this order",
-                    fontSize = 16.sp,
-                    style = MaterialTheme.typography.titleLarge
-                )
+                Box(
+                    modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .animateContentSize()
+                ) {
+                    if (draggingIndex.intValue >= 0) {
+                        Column {
+                            Text(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 15.dp, top = 15.dp, end = 15.dp),
+                                style = MaterialTheme.typography.titleSmall,
+                                text = "Remove your finger for adding"
+                            )
+                            Text(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 15.dp, top = 5.dp, end = 15.dp),
+                                style = MaterialTheme.typography.titleLarge,
+                                text = "${list.value[draggingIndex.intValue].albumTitle} in the position of $tTile"
+                            )
+                        }
+                    }
+                }
+                FilledTonalButton(
+                    onClick = { /*TODO*/ },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(15.dp)
+                ) {
+                    Text(
+                        text = "Save this order",
+                        fontSize = 16.sp,
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                }
             }
         }
     }) {
@@ -109,8 +157,8 @@ fun ReorderMusicContentScreen(createANewListScreenViewModel: CreateANewListScree
                                 currentItemOffSet.first.floatValue += dragAmount.x / 2
                             }
                             val offset = Offset(
-                                (currentItemOffSet.first.floatValue * (2 + index)),
-                                (currentItemOffSet.second.floatValue * (2 + index))
+                                lazyGridState.layoutInfo.visibleItemsInfo[index].offset.x + (currentItemOffSet.first.floatValue * 2),
+                                lazyGridState.layoutInfo.visibleItemsInfo[index].offset.y + (currentItemOffSet.second.floatValue * 2)
                             )
                             val targetItemIndex =
                                 lazyGridState.layoutInfo.visibleItemsInfo.firstOrNull {
@@ -118,6 +166,9 @@ fun ReorderMusicContentScreen(createANewListScreenViewModel: CreateANewListScree
                                         offset,
                                         lazyGridState.layoutInfo.visibleItemsInfo.map { it.offset.toOffset() })
                                 }
+                            targetItemIndex?.let {
+                                targetIndex.intValue = it.index
+                            }
                             Log.d(
                                 "10MinMail",
                                 "${currentItemOffSet.first.floatValue * 2}, ${currentItemOffSet.second.floatValue * 2}\nNearest value: ${
@@ -139,6 +190,7 @@ fun ReorderMusicContentScreen(createANewListScreenViewModel: CreateANewListScree
                             currentItemOffSet.first.floatValue = 0f
                             currentItemOffSet.second.floatValue = 0f
                             targetItemIndex?.let {
+                                targetIndex.intValue = it.index
                                 val newList =
                                     createANewListScreenViewModel.currentSelection.value.toMutableList()
                                 newList.add(
@@ -158,7 +210,7 @@ fun ReorderMusicContentScreen(createANewListScreenViewModel: CreateANewListScree
                     }
                     .clip(RoundedCornerShape(5.dp))) {
                     CoilImage(
-                        imgUrl = itemData,
+                        imgUrl = itemData.albumImgUrl,
                         modifier = Modifier
                             .fillMaxSize()
                             .then(

@@ -159,11 +159,10 @@ fun CreateANewListScreen(
                             detailsViewModel = detailsViewModel,
                             inSearchScreen = false,
                             onSelectingAnItem = {
-                                if (!createANewListScreenViewModel.currentSelection.value.contains(
-                                        detailsViewModel.albumScreenState.albumImgUrl
-                                    )
+                                if (!createANewListScreenViewModel.currentSelection.value.map { it.itemUri }
+                                        .contains(detailsViewModel.albumScreenState.itemUri)
                                 ) {
-                                    createANewListScreenViewModel.currentSelection.value += detailsViewModel.albumScreenState.albumImgUrl
+                                    createANewListScreenViewModel.currentSelection.value += detailsViewModel.albumScreenState
                                 }
                                 isSearchActive.value = false
                                 coroutineScope.launch {
@@ -334,14 +333,14 @@ fun CreateANewListScreen(
             }
             itemsIndexed(
                 createANewListScreenViewModel.currentSelection.value,
-                key = { index, it -> it }) { index, itemData ->
+                key = { index, it -> it.itemUri }) { index, itemData ->
                 Column(
                     Modifier
                         .size(150.dp)
                         .padding(5.dp)
                 ) {
                     CoilImage(
-                        imgUrl = itemData,
+                        imgUrl = itemData.albumImgUrl,
                         modifier = Modifier
                             .fillMaxSize(),
                         contentDescription = ""
