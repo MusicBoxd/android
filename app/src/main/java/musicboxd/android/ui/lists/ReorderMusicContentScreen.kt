@@ -171,16 +171,12 @@ fun ReorderMusicContentScreen(createANewListScreenViewModel: CreateANewListScree
                                 val newList =
                                     createANewListScreenViewModel.currentSelection.value.toMutableList()
                                 val currentDraggingItem = newList[draggingIndex.intValue]
+                                newList.removeAt(draggingIndex.intValue)
                                 newList.add(
                                     targetIndex.intValue,
                                     currentDraggingItem
                                 )
-                                createANewListScreenViewModel.currentSelection.value =
-                                    if (draggingIndex.intValue >= targetIndex.intValue) {
-                                        newList.distinct()
-                                    } else {
-                                        throw NotImplementedError()
-                                    }
+                                createANewListScreenViewModel.currentSelection.value = newList
                             }
                             targetIndex.intValue = -1
                             draggingIndex.intValue = -1
