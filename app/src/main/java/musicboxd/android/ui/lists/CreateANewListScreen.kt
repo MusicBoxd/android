@@ -159,7 +159,7 @@ fun CreateANewListScreen(
                             detailsViewModel = detailsViewModel,
                             inSearchScreen = false,
                             onSelectingAnItem = {
-                                if (!createANewListScreenViewModel.currentSelection.value.map { it.itemUri }
+                                if (!createANewListScreenViewModel.currentSelection.value.map { it?.itemUri }
                                         .contains(detailsViewModel.albumScreenState.itemUri)
                                 ) {
                                     createANewListScreenViewModel.currentSelection.value += detailsViewModel.albumScreenState
@@ -332,7 +332,7 @@ fun CreateANewListScreen(
                 }
             }
             itemsIndexed(
-                createANewListScreenViewModel.currentSelection.value,
+                createANewListScreenViewModel.currentSelection.value.filterNotNull(),
                 key = { index, it -> it.itemUri }) { index, itemData ->
                 Column(
                     Modifier

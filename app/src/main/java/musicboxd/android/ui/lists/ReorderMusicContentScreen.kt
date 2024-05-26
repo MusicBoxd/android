@@ -1,6 +1,5 @@
 package musicboxd.android.ui.lists
 
-import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
@@ -19,7 +18,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
@@ -70,9 +68,6 @@ fun ReorderMusicContentScreen(createANewListScreenViewModel: CreateANewListScree
             )
         })
     }, bottomBar = {
-        BottomAppBar {
-
-        }
         Surface(
             tonalElevation = BottomAppBarDefaults.ContainerElevation,
             modifier = Modifier
@@ -80,7 +75,7 @@ fun ReorderMusicContentScreen(createANewListScreenViewModel: CreateANewListScree
                 .background(BottomAppBarDefaults.containerColor)
         ) {
             val tTile = try {
-                list.value[targetIndex.intValue].albumTitle
+                list.value[targetIndex.intValue]?.albumTitle
             } catch (_: Exception) {
                 "Start of the list"
             }
@@ -108,7 +103,7 @@ fun ReorderMusicContentScreen(createANewListScreenViewModel: CreateANewListScree
                                     .fillMaxWidth()
                                     .padding(start = 15.dp, top = 5.dp, end = 15.dp),
                                 style = MaterialTheme.typography.titleLarge,
-                                text = "${list.value[draggingIndex.intValue].albumTitle} in the position of $tTile"
+                                text = "${list.value[draggingIndex.intValue]?.albumTitle} in the position of $tTile"
                             )
                         }
                     }
@@ -135,7 +130,7 @@ fun ReorderMusicContentScreen(createANewListScreenViewModel: CreateANewListScree
             columns = GridCells.Fixed(4),
             state = lazyGridState
         ) {
-            itemsIndexed(list.value) { index, itemData ->
+            itemsIndexed(list.value.filterNotNull()) { index, itemData ->
                 val currentItemOffSet = remember {
                     Pair(mutableFloatStateOf(0f), mutableFloatStateOf(0f))
                 }
@@ -169,42 +164,25 @@ fun ReorderMusicContentScreen(createANewListScreenViewModel: CreateANewListScree
                             targetItemIndex?.let {
                                 targetIndex.intValue = it.index
                             }
-                            Log.d(
-                                "10MinMail",
-                                "${currentItemOffSet.first.floatValue * 2}, ${currentItemOffSet.second.floatValue * 2}\nNearest value: ${
-                                    findNearestOffset(
-                                        offset,
-                                        lazyGridState.layoutInfo.visibleItemsInfo.map { it.offset.toOffset() })
-                                }\nTarget Index = ${targetItemIndex?.index}"
-                            )
                         }, onDragEnd = {
-                            val targetItemIndex =
-                                lazyGridState.layoutInfo.visibleItemsInfo.firstOrNull {
-                                    it.offset.toOffset() == findNearestOffset(
-                                        Offset(
-                                            (currentItemOffSet.first.floatValue * (2 + index)),
-                                            (currentItemOffSet.second.floatValue * (2 + index))
-                                        ),
-                                        lazyGridState.layoutInfo.visibleItemsInfo.map { it.offset.toOffset() })
-                                }
                             currentItemOffSet.first.floatValue = 0f
                             currentItemOffSet.second.floatValue = 0f
-                            targetItemIndex?.let {
-                                targetIndex.intValue = it.index
+                            if (targetIndex.intValue != -1) {
                                 val newList =
                                     createANewListScreenViewModel.currentSelection.value.toMutableList()
+                                val currentDraggingItem = newList[draggingIndex.intValue]
                                 newList.add(
-                                    targetItemIndex.index,
-                                    createANewListScreenViewModel.currentSelection.value[draggingIndex.intValue]
+                                    targetIndex.intValue,
+                                    currentDraggingItem
                                 )
                                 createANewListScreenViewModel.currentSelection.value =
-                                    newList.distinct()
+                                    if (draggingIndex.intValue >= targetIndex.intValue) {
+                                        newList.distinct()
+                                    } else {
+                                        throw NotImplementedError()
+                                    }
                             }
-                            Log.d("10MinMail",
-                                lazyGridState.layoutInfo.visibleItemsInfo
-                                    .map { it.offset }
-                                    .toString()
-                            )
+                            targetIndex.intValue = -1
                             draggingIndex.intValue = -1
                         })
                     }

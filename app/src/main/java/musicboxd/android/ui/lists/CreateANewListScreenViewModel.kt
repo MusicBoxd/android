@@ -5,5 +5,5 @@ import androidx.lifecycle.ViewModel
 import musicboxd.android.ui.details.album.AlbumDetailScreenState
 
 class CreateANewListScreenViewModel : ViewModel() {
-    val currentSelection = mutableStateOf(emptyList<AlbumDetailScreenState>())
+    val currentSelection = mutableStateOf(emptyList<AlbumDetailScreenState?>())
 }
