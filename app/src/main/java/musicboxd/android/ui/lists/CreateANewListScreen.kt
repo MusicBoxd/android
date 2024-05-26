@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -49,6 +50,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -89,6 +91,12 @@ fun CreateANewListScreen(
     val searchQuery = detailsViewModel.searchQuery.collectAsState()
     val lazyGridState = rememberLazyGridState()
     val coroutineScope = rememberCoroutineScope()
+    val isAPublicList = rememberSaveable {
+        mutableStateOf(false)
+    }
+    val isANumberedList = rememberSaveable {
+        mutableStateOf(false)
+    }
     Scaffold(Modifier.fillMaxSize(), bottomBar = {
         BottomAppBar(modifier = Modifier.fillMaxWidth()) {
             FilledTonalButton(
@@ -293,7 +301,9 @@ fun CreateANewListScreen(
                         text = "Save as a Public List",
                         style = MaterialTheme.typography.titleMedium
                     )
-                    Switch(checked = true, onCheckedChange = {})
+                    Switch(checked = isAPublicList.value, onCheckedChange = {
+                        isAPublicList.value = it
+                    })
                 }
             }
             item(span = {
@@ -309,7 +319,9 @@ fun CreateANewListScreen(
                 GridItemSpan(this.maxLineSpan)
             }) {
                 BooleanPreferenceGroup {
-
+                    it?.let {
+                        isANumberedList.value = it
+                    }
                 }
             }
             item(span = {
@@ -317,6 +329,7 @@ fun CreateANewListScreen(
             }) {
                 Row(
                     Modifier
+                        .animateContentSize()
                         .fillMaxWidth()
                         .padding(15.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -326,25 +339,40 @@ fun CreateANewListScreen(
                         text = "Music Content",
                         style = MaterialTheme.typography.titleMedium
                     )
-                    FilledTonalIconButton(onClick = { navController.navigate(NavigationRoutes.REORDER_MUSIC_CONTENT_SCREEN.name) }) {
-                        Icon(imageVector = Icons.Default.EditNote, contentDescription = "")
+                    if (isANumberedList.value) {
+                        FilledTonalIconButton(onClick = { navController.navigate(NavigationRoutes.REORDER_MUSIC_CONTENT_SCREEN.name) }) {
+                            Icon(imageVector = Icons.Default.EditNote, contentDescription = "")
+                        }
                     }
                 }
             }
             itemsIndexed(
                 createANewListScreenViewModel.currentSelection.value.filterNotNull(),
                 key = { index, it -> it.itemUri }) { index, itemData ->
-                Column(
-                    Modifier
-                        .size(150.dp)
-                        .padding(5.dp)
-                ) {
+                Column(Modifier.width(150.dp)) {
                     CoilImage(
                         imgUrl = itemData.albumImgUrl,
                         modifier = Modifier
-                            .fillMaxSize(),
+                            .size(150.dp)
+                            .padding(start = 5.dp, end = 5.dp, top = 5.dp),
                         contentDescription = ""
                     )
+                    FilledTonalButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 5.dp, end = 5.dp, bottom = 5.dp),
+                        shape = RectangleShape,
+                        onClick = {
+                            val newList =
+                                createANewListScreenViewModel.currentSelection.value.toMutableList()
+                            newList.removeAt(index)
+                            createANewListScreenViewModel.currentSelection.value = newList
+                        }) {
+                        Text(
+                            text = "Remove",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
                 }
             }
             item(span = {

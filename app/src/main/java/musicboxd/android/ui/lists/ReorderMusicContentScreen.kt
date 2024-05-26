@@ -5,11 +5,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
@@ -18,9 +21,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -108,16 +111,17 @@ fun ReorderMusicContentScreen(createANewListScreenViewModel: CreateANewListScree
                         }
                     }
                 }
-                FilledTonalButton(
-                    onClick = { /*TODO*/ },
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(15.dp)
+                        .padding(15.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Icon(imageVector = Icons.Default.Info, contentDescription = "")
+                    Spacer(modifier = Modifier.width(15.dp))
                     Text(
-                        text = "Save this order",
-                        fontSize = 16.sp,
-                        style = MaterialTheme.typography.titleLarge
+                        text = "Long press and drag the item to rearrange the order of this list, changes will be authentically made in the list the moment you remove your finger",
+                        style = MaterialTheme.typography.titleSmall
                     )
                 }
             }
