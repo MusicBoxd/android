@@ -4,6 +4,7 @@ import musicboxd.android.data.remote.api.APIResult
 import musicboxd.android.data.remote.api.musicboxd.model.MusicBoxdLoginDTO
 import musicboxd.android.data.remote.api.musicboxd.model.MusicBoxdTokenDTO
 import musicboxd.android.data.remote.api.musicboxd.model.ReviewDTO
+import musicboxd.android.data.remote.api.musicboxd.model.list.ListDTO
 import musicboxd.android.data.remote.api.musicboxd.model.review.MusicBoxdPublicReviews
 import javax.inject.Inject
 
@@ -18,6 +19,24 @@ class MusicBoxdAPIImpl @Inject constructor(private val musicBoxdAPIService: Musi
             APIResult.Success("Successful")
         } catch (_: Exception) {
             APIResult.Failure("Failed at postANewReview")
+        }
+    }
+
+    override suspend fun postANewList(listDTO: ListDTO, authorization: String): APIResult<String> {
+        return try {
+            musicBoxdAPIService.postANewList(listDTO, "Bearer ".plus(authorization))
+            APIResult.Success("Success")
+        } catch (e: Exception) {
+            e.printStackTrace()
+            APIResult.Failure("Failed at postANewList")
+        }
+    }
+
+    override suspend fun getPublicLists(authorization: String): APIResult<List<ListDTO>> {
+        return try {
+            APIResult.Success(musicBoxdAPIService.getPublicLists("Bearer ".plus(authorization)))
+        } catch (e: Exception) {
+            APIResult.Failure("Failed at getPublicLists")
         }
     }
 

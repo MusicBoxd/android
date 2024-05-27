@@ -114,14 +114,14 @@ fun SearchContent(
                                     itemType = it.album_type.capitalize(),
                                     itemUri = it.uri
                                 )
-                                detailsViewModel.loadAlbumInfo(
-                                    albumID = it.id,
-                                    albumName = it.name,
-                                    artistID = it.artists.map { it.id }.random(),
-                                    artistName = it.artists.first().name,
-                                    loadCanvases = inSearchScreen
-                                )
                                 if (inSearchScreen) {
+                                    detailsViewModel.loadAlbumInfo(
+                                        albumID = it.id,
+                                        albumName = it.name,
+                                        artistID = it.artists.map { it.id }.random(),
+                                        artistName = it.artists.first().name,
+                                        loadCanvases = inSearchScreen
+                                    )
                                     navController.navigate(NavigationRoutes.ALBUM_DETAILS.name)
                                     return@AlbumxTrackHorizontalPreview
                                 }

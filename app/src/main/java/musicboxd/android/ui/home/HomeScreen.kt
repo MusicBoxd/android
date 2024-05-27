@@ -18,11 +18,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun HomeScreen() {
     val homeScreenViewModel: HomeScreenViewModel = hiltViewModel()
-    val publicReviews = homeScreenViewModel.publicReviews.collectAsStateWithLifecycle()
+    val publicReviews = homeScreenViewModel.publicLists.collectAsStateWithLifecycle()
     LazyColumn(Modifier.fillMaxSize()) {
         items(publicReviews.value) {
             Text(
-                text = "${it.albumId} - ${it.albumRating} - ${it.albumReview}",
+                text = it.toString(),
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(15.dp)
             )

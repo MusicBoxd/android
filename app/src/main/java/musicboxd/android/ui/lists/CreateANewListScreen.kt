@@ -1,5 +1,6 @@
 package musicboxd.android.ui.lists
 
+import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -42,6 +43,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,11 +54,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import musicboxd.android.ui.common.CoilImage
 import musicboxd.android.ui.details.DetailsViewModel
@@ -97,10 +101,29 @@ fun CreateANewListScreen(
     val isANumberedList = rememberSaveable {
         mutableStateOf(false)
     }
+    val uiChannel = createANewListScreenViewModel.uiEvent
+    val localContext = LocalContext.current
+    LaunchedEffect(key1 = Unit) {
+        uiChannel.collectLatest {
+            when (it) {
+                is CreateANewListScreenUIEvent.ShowToast -> {
+                    Toast.makeText(localContext, it.msg, Toast.LENGTH_SHORT).show()
+                }
+
+                is CreateANewListScreenUIEvent.Nothing -> TODO()
+            }
+        }
+    }
     Scaffold(Modifier.fillMaxSize(), bottomBar = {
         BottomAppBar(modifier = Modifier.fillMaxWidth()) {
             FilledTonalButton(
-                onClick = { /*TODO*/ },
+                onClick = {
+                    createANewListScreenViewModel.publishANewList(
+                        listName = newListTile.value,
+                        listDescription = newListDescription.value,
+                        isListPublic = isAPublicList.value
+                    )
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(15.dp)
@@ -167,7 +190,7 @@ fun CreateANewListScreen(
                             detailsViewModel = detailsViewModel,
                             inSearchScreen = false,
                             onSelectingAnItem = {
-                                if (!createANewListScreenViewModel.currentSelection.value.map { it?.itemUri }
+                                if (!createANewListScreenViewModel.currentSelection.value.map { it.itemUri }
                                         .contains(detailsViewModel.albumScreenState.itemUri)
                                 ) {
                                     createANewListScreenViewModel.currentSelection.value += detailsViewModel.albumScreenState

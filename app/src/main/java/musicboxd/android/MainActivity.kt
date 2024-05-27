@@ -63,7 +63,7 @@ class MainActivity : ComponentActivity() {
             }
             val detailsViewModel: DetailsViewModel = hiltViewModel()
             val editProfileViewModel: EditProfileViewModel = viewModel()
-            val createANewListScreenViewModel: CreateANewListScreenViewModel = viewModel()
+            val createANewListScreenViewModel: CreateANewListScreenViewModel = hiltViewModel()
             MusicBoxdTheme {
                 Scaffold(Modifier.fillMaxSize()) {
                     androidx.compose.material.BottomSheetScaffold(sheetPeekHeight = 0.dp,
