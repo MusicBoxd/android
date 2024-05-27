@@ -23,9 +23,7 @@ class NotificationsScreenViewModel @Inject constructor(private val artistTourRep
 
     private fun retrieveLatestConcertsData() {
         viewModelScope.launch {
-            artistTourRepo.getLatestTourDetailsFromAnArtist("20qISvAhX20dpIbOOzGK3q").let {
-                _sampleList.emit(it)
-            }
+            artistTourRepo.getEventDetails("7pjPlcQp4vjwDGvuzQs5pz")
         }
     }
 }

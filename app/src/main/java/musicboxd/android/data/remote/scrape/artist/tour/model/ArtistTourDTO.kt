@@ -5,5 +5,6 @@ data class ArtistTourDTO(
     val venue: String,
     val day: String,
     val date: String,
-    val time: String
+    val time: String,
+    val href: String
 )

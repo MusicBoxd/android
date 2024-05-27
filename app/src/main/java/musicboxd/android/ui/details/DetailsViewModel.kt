@@ -32,6 +32,8 @@ import musicboxd.android.data.remote.api.spotify.model.artist_search.Item
 import musicboxd.android.data.remote.api.spotify.model.topTracks.TopTracksDTO
 import musicboxd.android.data.remote.scrape.artist.tour.ArtistTourRepo
 import musicboxd.android.data.remote.scrape.artist.tour.model.ArtistTourDTO
+import musicboxd.android.data.remote.scrape.artist.tour.model.event.EventDetailsDTO
+import musicboxd.android.data.remote.scrape.artist.tour.model.event.TicketDetails
 import musicboxd.android.ui.details.album.AlbumDetailScreenState
 import musicboxd.android.ui.details.model.ItemExternalLink
 import musicboxd.android.ui.search.SearchScreenViewModel
@@ -240,14 +242,18 @@ class DetailsViewModel @Inject constructor(
         }.toString().substringAfter("<a href=\"/music/").substringAfter("+images/")
             .substringBefore("\" class")
         val imgURL = "https://lastfm.freetls.fastly.net" + withContext(Dispatchers.IO) {
-            Jsoup.connect(
-                "https://www.last.fm/music/${
-                    artistName.replace(
-                        " ",
-                        "+"
-                    )
-                }/+images/${imageItem.substringBefore("\">")}".replace(" ", "+")
-            ).customConfig().get()
+            try {
+                Jsoup.connect(
+                    "https://www.last.fm/music/${
+                        artistName.replace(
+                            " ",
+                            "+"
+                        )
+                    }/+images/${imageItem.substringBefore("\">")}".replace(" ", "+")
+                ).customConfig().get()
+            } catch (e: Exception) {
+                ""
+            }
         }.toString().substringAfter("src=\"https://lastfm.freetls.fastly.net")
             .substringBefore("\">")
         _alternativeImageOfAnArtist.emit(imgURL)
@@ -440,6 +446,38 @@ class DetailsViewModel @Inject constructor(
                 }
             }
 
+        }
+    }
+
+    private val _specificConcertDetails = MutableStateFlow(
+        EventDetailsDTO(
+            eventTitle = "", eventTime = "", ticketsDetails = TicketDetails(
+                ticketSellingPlatformName = "",
+                ticketSellingPlatformImgURL = "",
+                ticketSellingPlatformStatus = "",
+                ticketBuyingUrl = ""
+            ), googleMapsURL = ""
+        )
+    )
+    val specificConcertDetails = _specificConcertDetails.asStateFlow()
+    fun loadASpecificConcertDetails(concertID: String) {
+        viewModelScope.launch {
+            _specificConcertDetails.emit(
+                EventDetailsDTO(
+                    eventTitle = "", eventTime = "", ticketsDetails = TicketDetails(
+                        ticketSellingPlatformName = "",
+                        ticketSellingPlatformImgURL = "",
+                        ticketSellingPlatformStatus = "",
+                        ticketBuyingUrl = ""
+                    ), googleMapsURL = ""
+                )
+            )
+        }.invokeOnCompletion {
+            viewModelScope.launch {
+                artistTourRepo.getEventDetails(concertID).let {
+                    _specificConcertDetails.emit(it)
+                }
+            }
         }
     }
 

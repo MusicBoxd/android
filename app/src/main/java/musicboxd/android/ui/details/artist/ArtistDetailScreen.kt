@@ -101,6 +101,7 @@ import musicboxd.android.ui.common.AlbumxTrackHorizontalPreview
 import musicboxd.android.ui.common.ArtistCoverArt
 import musicboxd.android.ui.common.ArtistCoverArtState
 import musicboxd.android.ui.common.CoilImage
+import musicboxd.android.ui.common.EventDetailBtmModalSheet
 import musicboxd.android.ui.common.HorizontalTrackPreview
 import musicboxd.android.ui.common.fadedEdges
 import musicboxd.android.ui.details.DetailsViewModel
@@ -252,6 +253,12 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
     val isEventsModeEnabled = rememberSaveable {
         mutableStateOf(false)
     }
+    val isConcertDetailsModalBtmSheetVisible = rememberSaveable {
+        mutableStateOf(false)
+    }
+    val selectedEventID = rememberSaveable {
+        mutableStateOf("")
+    }
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         item {
             ArtistCoverArt(
@@ -349,6 +356,14 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                 }
             }
         }
+        if (artistEventsData.value.isEmpty()) {
+            item {
+                Spacer(
+                    modifier = Modifier
+                        .height(15.dp)
+                )
+            }
+        }
         if (artistEventsData.value.isNotEmpty()) {
             stickyHeader {
                 Spacer(
@@ -433,6 +448,13 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                         it, modifier = Modifier
                             .fillMaxWidth()
                             .padding(start = 15.dp, end = 15.dp)
+                            .clickable {
+                                selectedEventID.value = it.href
+                                    .split("/")
+                                    .last()
+                                detailsViewModel.loadASpecificConcertDetails(selectedEventID.value)
+                                isConcertDetailsModalBtmSheetVisible.value = true
+                            }
                     )
                 }
                 item {
@@ -842,6 +864,16 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
         }
             }
         }
+    }
+    if (isConcertDetailsModalBtmSheetVisible.value) {
+        EventDetailBtmModalSheet(
+            isVisible = isConcertDetailsModalBtmSheetVisible,
+            eventID = selectedEventID,
+            detailsViewModel,
+            artistTourDTO = artistEventsData.value.first {
+                it.href.split("/").last() == selectedEventID.value
+            }
+        )
     }
     if (isBtmSheetVisible.value) {
         ModalBottomSheet(dragHandle = {
