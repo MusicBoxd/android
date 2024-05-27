@@ -30,6 +30,8 @@ import musicboxd.android.data.remote.api.spotify.model.artist_search.ExternalUrl
 import musicboxd.android.data.remote.api.spotify.model.artist_search.Followers
 import musicboxd.android.data.remote.api.spotify.model.artist_search.Item
 import musicboxd.android.data.remote.api.spotify.model.topTracks.TopTracksDTO
+import musicboxd.android.data.remote.scrape.artist.tour.ArtistTourRepo
+import musicboxd.android.data.remote.scrape.artist.tour.model.ArtistTourDTO
 import musicboxd.android.ui.details.album.AlbumDetailScreenState
 import musicboxd.android.ui.details.model.ItemExternalLink
 import musicboxd.android.ui.search.SearchScreenViewModel
@@ -43,7 +45,8 @@ class DetailsViewModel @Inject constructor(
     private val spotifyAPIRepo: SpotifyAPIRepo,
     private val songLinkRepo: SongLinkRepo,
     private val lastFMAPIRepo: LastFMAPIRepo,
-    spotifyChartsAPIRepo: SpotifyChartsAPIRepo
+    spotifyChartsAPIRepo: SpotifyChartsAPIRepo,
+    private val artistTourRepo: ArtistTourRepo
 ) : SearchScreenViewModel(spotifyAPIRepo, spotifyChartsAPIRepo) {
     var albumScreenState = AlbumDetailScreenState(
         covertArtImgUrl = flow { },
@@ -88,6 +91,17 @@ class DetailsViewModel @Inject constructor(
     val alternativeImageOfAnArtist = _alternativeImageOfAnArtist.asStateFlow()
     private val _artistMonthlyListeners = MutableStateFlow("")
     val artistMonthlyListeners = _artistMonthlyListeners.asStateFlow()
+
+
+    private val _artistEventsData = MutableStateFlow(emptyList<ArtistTourDTO>())
+    val artistEventsData = _artistEventsData.asStateFlow()
+    private fun loadLatestConcertsData(artistID: String) {
+        viewModelScope.launch {
+            artistTourRepo.getLatestTourDetailsFromAnArtist(artistID).let {
+                _artistEventsData.emit(it)
+            }
+        }
+    }
 
     fun loadAlbumInfo(
         artistID: String,
@@ -319,6 +333,8 @@ class DetailsViewModel @Inject constructor(
                     loadArtistImageFromLastFM(artistName)
                 }, async {
                     loadMonthlyListeners(artistID)
+                }, async {
+                    loadLatestConcertsData(artistID)
                 })
             }
         }

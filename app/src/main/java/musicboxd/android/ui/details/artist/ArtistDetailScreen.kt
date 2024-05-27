@@ -9,7 +9,9 @@ import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -40,6 +42,7 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Stop
@@ -103,11 +106,12 @@ import musicboxd.android.ui.common.fadedEdges
 import musicboxd.android.ui.details.DetailsViewModel
 import musicboxd.android.ui.details.album.AlbumDetailScreenState
 import musicboxd.android.ui.navigation.NavigationRoutes
+import musicboxd.android.ui.notifications.common.OnTourInfoComposable
 import musicboxd.android.utils.showNotificationSettings
 
 @OptIn(
     ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class,
-    ExperimentalPermissionsApi::class
+    ExperimentalPermissionsApi::class, ExperimentalFoundationApi::class
 )
 @Composable
 fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavController) {
@@ -178,6 +182,8 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
         mutableStateOf(false)
     }
     val monthlyListeners = detailsViewModel.artistMonthlyListeners.collectAsStateWithLifecycle()
+    val artistEventsData =
+        detailsViewModel.artistEventsData.collectAsStateWithLifecycle(initialValue = emptyList())
     LaunchedEffect(key1 = isAnyTrackIsPlayingState.value) {
         while (isAnyTrackIsPlayingState.value) {
             currentPlayingTrackDurationAsFloat.floatValue =
@@ -243,6 +249,9 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
 
     val notificationPermissionState =
         rememberPermissionState(permission = Manifest.permission.POST_NOTIFICATIONS)
+    val isEventsModeEnabled = rememberSaveable {
+        mutableStateOf(false)
+    }
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         item {
             ArtistCoverArt(
@@ -254,139 +263,233 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
             )
         }
         item {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Spacer(modifier = Modifier.width(10.dp))
-                Image(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clip(CircleShape),
-                    painter = painterResource(id = R.drawable.spotify_logo),
-                    contentDescription = ""
-                )
-                Text(
-                    text = "•   ",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = LocalContentColor.current,
-                    modifier = Modifier.padding(start = 10.dp)
-                )
-                Column(modifier = Modifier.animateContentSize()) {
-                    if (monthlyListeners.value.isNotEmpty()) {
-                        Text(
-                            text = monthlyListeners.value,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = LocalContentColor.current
-                        )
-                        Spacer(modifier = Modifier.height(5.dp))
-                    }
-                    Text(
-                        text = specificArtistFromSpotifyDTO.value.followers.total.toString()
-                            .plus(" Followers"),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = LocalContentColor.current
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Image(
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clip(CircleShape),
+                        painter = painterResource(id = R.drawable.spotify_logo),
+                        contentDescription = ""
                     )
-                }
-            }
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                FilledTonalButton(
-                    onClick = {
-                        if (Build.VERSION.SDK_INT >= 33) {
-                            if (notificationPermissionState.status.shouldShowRationale) {
-                                isPermissionDeniedDialogBoxVisible.value = true
-                                return@FilledTonalButton
-                            }
-                            if (notificationPermissionState.status.isGranted) {
-                                val notificationManager =
-                                    localContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                                val channel = notificationManager.getNotificationChannel("1")
-                                if (channel.importance == NotificationManager.IMPORTANCE_NONE) {
-                                    isPermissionDeniedDialogBoxVisible.value = true
-                                    return@FilledTonalButton
-                                }
-                                isBtmSheetVisible.value = true
-                                bottomSheetType.value = ArtistScreenBtmSheetType.SUBSCRIBE.name
-                                coroutineScope.launch {
-                                    bottomModalSheetState.expand()
-                                }
-                                return@FilledTonalButton
-                            } else {
-                                notificationPermissionState.launchPermissionRequest()
-                                return@FilledTonalButton
-                            }
-                        }
-                        isBtmSheetVisible.value = true
-                        bottomSheetType.value = ArtistScreenBtmSheetType.SUBSCRIBE.name
-                        coroutineScope.launch {
-                            bottomModalSheetState.expand()
-                        }
-                    },
-                    modifier = Modifier.padding(10.dp)
-                ) {
                     Text(
-                        text = "Subscribe",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                }
-                Spacer(modifier = Modifier.width(5.dp))
-                Text(
-                    text = "•",
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Spacer(modifier = Modifier.width(10.dp))
-                FilledTonalIconButton(onClick = { }) {
-                    Icon(imageVector = Icons.Default.Share, contentDescription = "")
-                }
-            }
-        }
-        if (specificArtistFromSpotifyDTO.value.genres.isNotEmpty()) {
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            isGenresExpanded.value = !isGenresExpanded.value
-                        },
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "Genres",
+                        text = "•   ",
                         style = MaterialTheme.typography.titleMedium,
                         color = LocalContentColor.current,
                         modifier = Modifier.padding(start = 10.dp)
                     )
-                    IconButton(onClick = {
-                        isGenresExpanded.value = !isGenresExpanded.value
-                    }) {
-                        Icon(
-                            imageVector = if (!isGenresExpanded.value) Icons.Default.ExpandMore else Icons.Default.ExpandLess,
-                            contentDescription = null
+                    Column(modifier = Modifier.animateContentSize()) {
+                        if (monthlyListeners.value.isNotEmpty()) {
+                            Text(
+                                text = monthlyListeners.value,
+                                style = MaterialTheme.typography.titleMedium,
+                                color = LocalContentColor.current
+                            )
+                            Spacer(modifier = Modifier.height(5.dp))
+                        }
+                        Text(
+                            text = specificArtistFromSpotifyDTO.value.followers.total.toString()
+                                .plus(" Followers"),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = LocalContentColor.current
                         )
                     }
                 }
-                Box(modifier = Modifier.animateContentSize()) {
-                    if (isGenresExpanded.value) {
-                        FlowRow(
-                            modifier = Modifier
-                                .padding(start = 10.dp, bottom = 10.dp)
-                                .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        ) {
-                            specificArtistFromSpotifyDTO.value.genres.forEach {
-                                AssistChip(onClick = {
-                                }, label = {
-                                    Text(
-                                        text = it,
-                                        style = MaterialTheme.typography.titleMedium,
-                                        color = LocalContentColor.current,
-                                        modifier = Modifier.padding(10.dp)
-                                    )
-                                })
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    FilledTonalIconButton(
+                        onClick = {
+                            if (Build.VERSION.SDK_INT >= 33) {
+                                if (notificationPermissionState.status.shouldShowRationale) {
+                                    isPermissionDeniedDialogBoxVisible.value = true
+                                    return@FilledTonalIconButton
+                                }
+                                if (notificationPermissionState.status.isGranted) {
+                                    val notificationManager =
+                                        localContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                                    val channel = notificationManager.getNotificationChannel("1")
+                                    if (channel.importance == NotificationManager.IMPORTANCE_NONE) {
+                                        isPermissionDeniedDialogBoxVisible.value = true
+                                        return@FilledTonalIconButton
+                                    }
+                                    isBtmSheetVisible.value = true
+                                    bottomSheetType.value = ArtistScreenBtmSheetType.SUBSCRIBE.name
+                                    coroutineScope.launch {
+                                        bottomModalSheetState.expand()
+                                    }
+                                    return@FilledTonalIconButton
+                                } else {
+                                    notificationPermissionState.launchPermissionRequest()
+                                    return@FilledTonalIconButton
+                                }
                             }
+                            isBtmSheetVisible.value = true
+                            bottomSheetType.value = ArtistScreenBtmSheetType.SUBSCRIBE.name
+                            coroutineScope.launch {
+                                bottomModalSheetState.expand()
+                            }
+                        },
+                    ) {
+                        Icon(imageVector = Icons.Default.PersonAdd, contentDescription = null)
+                    }
+                    Spacer(modifier = Modifier.width(5.dp))
+                    Text(
+                        text = "•",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Spacer(modifier = Modifier.width(5.dp))
+                    FilledTonalIconButton(onClick = { }) {
+                        Icon(imageVector = Icons.Default.Share, contentDescription = "")
+                    }
+                    Spacer(modifier = Modifier.width(10.dp))
+                }
+            }
+        }
+        if (artistEventsData.value.isNotEmpty()) {
+            stickyHeader {
+                Spacer(
+                    modifier = Modifier
+                        .height(15.dp)
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surface)
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surface)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .clickable(indication = null, interactionSource = remember {
+                                MutableInteractionSource()
+                            }, onClick = {
+                                isEventsModeEnabled.value = false
+                            })
+                            .padding(start = 10.dp, end = 15.dp)
+                            .width(75.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Music",
+                            fontSize = 16.sp,
+                            fontWeight = if (!isEventsModeEnabled.value) FontWeight.Bold else FontWeight.SemiBold,
+                            color = if (!isEventsModeEnabled.value) LocalContentColor.current else LocalContentColor.current.copy(
+                                0.8f
+                            ),
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                        if (!isEventsModeEnabled.value) {
+                            Spacer(
+                                modifier = Modifier
+                                    .padding(top = 5.dp)
+                                    .width(75.dp)
+                                    .height(3.dp)
+                                    .background(MaterialTheme.colorScheme.primary)
+                            )
+                        }
+                    }
+                    Column(
+                        modifier = Modifier
+                            .clickable(indication = null, interactionSource = remember {
+                                MutableInteractionSource()
+                            }, onClick = {
+                                isEventsModeEnabled.value = true
+                            })
+                            .padding(end = 15.dp)
+                            .width(75.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Events",
+                            fontSize = 16.sp,
+                            color = if (isEventsModeEnabled.value) LocalContentColor.current else LocalContentColor.current.copy(
+                                0.8f
+                            ),
+                            fontWeight = if (isEventsModeEnabled.value) FontWeight.Bold else FontWeight.SemiBold,
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                        if (isEventsModeEnabled.value) {
+                            Spacer(
+                                modifier = Modifier
+                                    .padding(top = 5.dp)
+                                    .width(75.dp)
+                                    .height(3.dp)
+                                    .background(MaterialTheme.colorScheme.primary)
+                            )
                         }
                     }
                 }
             }
         }
+        when (isEventsModeEnabled.value) {
+            true -> {
+                items(artistEventsData.value) {
+                    Spacer(modifier = Modifier.height(15.dp))
+                    OnTourInfoComposable(
+                        it, modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 15.dp, end = 15.dp)
+                    )
+                }
+                item {
+                    Spacer(modifier = Modifier.height(15.dp))
+                }
+            }
+
+            else -> {
+                if (specificArtistFromSpotifyDTO.value.genres.isNotEmpty()) {
+                    item {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    isGenresExpanded.value = !isGenresExpanded.value
+                                },
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "Genres",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = LocalContentColor.current,
+                                modifier = Modifier.padding(start = 10.dp)
+                            )
+                            IconButton(onClick = {
+                                isGenresExpanded.value = !isGenresExpanded.value
+                            }) {
+                                Icon(
+                                    imageVector = if (!isGenresExpanded.value) Icons.Default.ExpandMore else Icons.Default.ExpandLess,
+                                    contentDescription = null
+                                )
+                            }
+                        }
+                        Box(modifier = Modifier.animateContentSize()) {
+                            if (isGenresExpanded.value) {
+                                FlowRow(
+                                    modifier = Modifier
+                                        .padding(start = 10.dp, bottom = 10.dp)
+                                        .fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                ) {
+                                    specificArtistFromSpotifyDTO.value.genres.forEach {
+                                        AssistChip(onClick = {}, label = {
+                                            Text(
+                                                text = it,
+                                                style = MaterialTheme.typography.titleMedium,
+                                                color = LocalContentColor.current,
+                                                modifier = Modifier.padding(10.dp)
+                                            )
+                                        })
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
         item {
             Divider(
                 modifier = Modifier.padding(start = 15.dp, bottom = 15.dp, end = 15.dp),
@@ -403,13 +506,12 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
         }
         if (albums.isNotEmpty()) {
             item {
-                Row(
-                    Modifier
-                        .clickable {
-                            onDiscographyItemClick(albums.first())
-                        }
-                        .fillMaxWidth()
-                        .padding(start = 10.dp, bottom = 15.dp, end = 15.dp, top = 15.dp),
+                Row(Modifier
+                    .clickable {
+                        onDiscographyItemClick(albums.first())
+                    }
+                    .fillMaxWidth()
+                    .padding(start = 10.dp, bottom = 15.dp, end = 15.dp, top = 15.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     CoilImage(
@@ -736,6 +838,8 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                     )
                 }
                 Spacer(modifier = Modifier.height(5.dp))
+            }
+        }
             }
         }
     }
