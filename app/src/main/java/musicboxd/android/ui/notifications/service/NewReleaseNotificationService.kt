@@ -1,4 +1,4 @@
-package musicboxd.android.ui.notifications
+package musicboxd.android.ui.notifications.service
 
 import android.app.NotificationManager
 import android.app.PendingIntent

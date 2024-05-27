@@ -1,4 +1,4 @@
-package musicboxd.android.ui.notifications
+package musicboxd.android.ui.notifications.service
 
 import android.annotation.SuppressLint
 import android.content.Context

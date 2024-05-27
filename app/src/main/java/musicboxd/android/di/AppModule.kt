@@ -27,6 +27,8 @@ import musicboxd.android.data.remote.api.spotify.SpotifyAPIService
 import musicboxd.android.data.remote.api.spotify.charts.SpotifyChartsAPIImpl
 import musicboxd.android.data.remote.api.spotify.charts.SpotifyChartsAPIRepo
 import musicboxd.android.data.remote.api.spotify.charts.SpotifyChartsAPIService
+import musicboxd.android.data.remote.scrape.artist.tour.ArtistTourImpl
+import musicboxd.android.data.remote.scrape.artist.tour.ArtistTourRepo
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -154,6 +156,12 @@ object AppModule {
     @Singleton
     fun provideMusicBoxdAPIRepo(musicBoxdAPIService: MusicBoxdAPIService): MusicBoxdAPIRepo {
         return MusicBoxdAPIImpl(musicBoxdAPIService)
+    }
+
+    @Provides
+    @Singleton
+    fun provideArtistConcertsRepo(): ArtistTourRepo {
+        return ArtistTourImpl()
     }
 
     @Provides

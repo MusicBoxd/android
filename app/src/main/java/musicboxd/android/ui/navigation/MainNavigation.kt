@@ -13,6 +13,7 @@ import musicboxd.android.ui.home.HomeScreen
 import musicboxd.android.ui.lists.CreateANewListScreen
 import musicboxd.android.ui.lists.CreateANewListScreenViewModel
 import musicboxd.android.ui.lists.ReorderMusicContentScreen
+import musicboxd.android.ui.notifications.NotificationsScreen
 import musicboxd.android.ui.review.AddANewReviewScreen
 import musicboxd.android.ui.review.AddScreen
 import musicboxd.android.ui.search.SearchScreen
@@ -30,7 +31,7 @@ fun MainNavigation(
 ) {
     NavHost(
         navController = navController,
-        startDestination = NavigationRoutes.PROFILE.name
+        startDestination = NavigationRoutes.CUES.name
     ) {
         composable(route = NavigationRoutes.HOME.name) {
             HomeScreen()
@@ -48,9 +49,7 @@ fun MainNavigation(
             )
         }
         composable(route = NavigationRoutes.CUES.name) {
-            Column {
-
-            }
+            NotificationsScreen()
         }
         composable(route = NavigationRoutes.PROFILE.name) {
             UserProfile(navController)
