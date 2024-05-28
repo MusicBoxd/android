@@ -1,18 +1,11 @@
 package musicboxd.android.data.local.model.review
 
 import androidx.room.Entity
-import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import musicboxd.android.data.local.model.user.User
 import musicboxd.android.data.remote.api.spotify.model.tracklist.Artist
 
 @Entity(
-    tableName = "review", foreignKeys = [ForeignKey(
-        entity = User::class,
-        parentColumns = ["userId"],
-        childColumns = ["reviewedByUserID"],
-        onDelete = ForeignKey.CASCADE
-    )]
+    tableName = "review"
 )
 data class Review(
     @PrimaryKey(autoGenerate = true)
@@ -20,6 +13,7 @@ data class Review(
     val remoteReviewId: Long,
     val releaseType: String,
     val releaseName: String,
+    val releaseImgUrl: String,
     val artists: List<Artist>,
     val spotifyUri: String,
     val isExplicit: Boolean,

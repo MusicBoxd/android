@@ -6,6 +6,7 @@ import androidx.room.TypeConverters
 import musicboxd.android.data.local.model.release.Release
 import musicboxd.android.data.local.model.review.Review
 import musicboxd.android.data.local.model.user.User
+import musicboxd.android.data.local.review.ReviewDao
 import musicboxd.android.data.local.typeconverters.LongListTypeConverter
 import musicboxd.android.data.local.typeconverters.ReleaseToArtistTypeConverter
 import musicboxd.android.data.local.typeconverters.StringListTypeConverter
@@ -17,5 +18,5 @@ import musicboxd.android.data.local.typeconverters.StringListTypeConverter
     StringListTypeConverter::class
 )
 abstract class LocalDatabase : RoomDatabase() {
-
+    abstract fun reviewDao(): ReviewDao
 }

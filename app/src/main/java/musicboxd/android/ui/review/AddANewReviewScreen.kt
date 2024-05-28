@@ -37,6 +37,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -54,7 +55,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.gowtham.ratingbar.RatingBar
 import com.gowtham.ratingbar.RatingBarConfig
@@ -62,6 +62,7 @@ import com.gowtham.ratingbar.RatingBarStyle
 import com.gowtham.ratingbar.StepSize
 import kotlinx.coroutines.flow.collectLatest
 import musicboxd.android.data.remote.api.musicboxd.model.ReviewDTO
+import musicboxd.android.data.remote.api.spotify.model.tracklist.Artist
 import musicboxd.android.ui.common.CoilImage
 import musicboxd.android.ui.details.DetailsViewModel
 import musicboxd.android.ui.theme.fonts
@@ -71,7 +72,7 @@ import musicboxd.android.ui.theme.fonts
 fun AddANewReviewScreen(
     navController: NavController,
     detailsViewModel: DetailsViewModel,
-    reviewScreenViewModel: ReviewScreenViewModel = hiltViewModel()
+    reviewScreenViewModel: ReviewScreenViewModel
 ) {
     val uiChannel = reviewScreenViewModel.reviewScreenUIChannel
     val localContext = LocalContext.current
@@ -85,6 +86,9 @@ fun AddANewReviewScreen(
                 is ReviewScreenUIEvent.Nothing -> TODO()
             }
         }
+    }
+    LaunchedEffect(key1 = Unit) {
+        reviewScreenViewModel.createANewLocalReview(detailsViewModel.albumScreenState)
     }
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
         TopAppBar(navigationIcon = {
@@ -240,7 +244,7 @@ private fun ReviewUI(
         mutableStateOf(null)
     }
     Text(
-        text = "Did you like this album? ${albumLikeStatus.value}",
+        text = "Did you like this album?",
         modifier = Modifier.padding(
             start = 15.dp,
             top = 15.dp,
@@ -253,7 +257,7 @@ private fun ReviewUI(
         albumLikeStatus.value = it
     })
     Text(
-        text = "Would you recommend this to other people? ${albumRecommendationStatus.value}",
+        text = "Would you recommend this to other people?",
         modifier = Modifier.padding(
             start = 15.dp,
             top = 15.dp,
@@ -379,6 +383,49 @@ private fun ReviewUI(
             .padding(start = 15.dp, end = 15.dp, bottom = 15.dp)
     ) {
         Text(text = "Post Review", style = MaterialTheme.typography.titleMedium)
+    }
+
+    val launchEffectKeys = remember(
+        listOf(
+            reviewTitle.value,
+            reviewContent.value,
+            albumLikeStatus.value,
+            albumRecommendationStatus.value,
+            albumRatingValue.floatValue,
+            reviewTags.value
+        )
+    ) {
+        mutableStateListOf(
+            reviewTitle.value,
+            reviewContent.value,
+            albumLikeStatus.value,
+            albumRecommendationStatus.value,
+            albumRatingValue.floatValue,
+            reviewTags.value
+        )
+    }
+
+    LaunchedEffect(
+        key1 = launchEffectKeys.toList()
+    ) {
+        reviewScreenViewModel.updateAnExistingLocalReview(
+            reviewScreenViewModel.currentLocalReview.copy(releaseType = detailsViewModel.albumScreenState.itemType,
+                releaseName = detailsViewModel.albumScreenState.albumTitle,
+                artists = detailsViewModel.albumScreenState.artists.map {
+                    Artist(
+                        it.id,
+                        it.name,
+                        it.uri
+                    )
+                },
+                spotifyUri = detailsViewModel.albumScreenState.itemUri,
+                reviewContent = reviewContent.value,
+                isLiked = albumLikeStatus.value ?: false,
+                isRecommended = albumRecommendationStatus.value ?: false,
+                reviewTitle = reviewTitle.value,
+                rating = albumRatingValue.floatValue,
+                reviewTags = reviewTags.value.split(",").map { it.trim() })
+        )
     }
 }
 

@@ -1,7 +1,6 @@
 package musicboxd.android.ui.review
 
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,9 +10,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Cancel
@@ -30,6 +29,7 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import musicboxd.android.ui.common.CoilImage
 import musicboxd.android.ui.details.DetailsViewModel
@@ -54,12 +55,17 @@ import musicboxd.android.ui.search.SearchScreenViewModel
 fun AddScreen(
     navController: NavController,
     detailsViewModel: DetailsViewModel,
-    searchScreenViewModel: SearchScreenViewModel
+    searchScreenViewModel: SearchScreenViewModel,
+    reviewScreenViewModel: ReviewScreenViewModel
 ) {
     val isSearchActive = rememberSaveable {
         mutableStateOf(false)
     }
+    LaunchedEffect(key1 = Unit) {
+        reviewScreenViewModel.loadLocalReviews()
+    }
     val searchQuery = searchScreenViewModel.searchQuery.collectAsState()
+    val localReviews = reviewScreenViewModel.localReviews.collectAsStateWithLifecycle()
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
         ProvideTextStyle(value = MaterialTheme.typography.titleSmall) {
             SearchBar(colors = SearchBarDefaults.colors(dividerColor = Color.Transparent),
@@ -121,89 +127,97 @@ fun AddScreen(
                 })
         }
     }) {
-        Column(
+
+        LazyColumn(
             Modifier
                 .fillMaxSize()
                 .padding(it)
-                .verticalScroll(rememberScrollState())
         ) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column {
+            item {
+                Text(
+                    text = "Search for albums, tracks, or artists and share your reviews!",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(30.dp),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+            item {
+                Text(
+                    text = "Or...",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 30.dp, end = 30.dp, bottom = 30.dp),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Black,
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+            item {
+                FilledTonalButton(
+                    onClick = { navController.navigate(NavigationRoutes.CREATE_A_NEW_LIST.name) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 30.dp, end = 30.dp)
+                ) {
                     Text(
-                        text = "Search for albums, tracks, or artists and share your reviews!",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(30.dp),
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        style = MaterialTheme.typography.titleMedium
+                        text = "Create a New List",
+                        style = MaterialTheme.typography.titleSmall
                     )
-                    Text(
-                        text = "Or...",
+                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(15.dp))
+                Text(
+                    text = "Drafts",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(15.dp),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Black,
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+
+            items(localReviews.value) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 15.dp, end = 15.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CoilImage(
+                        imgUrl = it.releaseImgUrl,
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 30.dp, end = 30.dp, bottom = 30.dp),
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Black,
-                        style = MaterialTheme.typography.titleMedium
+                            .size(65.dp)
+                            .clip(RoundedCornerShape(15.dp)),
+                        contentDescription = ""
                     )
-                    FilledTonalButton(
-                        onClick = { navController.navigate(NavigationRoutes.CREATE_A_NEW_LIST.name) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 30.dp, end = 30.dp)
-                    ) {
+                    Spacer(modifier = Modifier.width(15.dp))
+                    Column {
                         Text(
-                            text = "Create a New List",
-                            style = MaterialTheme.typography.titleSmall
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(15.dp))
-                    Text(
-                        text = "Drafts",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(15.dp),
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Black,
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 15.dp, end = 15.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        CoilImage(
-                            imgUrl = "https://i.scdn.co/image/ab67616d0000b2735ad8ab24fd5d0988af1f6fb7",
+                            text = it.reviewTitle,
+                            fontSize = 18.sp,
+                            style = MaterialTheme.typography.titleLarge,
                             modifier = Modifier
-                                .size(65.dp)
-                                .clip(RoundedCornerShape(15.dp)),
-                            contentDescription = ""
+                                .fillMaxWidth()
+                                .padding(end = 20.dp),
+                            fontWeight = FontWeight.Black,
+                            maxLines = 3,
+                            overflow = TextOverflow.Ellipsis
                         )
-                        Spacer(modifier = Modifier.width(15.dp))
-                        Column {
-                            Text(
-                                text = "Draft Title",
-                                fontSize = 18.sp,
-                                style = MaterialTheme.typography.titleLarge,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(end = 20.dp),
-                                fontWeight = FontWeight.Black,
-                                maxLines = 3,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            Spacer(modifier = Modifier.height(5.dp))
-                            Text(
-                                text = "Draft Sample",
-                                style = MaterialTheme.typography.titleMedium,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(end = 20.dp),
-                                color = LocalContentColor.current.copy(0.8f)
-                            )
-                        }
+                        Spacer(modifier = Modifier.height(5.dp))
+                        Text(
+                            text = it.reviewContent,
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(end = 20.dp),
+                            color = LocalContentColor.current.copy(0.8f)
+                        )
                     }
                 }
             }

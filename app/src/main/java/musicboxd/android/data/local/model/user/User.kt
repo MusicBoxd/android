@@ -23,5 +23,6 @@ data class User(
     val listenedReleases: List<Long>, // Long = releaseId from `Release` table
     val optedInNotifications: List<String>,
     val accountStatus: String,
-    val lastActive: String
+    val lastActive: String,
+    val savedEvents: List<String>
 )

@@ -365,7 +365,9 @@ fun AlbumDetailScreen(
             }
             item {
                 FilledTonalButton(
-                    onClick = { },
+                    onClick = {
+                        navController.navigate(NavigationRoutes.CREATE_A_NEW_REVIEW.name)
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 15.dp, end = 15.dp, bottom = 15.dp, top = 5.dp)

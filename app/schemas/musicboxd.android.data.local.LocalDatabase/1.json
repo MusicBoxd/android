@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "f0b2299fdbb02491eb7f0c00880b66be",
+    "identityHash": "f20182a26a4cf6a9809c59ba45e41b44",
     "entities": [
       {
         "tableName": "user",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `userProfileName` TEXT NOT NULL, `userName` TEXT NOT NULL, `userBio` TEXT NOT NULL, `userWebsite` TEXT NOT NULL, `profilePicBase64Data` TEXT NOT NULL, `profileHeaderBase64Data` TEXT NOT NULL, `userLocation` TEXT NOT NULL, `userJoinedDate` TEXT NOT NULL, `followingCount` INTEGER NOT NULL, `followersCount` INTEGER NOT NULL, `reviewsCount` INTEGER NOT NULL, `reviews` TEXT NOT NULL, `recommendations` TEXT NOT NULL, `likedReleases` TEXT NOT NULL, `listenedReleases` TEXT NOT NULL, `optedInNotifications` TEXT NOT NULL, `accountStatus` TEXT NOT NULL, `lastActive` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `userProfileName` TEXT NOT NULL, `userName` TEXT NOT NULL, `userBio` TEXT NOT NULL, `userWebsite` TEXT NOT NULL, `profilePicBase64Data` TEXT NOT NULL, `profileHeaderBase64Data` TEXT NOT NULL, `userLocation` TEXT NOT NULL, `userJoinedDate` TEXT NOT NULL, `followingCount` INTEGER NOT NULL, `followersCount` INTEGER NOT NULL, `reviewsCount` INTEGER NOT NULL, `reviews` TEXT NOT NULL, `recommendations` TEXT NOT NULL, `likedReleases` TEXT NOT NULL, `listenedReleases` TEXT NOT NULL, `optedInNotifications` TEXT NOT NULL, `accountStatus` TEXT NOT NULL, `lastActive` TEXT NOT NULL, `savedEvents` TEXT NOT NULL)",
         "fields": [
           {
             "fieldPath": "userId",
@@ -121,6 +121,12 @@
             "columnName": "lastActive",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "savedEvents",
+            "columnName": "savedEvents",
+            "affinity": "TEXT",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -190,7 +196,7 @@
       },
       {
         "tableName": "review",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localReviewId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `remoteReviewId` INTEGER NOT NULL, `releaseType` TEXT NOT NULL, `releaseName` TEXT NOT NULL, `artists` TEXT NOT NULL, `spotifyUri` TEXT NOT NULL, `isExplicit` INTEGER NOT NULL, `reviewContent` TEXT NOT NULL, `isLiked` INTEGER NOT NULL, `isRecommended` INTEGER NOT NULL, `gotAddedIntoAnyLists` INTEGER NOT NULL, `listIds` TEXT, `reviewedByUserID` INTEGER NOT NULL, `reviewedOnDate` TEXT NOT NULL, `reviewTitle` TEXT NOT NULL, `rating` REAL NOT NULL, `timeStamp` INTEGER NOT NULL, `genres` TEXT NOT NULL, `noOfLikesForThisReview` INTEGER NOT NULL, `reviewTags` TEXT NOT NULL, FOREIGN KEY(`reviewedByUserID`) REFERENCES `user`(`userId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localReviewId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `remoteReviewId` INTEGER NOT NULL, `releaseType` TEXT NOT NULL, `releaseName` TEXT NOT NULL, `releaseImgUrl` TEXT NOT NULL, `artists` TEXT NOT NULL, `spotifyUri` TEXT NOT NULL, `isExplicit` INTEGER NOT NULL, `reviewContent` TEXT NOT NULL, `isLiked` INTEGER NOT NULL, `isRecommended` INTEGER NOT NULL, `gotAddedIntoAnyLists` INTEGER NOT NULL, `listIds` TEXT, `reviewedByUserID` INTEGER NOT NULL, `reviewedOnDate` TEXT NOT NULL, `reviewTitle` TEXT NOT NULL, `rating` REAL NOT NULL, `timeStamp` INTEGER NOT NULL, `genres` TEXT NOT NULL, `noOfLikesForThisReview` INTEGER NOT NULL, `reviewTags` TEXT NOT NULL)",
         "fields": [
           {
             "fieldPath": "localReviewId",
@@ -213,6 +219,12 @@
           {
             "fieldPath": "releaseName",
             "columnName": "releaseName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "releaseImgUrl",
+            "columnName": "releaseImgUrl",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -320,25 +332,13 @@
           ]
         },
         "indices": [],
-        "foreignKeys": [
-          {
-            "table": "user",
-            "onDelete": "CASCADE",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "reviewedByUserID"
-            ],
-            "referencedColumns": [
-              "userId"
-            ]
-          }
-        ]
+        "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f0b2299fdbb02491eb7f0c00880b66be')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f20182a26a4cf6a9809c59ba45e41b44')"
     ]
   }
 }
