@@ -1,3 +1,26 @@
 ## Under Development: Initial Release Phase
 
 This project is currently in development and not yet usable. For updates on development progress, plans, and more, check our [Kanban board](https://github.com/orgs/MusicBoxd/projects/1/views/1).
+
+## Screenshots
+
+- These screenshots are from the current build and may be altered, updated, or removed as
+  development continues.
+- The UI displayed here is NOT the final version for the initial release; additional UI changes will
+  be made.
+
+|                                                                                                                               |                                                                                                                               |                                                                                                                               |                                                                                                                               |
+|-------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------|
+| ![MusicBoxd_Screenshot_1717002839](https://github.com/MusicBoxd/android/assets/83284398/8f7d758d-ad1a-4d3a-8a42-51b5951600ec) | ![MusicBoxd_Screenshot_1717002815](https://github.com/MusicBoxd/android/assets/83284398/6b529c6f-7588-4d18-95b9-d332912c893d) | ![MusicBoxd_Screenshot_1717002812](https://github.com/MusicBoxd/android/assets/83284398/2da3f247-1d8e-415e-897a-0727066d85d4) | ![MusicBoxd_Screenshot_1717002632](https://github.com/MusicBoxd/android/assets/83284398/a8b491f6-8e58-4b00-acad-27346dc72968) |
+| ![MusicBoxd_Screenshot_1717002485](https://github.com/MusicBoxd/android/assets/83284398/653b52f8-a00c-48be-b17f-c69b5cd6b990) | ![MusicBoxd_Screenshot_1717002471](https://github.com/MusicBoxd/android/assets/83284398/7baedd93-bcf3-4687-92c9-707a141606df) | ![MusicBoxd_Screenshot_1717002314](https://github.com/MusicBoxd/android/assets/83284398/c476e60d-8db8-4292-9716-fbd26c25bdab) | ![MusicBoxd_Screenshot_1717002262](https://github.com/MusicBoxd/android/assets/83284398/767e32dc-74c3-446d-bbb6-3446f8030ef0) |
+| ![MusicBoxd_Screenshot_1717002208](https://github.com/MusicBoxd/android/assets/83284398/5e46ea6a-395f-4e65-a897-4d73e7cdd690) | ![MusicBoxd_Screenshot_1717002193](https://github.com/MusicBoxd/android/assets/83284398/9c7e2564-3fb3-4e25-a01a-294d45662d58) | ![MusicBoxd_Screenshot_1717002183](https://github.com/MusicBoxd/android/assets/83284398/0227a058-9573-413b-82ab-0d41e67fbb5c) | ![MusicBoxd_Screenshot_1717002143](https://github.com/MusicBoxd/android/assets/83284398/223bd3f5-224d-415a-a578-9bd181c27c37) |
+| ![MusicBoxd_Screenshot_1717002022](https://github.com/MusicBoxd/android/assets/83284398/f8760ae8-733a-4194-be61-be4aa85952e4) | ![MusicBoxd_Screenshot_1716999489](https://github.com/MusicBoxd/android/assets/83284398/b569b3a8-6fbf-43b7-bda4-94095ab1d645) | ![MusicBoxd_Screenshot_1717001947](https://github.com/MusicBoxd/android/assets/83284398/8b079537-1f40-40a0-a42a-b03ce03f0a1d) | ![MusicBoxd_Screenshot_1716999448](https://github.com/MusicBoxd/android/assets/83284398/77a8d7a6-da51-4d1e-8430-5b21a6d8fef9) |
+| ![MusicBoxd_Screenshot_1717001943](https://github.com/MusicBoxd/android/assets/83284398/1529b304-a6ad-4f92-88a2-77be794591a8) | ![MusicBoxd_Screenshot_1716999645](https://github.com/MusicBoxd/android/assets/83284398/6a3087aa-404e-490b-ba27-cf60e99576af) | ![MusicBoxd_Screenshot_1716999628](https://github.com/MusicBoxd/android/assets/83284398/964a1248-2a72-4bf7-bf36-2502b4010165) | ![MusicBoxd_Screenshot_1716999607](https://github.com/MusicBoxd/android/assets/83284398/5555b54b-5790-402b-a6f7-ba27d6d84326) |
+| ![MusicBoxd_Screenshot_1716999583](https://github.com/MusicBoxd/android/assets/83284398/3723e178-4ef9-49f3-b1e8-5c030baa699b) | ![MusicBoxd_Screenshot_1716999548](https://github.com/MusicBoxd/android/assets/83284398/8fb8665c-f0ad-4b82-bf02-4e73fea70cf7) | ![MusicBoxd_Screenshot_1716999544](https://github.com/MusicBoxd/android/assets/83284398/268f01cf-235e-4789-b7d1-8fed8a288092) | ![MusicBoxd_Screenshot_1716999524](https://github.com/MusicBoxd/android/assets/83284398/f759fa09-065f-46f3-9970-eae78d4ac93c) |
+| ![MusicBoxd_Screenshot_1716999507](https://github.com/MusicBoxd/android/assets/83284398/dd516e36-5250-48bc-8355-f716a86074af) |                                                                                                                               |                                                                                                                               |                                                                                                                               |
+
+https://github.com/MusicBoxd/android/assets/83284398/8ce9c425-8101-4165-a20a-c1057515d79d
+
+__________________________
+
+https://github.com/MusicBoxd/android/assets/83284398/789ffce7-b726-410a-b898-acbb58301a8f
