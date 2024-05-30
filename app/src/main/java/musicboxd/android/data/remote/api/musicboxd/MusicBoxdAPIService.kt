@@ -18,7 +18,7 @@ interface MusicBoxdAPIService {
         @Header("Authorization") authorization: String
     ): Response<Unit>
 
-    @POST("api/user/playlist/create")
+    @POST("api/user/playlist/createWithSongs")
     suspend fun postANewList(
         @Body listDTO: ListDTO,
         @Header("Authorization") authorization: String

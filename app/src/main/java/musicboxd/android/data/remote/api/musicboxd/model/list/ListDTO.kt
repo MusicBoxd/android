@@ -11,6 +11,6 @@ data class ListDTO(
     val lisDescription: String,
     @SerialName("uris")
     val spotifyURIs: List<String>,
-    @SerialName("public")
+    @SerialName("publicAccess")
     val isListPublic: Boolean
 )
