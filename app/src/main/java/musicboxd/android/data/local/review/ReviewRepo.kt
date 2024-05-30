@@ -8,6 +8,9 @@ interface ReviewRepo {
     suspend fun updateAnExistingLocalReview(review: Review)
     suspend fun doesThisReviewExistsOnLocalDevice(spotifyUri: String): Boolean
     suspend fun getTheLatestAddedLocalReview(): Review
+    suspend fun getTheLatestAddedLocalReviewAsFlow(): Flow<Review>
+    suspend fun getASpecificLocalReviewAsFlow(spotifyUri: String): Flow<Review>
+
     suspend fun getASpecificLocalReview(spotifyUri: String): Review
 
     fun getAllExistingLocalReviews(): Flow<List<Review>>

@@ -6,8 +6,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import musicboxd.android.TEMP_PASSWORD
@@ -31,6 +31,72 @@ class ReviewScreenViewModel @Inject constructor(
 
     private val _reviewScreenUIChannel = Channel<ReviewScreenUIEvent>()
     val reviewScreenUIChannel = _reviewScreenUIChannel.receiveAsFlow()
+
+    val reviewTitle = MutableStateFlow("")
+    val reviewContent = MutableStateFlow("")
+    val albumLikeStatus = MutableStateFlow(false)
+    val albumRecommendationStatus = MutableStateFlow(false)
+    val albumRatingValue = MutableStateFlow(0f)
+    val reviewTags = MutableStateFlow("")
+    var currentLocalReview = Review(
+        localReviewId = -1,
+        remoteReviewId = 0L,
+        releaseType = "",
+        releaseName = "",
+        artists = listOf(),
+        spotifyUri = "",
+        isExplicit = false,
+        reviewContent = "",
+        isLiked = false,
+        isRecommended = false,
+        gotAddedIntoAnyLists = false,
+        listIds = listOf(),
+        reviewedByUserID = 0L,
+        reviewedOnDate = "",
+        reviewTitle = "",
+        rating = 0.0f,
+        timeStamp = 0L,
+        genres = listOf(),
+        noOfLikesForThisReview = 0L,
+        reviewTags = listOf(),
+        releaseImgUrl = ""
+    )
+
+    init {
+        val reviewData = object {
+            var reviewTitle = ""
+            var reviewContent = ""
+            var isLiked = false
+            var isRecommended = false
+            var tags = ""
+        }
+        viewModelScope.launch {
+            combine(
+                reviewTitle, reviewContent,
+                albumLikeStatus,
+                albumRecommendationStatus, reviewTags
+            ) { title, review, isLiked, isRecommended, tags ->
+                reviewData.reviewTitle = title
+                reviewData.reviewContent = review
+                reviewData.isLiked = isLiked
+                reviewData.isRecommended = isRecommended
+                reviewData.tags = tags
+                return@combine reviewData
+            }.collectLatest {
+                if (currentLocalReview.localReviewId >= 0) {
+                    updateAnExistingLocalReview(
+                        currentLocalReview.copy(
+                            reviewTags = it.tags.split(",").map { it.trim() },
+                            reviewTitle = it.reviewTitle,
+                            reviewContent = it.reviewContent,
+                            isLiked = it.isLiked,
+                            isRecommended = it.isRecommended
+                        )
+                    )
+                }
+            }
+        }
+    }
 
     fun postANewReview(reviewDTO: ReviewDTO) {
         viewModelScope.launch(Dispatchers.Default) {
@@ -58,31 +124,6 @@ class ReviewScreenViewModel @Inject constructor(
             }
         }
     }
-
-    var currentLocalReview = Review(
-        localReviewId = 0L,
-        remoteReviewId = 0L,
-        releaseType = "",
-        releaseName = "",
-        artists = listOf(),
-        spotifyUri = "",
-        isExplicit = false,
-        reviewContent = "",
-        isLiked = false,
-        isRecommended = false,
-        gotAddedIntoAnyLists = false,
-        listIds = listOf(),
-        reviewedByUserID = 0L,
-        reviewedOnDate = "",
-        reviewTitle = "",
-        rating = 0.0f,
-        timeStamp = 0L,
-        genres = listOf(),
-        noOfLikesForThisReview = 0L,
-        reviewTags = listOf(),
-        releaseImgUrl = ""
-    )
-
     fun createANewLocalReview(albumDetailScreenState: AlbumDetailScreenState) {
         viewModelScope.launch {
             if (!reviewRepo.doesThisReviewExistsOnLocalDevice(albumDetailScreenState.itemUri)) {
@@ -107,7 +148,7 @@ class ReviewScreenViewModel @Inject constructor(
                         listIds = listOf(),
                         reviewedByUserID = 0L,
                         reviewedOnDate = "",
-                        reviewTitle = "",
+                        reviewTitle = reviewTitle.value,
                         rating = 0.0f,
                         timeStamp = 0L,
                         genres = listOf(),
@@ -116,25 +157,49 @@ class ReviewScreenViewModel @Inject constructor(
                         releaseImgUrl = albumDetailScreenState.albumImgUrl
                     )
                 )
-                currentLocalReview = reviewRepo.getTheLatestAddedLocalReview()
-            } else {
-                currentLocalReview =
-                    reviewRepo.getASpecificLocalReview(albumDetailScreenState.itemUri)
+                this.launch {
+                    reviewRepo.getTheLatestAddedLocalReview().let {
+                        reviewTitle.value = it.reviewTitle
+                        reviewContent.value = it.reviewContent
+                        albumLikeStatus.value = it.isLiked
+                        albumRecommendationStatus.value = it.isRecommended
+                        albumRatingValue.value = it.rating
+                        reviewTags.value =
+                            it.reviewTags.joinToString { it }.trim()
+                    }
+                }
+                this.launch {
+                    reviewRepo.getTheLatestAddedLocalReviewAsFlow().collectLatest {
+                        currentLocalReview = it
+                    }
+                }
             }
         }
     }
 
-    private val _localReviews = MutableStateFlow(emptyList<Review>())
-    val localReviews = _localReviews.asStateFlow()
-
-    fun loadLocalReviews() {
+    fun loadExistingLocalReview(itemUri: String) {
         viewModelScope.launch {
-            reviewRepo.getAllExistingLocalReviews().collectLatest {
-                _localReviews.emit(it)
+            if (reviewRepo.doesThisReviewExistsOnLocalDevice(itemUri)) {
+                this.launch {
+                    reviewRepo.getASpecificLocalReview(itemUri).let {
+                        reviewTitle.value = it.reviewTitle
+                        reviewContent.value = it.reviewContent
+                        albumLikeStatus.value = it.isLiked
+                        albumRecommendationStatus.value = it.isRecommended
+                        albumRatingValue.value = it.rating
+                        reviewTags.value =
+                            it.reviewTags.joinToString { it }.trim()
+                    }
+                }
+                this.launch {
+                    reviewRepo.getASpecificLocalReviewAsFlow(itemUri)
+                        .collectLatest {
+                            currentLocalReview = it
+                        }
+                }
             }
         }
     }
-
     fun updateAnExistingLocalReview(review: Review) {
         viewModelScope.launch {
             reviewRepo.updateAnExistingLocalReview(review)

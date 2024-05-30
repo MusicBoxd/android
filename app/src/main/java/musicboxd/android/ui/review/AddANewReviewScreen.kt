@@ -36,8 +36,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -55,6 +53,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.gowtham.ratingbar.RatingBar
 import com.gowtham.ratingbar.RatingBarConfig
@@ -62,7 +62,6 @@ import com.gowtham.ratingbar.RatingBarStyle
 import com.gowtham.ratingbar.StepSize
 import kotlinx.coroutines.flow.collectLatest
 import musicboxd.android.data.remote.api.musicboxd.model.ReviewDTO
-import musicboxd.android.data.remote.api.spotify.model.tracklist.Artist
 import musicboxd.android.ui.common.CoilImage
 import musicboxd.android.ui.details.DetailsViewModel
 import musicboxd.android.ui.theme.fonts
@@ -72,10 +71,18 @@ import musicboxd.android.ui.theme.fonts
 fun AddANewReviewScreen(
     navController: NavController,
     detailsViewModel: DetailsViewModel,
-    reviewScreenViewModel: ReviewScreenViewModel
 ) {
+    val reviewScreenViewModel: ReviewScreenViewModel = hiltViewModel()
     val uiChannel = reviewScreenViewModel.reviewScreenUIChannel
     val localContext = LocalContext.current
+    LaunchedEffect(key1 = reviewScreenViewModel.reviewTitle.collectAsStateWithLifecycle().value) {
+        if (reviewScreenViewModel.currentLocalReview.localReviewId == (-1).toLong() && reviewScreenViewModel.reviewTitle.value.isNotEmpty()) {
+            reviewScreenViewModel.createANewLocalReview(detailsViewModel.albumScreenState)
+        }
+    }
+    LaunchedEffect(key1 = Unit) {
+        reviewScreenViewModel.loadExistingLocalReview(detailsViewModel.albumScreenState.itemUri)
+    }
     LaunchedEffect(key1 = Unit) {
         uiChannel.collectLatest {
             when (it) {
@@ -86,9 +93,6 @@ fun AddANewReviewScreen(
                 is ReviewScreenUIEvent.Nothing -> TODO()
             }
         }
-    }
-    LaunchedEffect(key1 = Unit) {
-        reviewScreenViewModel.createANewLocalReview(detailsViewModel.albumScreenState)
     }
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
         TopAppBar(navigationIcon = {
@@ -161,14 +165,8 @@ private fun ReviewUI(
             )
         }
     }
-    val reviewTitle = rememberSaveable {
-        mutableStateOf("")
-    }
     val reviewTitleInteractionSource = remember {
         MutableInteractionSource()
-    }
-    val reviewContent = rememberSaveable {
-        mutableStateOf("")
     }
     val reviewContentInteractionSource = remember {
         MutableInteractionSource()
@@ -185,9 +183,9 @@ private fun ReviewUI(
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 15.dp, end = 15.dp),
-        value = reviewTitle.value,
+        value = reviewScreenViewModel.reviewTitle.collectAsStateWithLifecycle().value,
         onValueChange = { newValue ->
-            reviewTitle.value = newValue
+            reviewScreenViewModel.reviewTitle.value = newValue
         },
         textStyle = TextStyle(
             fontFamily = fonts,
@@ -218,9 +216,9 @@ private fun ReviewUI(
             .fillMaxWidth()
             .defaultMinSize(minHeight = 100.dp)
             .padding(start = 15.dp, end = 15.dp),
-        value = reviewContent.value,
+        value = reviewScreenViewModel.reviewContent.collectAsStateWithLifecycle().value,
         onValueChange = { newValue ->
-            reviewContent.value = newValue
+            reviewScreenViewModel.reviewContent.value = newValue
         },
         textStyle = TextStyle(
             fontFamily = fonts,
@@ -237,12 +235,6 @@ private fun ReviewUI(
             0.65f
         )
     )
-    val albumLikeStatus: MutableState<Boolean?> = rememberSaveable {
-        mutableStateOf(null)
-    }
-    val albumRecommendationStatus: MutableState<Boolean?> = rememberSaveable {
-        mutableStateOf(null)
-    }
     Text(
         text = "Did you like this album?",
         modifier = Modifier.padding(
@@ -253,8 +245,11 @@ private fun ReviewUI(
         ),
         style = MaterialTheme.typography.titleMedium
     )
-    BooleanPreferenceGroup(preference = {
-        albumLikeStatus.value = it
+    BooleanPreferenceGroup(
+        defaultValue = rememberSaveable(reviewScreenViewModel.albumLikeStatus.collectAsStateWithLifecycle().value) {
+            mutableStateOf(reviewScreenViewModel.albumLikeStatus.value)
+        }, preference = {
+            reviewScreenViewModel.albumLikeStatus.value = it.value == true
     })
     Text(
         text = "Would you recommend this to other people?",
@@ -266,12 +261,11 @@ private fun ReviewUI(
         ),
         style = MaterialTheme.typography.titleMedium
     )
-    BooleanPreferenceGroup(preference = {
-        albumRecommendationStatus.value = it
+    BooleanPreferenceGroup(defaultValue = rememberSaveable(reviewScreenViewModel.albumRecommendationStatus.collectAsStateWithLifecycle().value) {
+        mutableStateOf(reviewScreenViewModel.albumRecommendationStatus.value)
+    }, preference = {
+        reviewScreenViewModel.albumRecommendationStatus.value = it.value == true
     })
-    val albumRatingValue = rememberSaveable {
-        mutableFloatStateOf(0f)
-    }
     Text(
         text = "How much would you rate this record?",
         modifier = Modifier.padding(
@@ -288,21 +282,22 @@ private fun ReviewUI(
             config = RatingBarConfig().inactiveColor(MaterialTheme.colorScheme.outline)
                 .activeColor(MaterialTheme.colorScheme.primary).padding(5.dp)
                 .stepSize(StepSize.HALF).style(RatingBarStyle.HighLighted),
-            value = albumRatingValue.floatValue,
+            value = reviewScreenViewModel.albumRatingValue.collectAsStateWithLifecycle().value,
             onValueChange = {
-                albumRatingValue.floatValue = it
+                reviewScreenViewModel.albumRatingValue.value = it
             },
             onRatingChanged = {
-
+                reviewScreenViewModel.updateAnExistingLocalReview(
+                    reviewScreenViewModel.currentLocalReview.copy(
+                        rating = it
+                    )
+                )
             })
         Spacer(modifier = Modifier.width(5.dp))
         Text(
-            text = "${albumRatingValue.floatValue}/5.0",
+            text = "${reviewScreenViewModel.albumRatingValue.collectAsStateWithLifecycle().value}/5.0",
             style = MaterialTheme.typography.titleMedium,
         )
-    }
-    val reviewTags = rememberSaveable {
-        mutableStateOf("")
     }
     val reviewTagsInteractionSource = remember {
         MutableInteractionSource()
@@ -331,9 +326,9 @@ private fun ReviewUI(
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 15.dp, end = 15.dp),
-        value = reviewTags.value,
+        value = reviewScreenViewModel.reviewTags.collectAsStateWithLifecycle().value,
         onValueChange = { newValue ->
-            reviewTags.value = newValue
+            reviewScreenViewModel.reviewTags.value = newValue
         },
         textStyle = TextStyle(
             fontFamily = fonts,
@@ -373,9 +368,9 @@ private fun ReviewUI(
         onClick = {
             reviewScreenViewModel.postANewReview(
                 ReviewDTO(
-                    reviewContent = reviewContent.value,
+                    reviewContent = reviewScreenViewModel.reviewContent.value,
                     albumId = selectedAlbumData.itemUri,
-                    reviewRating = albumRatingValue.floatValue
+                    reviewRating = reviewScreenViewModel.albumRatingValue.value
                 )
             )
         }, modifier = Modifier
@@ -384,62 +379,21 @@ private fun ReviewUI(
     ) {
         Text(text = "Post Review", style = MaterialTheme.typography.titleMedium)
     }
-
-    val launchEffectKeys = remember(
-        listOf(
-            reviewTitle.value,
-            reviewContent.value,
-            albumLikeStatus.value,
-            albumRecommendationStatus.value,
-            albumRatingValue.floatValue,
-            reviewTags.value
-        )
-    ) {
-        mutableStateListOf(
-            reviewTitle.value,
-            reviewContent.value,
-            albumLikeStatus.value,
-            albumRecommendationStatus.value,
-            albumRatingValue.floatValue,
-            reviewTags.value
-        )
-    }
-
-    LaunchedEffect(
-        key1 = launchEffectKeys.toList()
-    ) {
-        reviewScreenViewModel.updateAnExistingLocalReview(
-            reviewScreenViewModel.currentLocalReview.copy(releaseType = detailsViewModel.albumScreenState.itemType,
-                releaseName = detailsViewModel.albumScreenState.albumTitle,
-                artists = detailsViewModel.albumScreenState.artists.map {
-                    Artist(
-                        it.id,
-                        it.name,
-                        it.uri
-                    )
-                },
-                spotifyUri = detailsViewModel.albumScreenState.itemUri,
-                reviewContent = reviewContent.value,
-                isLiked = albumLikeStatus.value ?: false,
-                isRecommended = albumRecommendationStatus.value ?: false,
-                reviewTitle = reviewTitle.value,
-                rating = albumRatingValue.floatValue,
-                reviewTags = reviewTags.value.split(",").map { it.trim() })
-        )
-    }
 }
 
 @Composable
-fun BooleanPreferenceGroup(preference: (Boolean?) -> Unit) {
-    val firstBooleanPref = rememberSaveable {
-        mutableStateOf(false)
+fun BooleanPreferenceGroup(
+    defaultValue: MutableState<Boolean> = mutableStateOf(false),
+    preference: (MutableState<Boolean?>) -> Unit
+) {
+    val secondBooleanPref = rememberSaveable(defaultValue.value) {
+        mutableStateOf(!defaultValue.value)
     }
-    val secondBooleanPref = rememberSaveable {
-        mutableStateOf(false)
-    }
-    preference(if (!firstBooleanPref.value && !secondBooleanPref.value) null else firstBooleanPref.value)
+    preference(rememberSaveable(defaultValue.value, secondBooleanPref.value) {
+        mutableStateOf(if (!defaultValue.value && !secondBooleanPref.value) null else defaultValue.value)
+    })
     val firstPrefColor =
-        if (firstBooleanPref.value) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
+        if (defaultValue.value) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
     val secondPrefColor =
         if (secondBooleanPref.value) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
 
@@ -448,7 +402,7 @@ fun BooleanPreferenceGroup(preference: (Boolean?) -> Unit) {
         OutlinedButton(
             shape = RoundedCornerShape(topStart = 15.dp, bottomStart = 15.dp),
             onClick = {
-                firstBooleanPref.value = true
+                defaultValue.value = true
                 secondBooleanPref.value = false
             },
             colors = ButtonDefaults.outlinedButtonColors(containerColor = firstPrefColor)
@@ -456,14 +410,14 @@ fun BooleanPreferenceGroup(preference: (Boolean?) -> Unit) {
             Text(
                 text = "Yes",
                 style = MaterialTheme.typography.titleLarge,
-                color = if (firstBooleanPref.value) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+                color = if (defaultValue.value) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
             )
         }
         Spacer(modifier = Modifier.width(5.dp))
         OutlinedButton(
             shape = RoundedCornerShape(topEnd = 15.dp, bottomEnd = 15.dp),
             onClick = {
-                firstBooleanPref.value = false
+                defaultValue.value = false
                 secondBooleanPref.value = true
             },
             colors = ButtonDefaults.outlinedButtonColors(containerColor = secondPrefColor)

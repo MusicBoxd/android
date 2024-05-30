@@ -342,7 +342,7 @@ fun CreateANewListScreen(
                 GridItemSpan(this.maxLineSpan)
             }) {
                 BooleanPreferenceGroup {
-                    it?.let {
+                    it.value?.let {
                         isANumberedList.value = it
                     }
                 }

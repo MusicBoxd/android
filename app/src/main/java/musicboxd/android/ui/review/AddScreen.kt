@@ -1,6 +1,7 @@
 package musicboxd.android.ui.review
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -41,10 +42,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import kotlinx.coroutines.flow.flow
+import musicboxd.android.data.remote.api.spotify.model.album.Artist
+import musicboxd.android.data.remote.api.spotify.model.album.ExternalUrlsX
 import musicboxd.android.ui.common.CoilImage
 import musicboxd.android.ui.details.DetailsViewModel
+import musicboxd.android.ui.details.album.AlbumDetailScreenState
 import musicboxd.android.ui.navigation.NavigationRoutes
 import musicboxd.android.ui.search.SearchContent
 import musicboxd.android.ui.search.SearchScreenUiEvent
@@ -55,17 +61,17 @@ import musicboxd.android.ui.search.SearchScreenViewModel
 fun AddScreen(
     navController: NavController,
     detailsViewModel: DetailsViewModel,
-    searchScreenViewModel: SearchScreenViewModel,
-    reviewScreenViewModel: ReviewScreenViewModel
+    searchScreenViewModel: SearchScreenViewModel
 ) {
     val isSearchActive = rememberSaveable {
         mutableStateOf(false)
     }
+    val addScreenViewModel: AddScreenViewModel = hiltViewModel()
     LaunchedEffect(key1 = Unit) {
-        reviewScreenViewModel.loadLocalReviews()
+        addScreenViewModel.loadLocalReviews()
     }
     val searchQuery = searchScreenViewModel.searchQuery.collectAsState()
-    val localReviews = reviewScreenViewModel.localReviews.collectAsStateWithLifecycle()
+    val localReviews = addScreenViewModel.localReviews.collectAsStateWithLifecycle()
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
         ProvideTextStyle(value = MaterialTheme.typography.titleSmall) {
             SearchBar(colors = SearchBarDefaults.colors(dividerColor = Color.Transparent),
@@ -127,7 +133,6 @@ fun AddScreen(
                 })
         }
     }) {
-
         LazyColumn(
             Modifier
                 .fillMaxSize()
@@ -186,7 +191,30 @@ fun AddScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 15.dp, end = 15.dp),
+                        .padding(start = 15.dp, end = 15.dp)
+                        .clickable {
+                            detailsViewModel.albumScreenState = AlbumDetailScreenState(
+                                covertArtImgUrl = flow { },
+                                albumImgUrl = it.releaseImgUrl,
+                                albumTitle = it.releaseName,
+                                artists = it.artists.map {
+                                    Artist(
+                                        external_urls = ExternalUrlsX(spotify = ""),
+                                        href = "",
+                                        id = it.id,
+                                        name = it.name,
+                                        type = "",
+                                        uri = it.uri
+                                    )
+                                },
+                                albumWiki = flow { },
+                                releaseDate = "",
+                                trackList = flow { },
+                                itemType = it.releaseType,
+                                itemUri = it.spotifyUri
+                            )
+                            navController.navigate(NavigationRoutes.CREATE_A_NEW_REVIEW.name)
+                        },
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     CoilImage(
@@ -206,7 +234,7 @@ fun AddScreen(
                                 .fillMaxWidth()
                                 .padding(end = 20.dp),
                             fontWeight = FontWeight.Black,
-                            maxLines = 3,
+                            maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
                         Spacer(modifier = Modifier.height(5.dp))
@@ -216,11 +244,15 @@ fun AddScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(end = 20.dp),
-                            color = LocalContentColor.current.copy(0.8f)
+                            color = LocalContentColor.current.copy(0.8f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }
+                Spacer(modifier = Modifier.height(15.dp))
             }
+            item { Spacer(modifier = Modifier.height(100.dp)) }
         }
     }
 }

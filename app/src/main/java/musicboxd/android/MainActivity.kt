@@ -76,7 +76,7 @@ class MainActivity : ComponentActivity() {
                                 navController = navController,
                                 detailsViewModel,
                                 editProfileViewModel,
-                                createANewListScreenViewModel
+                                createANewListScreenViewModel,
                             )
                         }
                     }

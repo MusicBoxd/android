@@ -22,6 +22,14 @@ class ReviewImpl @Inject constructor(private val localDatabase: LocalDatabase) :
         return localDatabase.reviewDao().getTheLatestAddedLocalReview()
     }
 
+    override suspend fun getTheLatestAddedLocalReviewAsFlow(): Flow<Review> {
+        return localDatabase.reviewDao().getTheLatestAddedLocalReviewAsFlow()
+    }
+
+    override suspend fun getASpecificLocalReviewAsFlow(spotifyUri: String): Flow<Review> {
+        return localDatabase.reviewDao().getASpecificLocalReviewAsFlow(spotifyUri)
+    }
+
     override suspend fun getASpecificLocalReview(spotifyUri: String): Review {
         return localDatabase.reviewDao().getASpecificLocalReview(spotifyUri)
     }

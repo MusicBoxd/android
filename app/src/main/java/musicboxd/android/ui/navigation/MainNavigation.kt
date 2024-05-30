@@ -2,7 +2,6 @@ package musicboxd.android.ui.navigation
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -17,7 +16,6 @@ import musicboxd.android.ui.lists.ReorderMusicContentScreen
 import musicboxd.android.ui.notifications.NotificationsScreen
 import musicboxd.android.ui.review.AddANewReviewScreen
 import musicboxd.android.ui.review.AddScreen
-import musicboxd.android.ui.review.ReviewScreenViewModel
 import musicboxd.android.ui.search.SearchScreen
 import musicboxd.android.ui.search.charts.ChartsScreen
 import musicboxd.android.ui.user.profile.UserProfile
@@ -29,8 +27,7 @@ fun MainNavigation(
     navController: NavHostController,
     detailsViewModel: DetailsViewModel,
     editProfileViewModel: EditProfileViewModel,
-    createANewListScreenViewModel: CreateANewListScreenViewModel,
-    reviewScreenViewModel: ReviewScreenViewModel = hiltViewModel()
+    createANewListScreenViewModel: CreateANewListScreenViewModel
 ) {
     NavHost(
         navController = navController,
@@ -48,8 +45,7 @@ fun MainNavigation(
             AddScreen(
                 navController = navController,
                 detailsViewModel = detailsViewModel,
-                searchScreenViewModel = detailsViewModel,
-                reviewScreenViewModel = reviewScreenViewModel
+                searchScreenViewModel = detailsViewModel
             )
         }
         composable(route = NavigationRoutes.CUES.name) {
@@ -85,7 +81,7 @@ fun MainNavigation(
             CreateANewListScreen(detailsViewModel, navController, createANewListScreenViewModel)
         }
         composable(route = NavigationRoutes.CREATE_A_NEW_REVIEW.name) {
-            AddANewReviewScreen(navController, detailsViewModel, reviewScreenViewModel)
+            AddANewReviewScreen(navController, detailsViewModel)
         }
         composable(route = NavigationRoutes.REORDER_MUSIC_CONTENT_SCREEN.name) {
             ReorderMusicContentScreen(createANewListScreenViewModel)
