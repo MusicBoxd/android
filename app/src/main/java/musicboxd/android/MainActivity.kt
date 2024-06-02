@@ -7,7 +7,10 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.rememberBottomSheetScaffoldState
+import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
@@ -19,6 +22,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import dagger.hilt.android.AndroidEntryPoint
 import musicboxd.android.data.RefreshReleasesWorker
 import musicboxd.android.ui.details.DetailsViewModel
@@ -65,6 +69,13 @@ class MainActivity : ComponentActivity() {
             val editProfileViewModel: EditProfileViewModel = viewModel()
             val createANewListScreenViewModel: CreateANewListScreenViewModel = hiltViewModel()
             MusicBoxdTheme {
+                val systemUiController = rememberSystemUiController()
+                systemUiController.setStatusBarColor(colorScheme.surface)
+                systemUiController.setNavigationBarColor(
+                    colorScheme.surfaceColorAtElevation(
+                        NavigationBarDefaults.Elevation
+                    )
+                )
                 Scaffold(Modifier.fillMaxSize()) {
                     androidx.compose.material.BottomSheetScaffold(sheetPeekHeight = 0.dp,
                         scaffoldState = scaffoldState,

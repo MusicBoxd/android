@@ -40,6 +40,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toOffset
@@ -97,16 +101,18 @@ fun ReorderMusicContentScreen(createANewListScreenViewModel: CreateANewListScree
                             Text(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(start = 15.dp, top = 15.dp, end = 15.dp),
-                                style = MaterialTheme.typography.titleSmall,
-                                text = "Remove your finger for adding"
-                            )
-                            Text(
-                                modifier = Modifier
-                                    .fillMaxWidth()
                                     .padding(start = 15.dp, top = 5.dp, end = 15.dp),
-                                style = MaterialTheme.typography.titleLarge,
-                                text = "${list[draggingIndex.intValue]?.albumTitle} in the position of $tTile"
+                                style = MaterialTheme.typography.titleSmall,
+                                text = buildAnnotatedString {
+                                    append("Lift your finger to place ")
+                                    withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
+                                        append(list[draggingIndex.intValue].albumTitle)
+                                    }
+                                    append(" in the position of ")
+                                    withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
+                                        append(tTile)
+                                    }
+                                }
                             )
                         }
                     }
@@ -120,7 +126,7 @@ fun ReorderMusicContentScreen(createANewListScreenViewModel: CreateANewListScree
                     Icon(imageVector = Icons.Default.Info, contentDescription = "")
                     Spacer(modifier = Modifier.width(15.dp))
                     Text(
-                        text = "Long press and drag the item to rearrange the order of this list, changes will be authentically made in the list the moment you remove your finger",
+                        text = "Press and hold to drag the item and rearrange the list. Changes are saved when you lift your finger.",
                         style = MaterialTheme.typography.titleSmall
                     )
                 }

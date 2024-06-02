@@ -37,9 +37,9 @@ class CreateANewListScreenViewModel @Inject constructor(
 
     val newListTitle = MutableStateFlow("")
     val newListDescription = MutableStateFlow("")
-    val isAPublicList = MutableStateFlow(false)
+    val isAPublicList = MutableStateFlow(true)
 
-    val isANumberedList = MutableStateFlow(false)
+    val isANumberedList = MutableStateFlow(true)
 
     private var currentModifyingList = List(
         localId = -1,

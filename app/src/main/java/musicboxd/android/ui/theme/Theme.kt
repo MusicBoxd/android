@@ -2,12 +2,9 @@ package musicboxd.android.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 private val lightScheme = lightColorScheme(
     primary = primaryLight,
@@ -206,13 +203,6 @@ fun MusicBoxdTheme(
         darkTheme -> darkScheme
         else -> lightScheme
     }
-    val systemUiController = rememberSystemUiController()
-    systemUiController.setStatusBarColor(MaterialTheme.colorScheme.surface)
-    systemUiController.setNavigationBarColor(
-        colorScheme.surfaceColorAtElevation(
-            NavigationBarDefaults.Elevation
-        )
-    )
 
     MaterialTheme(
         colorScheme = colorScheme,

@@ -1,10 +1,8 @@
 package musicboxd.android.ui.review
 
 import android.widget.Toast
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
@@ -16,34 +14,32 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Recommend
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Recommend
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -110,13 +106,33 @@ fun AddANewReviewScreen(
 
             )
         })
+    }, bottomBar = {
+        BottomAppBar {
+            Button(
+                onClick = {
+                    reviewScreenViewModel.postANewReview(
+                        ReviewDTO(
+                            reviewContent = reviewScreenViewModel.reviewContent.value,
+                            itemUri = detailsViewModel.albumScreenState.itemUri,
+                            reviewRating = reviewScreenViewModel.albumRatingValue.value,
+                            reviewTitle = reviewScreenViewModel.reviewTitle.value
+                        )
+                    )
+                }, modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(15.dp)
+            ) {
+                Text(text = "Post Review", style = MaterialTheme.typography.titleSmall)
+            }
+        }
     }) {
         Column(
             Modifier
                 .fillMaxSize()
+                .padding(it)
                 .verticalScroll(rememberScrollState())
         ) {
-            ReviewUI(detailsViewModel = detailsViewModel, it, reviewScreenViewModel)
+            ReviewUI(detailsViewModel = detailsViewModel, reviewScreenViewModel)
         }
     }
 }
@@ -124,14 +140,15 @@ fun AddANewReviewScreen(
 @Composable
 private fun ReviewUI(
     detailsViewModel: DetailsViewModel,
-    paddingValues: PaddingValues,
     reviewScreenViewModel: ReviewScreenViewModel
 ) {
     val selectedAlbumData = detailsViewModel.albumScreenState
+    val albumLikeStatus = reviewScreenViewModel.albumLikeStatus.collectAsStateWithLifecycle()
+    val albumRecommendationStatus =
+        reviewScreenViewModel.albumRecommendationStatus.collectAsStateWithLifecycle()
     Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(paddingValues),
+            .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
         CoilImage(
@@ -165,21 +182,86 @@ private fun ReviewUI(
             )
         }
     }
-    val reviewTitleInteractionSource = remember {
-        MutableInteractionSource()
-    }
-    val reviewContentInteractionSource = remember {
-        MutableInteractionSource()
-    }
-    Text(
-        text = "Review Title",
-        modifier = Modifier.padding(15.dp),
-        style = MaterialTheme.typography.titleMedium
-    )
+    Row(
+        verticalAlignment = Alignment.CenterVertically, modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 15.dp, end = 15.dp)
+    ) {
+        Row(verticalAlignment = Alignment.Bottom) {
+            if (albumLikeStatus.value) {
+                FilledTonalIconButton(onClick = {
+                    reviewScreenViewModel.albumLikeStatus.value =
+                        !reviewScreenViewModel.albumLikeStatus.value
+                }) {
+                    Icon(
+                        imageVector = Icons.Filled.Favorite,
+                        contentDescription = ""
+                    )
+                }
+            } else {
+                IconButton(onClick = {
+                    reviewScreenViewModel.albumLikeStatus.value =
+                        !reviewScreenViewModel.albumLikeStatus.value
+                }) {
+                    Icon(
+                        imageVector = Icons.Outlined.FavoriteBorder,
+                        contentDescription = ""
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.width(5.dp))
+            if (albumRecommendationStatus.value) {
+                FilledTonalIconButton(onClick = {
+                    reviewScreenViewModel.albumRecommendationStatus.value =
+                        !reviewScreenViewModel.albumRecommendationStatus.value
+                }) {
+                    Icon(
+                        imageVector = Icons.Filled.Recommend,
+                        contentDescription = ""
+                    )
+                }
+            } else {
+                IconButton(onClick = {
+                    reviewScreenViewModel.albumRecommendationStatus.value =
+                        !reviewScreenViewModel.albumRecommendationStatus.value
+                }) {
+                    Icon(
+                        imageVector = Icons.Outlined.Recommend,
+                        contentDescription = ""
+                    )
+                }
+            }
+        }
+        Spacer(modifier = Modifier.width(10.dp))
+        Spacer(
+            modifier = Modifier
+                .width(1.5.dp)
+                .height(15.dp)
+                .background(MaterialTheme.colorScheme.onSurface)
+        )
+        Spacer(modifier = Modifier.width(5.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            RatingBar(
+                modifier = Modifier.padding(start = 15.dp),
+                config = RatingBarConfig().inactiveColor(MaterialTheme.colorScheme.outline)
+                    .activeColor(MaterialTheme.colorScheme.primary).padding(5.dp)
+                    .stepSize(StepSize.HALF).style(RatingBarStyle.HighLighted),
+                value = reviewScreenViewModel.albumRatingValue.collectAsStateWithLifecycle().value,
+                onValueChange = {
+                    reviewScreenViewModel.albumRatingValue.value = it
+                },
+                onRatingChanged = {
+                    reviewScreenViewModel.updateAnExistingLocalReview(
+                        reviewScreenViewModel.currentLocalReview.copy(
+                            rating = it
+                        )
+                    )
+                })
+        }
 
-    BasicTextField(
-        interactionSource = reviewTitleInteractionSource,
-        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+    }
+    Spacer(modifier = Modifier.height(15.dp))
+    TextField(
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 15.dp, end = 15.dp),
@@ -192,26 +274,16 @@ private fun ReviewUI(
             fontWeight = FontWeight.Normal,
             fontSize = 16.sp,
             color = LocalContentColor.current
-        )
+        ),
+        label = {
+            Text(
+                text = "Review Title",
+                style = MaterialTheme.typography.titleSmall
+            )
+        }
     )
-    Divider(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 15.dp, end = 15.dp, top = 5.dp),
-        color = if (reviewTitleInteractionSource.collectIsFocusedAsState().value) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(
-            0.65f
-        )
-    )
-
-    Text(
-        text = "Review",
-        modifier = Modifier.padding(15.dp),
-        style = MaterialTheme.typography.titleMedium
-    )
-
-    BasicTextField(
-        interactionSource = reviewContentInteractionSource,
-        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+    Spacer(modifier = Modifier.height(15.dp))
+    TextField(
         modifier = Modifier
             .fillMaxWidth()
             .defaultMinSize(minHeight = 100.dp)
@@ -225,212 +297,37 @@ private fun ReviewUI(
             fontWeight = FontWeight.Normal,
             fontSize = 16.sp,
             color = LocalContentColor.current
-        )
+        ),
+        label = {
+            Text(
+                text = "Review",
+                style = MaterialTheme.typography.titleSmall
+            )
+        }
     )
     Divider(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 15.dp, end = 15.dp, top = 5.dp),
-        color = if (reviewContentInteractionSource.collectIsFocusedAsState().value) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(
-            0.65f
-        )
-    )
-    Text(
-        text = "Did you like this album?",
-        modifier = Modifier.padding(
-            start = 15.dp,
-            top = 15.dp,
-            bottom = 10.dp,
-            end = 15.dp
-        ),
-        style = MaterialTheme.typography.titleMedium
-    )
-    BooleanPreferenceGroup(
-        defaultValue = rememberSaveable(reviewScreenViewModel.albumLikeStatus.collectAsStateWithLifecycle().value) {
-            mutableStateOf(reviewScreenViewModel.albumLikeStatus.value)
-        }, preference = {
-            reviewScreenViewModel.albumLikeStatus.value = it.value == true
-    })
-    Text(
-        text = "Would you recommend this to other people?",
-        modifier = Modifier.padding(
-            start = 15.dp,
-            top = 15.dp,
-            bottom = 10.dp,
-            end = 15.dp
-        ),
-        style = MaterialTheme.typography.titleMedium
-    )
-    BooleanPreferenceGroup(defaultValue = rememberSaveable(reviewScreenViewModel.albumRecommendationStatus.collectAsStateWithLifecycle().value) {
-        mutableStateOf(reviewScreenViewModel.albumRecommendationStatus.value)
-    }, preference = {
-        reviewScreenViewModel.albumRecommendationStatus.value = it.value == true
-    })
-    Text(
-        text = "How much would you rate this record?",
-        modifier = Modifier.padding(
-            start = 15.dp,
-            top = 15.dp,
-            bottom = 10.dp,
-            end = 15.dp
-        ),
-        style = MaterialTheme.typography.titleMedium
-    )
-    Row(verticalAlignment = Alignment.Bottom) {
-        RatingBar(
-            modifier = Modifier.padding(start = 15.dp, top = 5.dp),
-            config = RatingBarConfig().inactiveColor(MaterialTheme.colorScheme.outline)
-                .activeColor(MaterialTheme.colorScheme.primary).padding(5.dp)
-                .stepSize(StepSize.HALF).style(RatingBarStyle.HighLighted),
-            value = reviewScreenViewModel.albumRatingValue.collectAsStateWithLifecycle().value,
-            onValueChange = {
-                reviewScreenViewModel.albumRatingValue.value = it
-            },
-            onRatingChanged = {
-                reviewScreenViewModel.updateAnExistingLocalReview(
-                    reviewScreenViewModel.currentLocalReview.copy(
-                        rating = it
-                    )
-                )
-            })
-        Spacer(modifier = Modifier.width(5.dp))
-        Text(
-            text = "${reviewScreenViewModel.albumRatingValue.collectAsStateWithLifecycle().value}/5.0",
-            style = MaterialTheme.typography.titleMedium,
-        )
-    }
-    val reviewTagsInteractionSource = remember {
-        MutableInteractionSource()
-    }
-    Text(
-        text = "Tags",
-        modifier = Modifier.padding(start = 15.dp, top = 15.dp, end = 15.dp, bottom = 5.dp),
-        style = MaterialTheme.typography.titleMedium
-    )
-    Text(
-        modifier = Modifier.padding(start = 15.dp, end = 15.dp, bottom = 15.dp),
-        text = buildAnnotatedString {
-            append("Separate multiple tags by adding a comma")
-            append(" (")
-            withStyle(SpanStyle(fontWeight = FontWeight.Black)) {
-                append(" ,")
-            }
-            append(" )")
-        },
-        style = MaterialTheme.typography.titleSmall
-    )
-
-    BasicTextField(
-        interactionSource = reviewTagsInteractionSource,
-        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 15.dp, end = 15.dp),
-        value = reviewScreenViewModel.reviewTags.collectAsStateWithLifecycle().value,
-        onValueChange = { newValue ->
-            reviewScreenViewModel.reviewTags.value = newValue
-        },
-        textStyle = TextStyle(
-            fontFamily = fonts,
-            fontWeight = FontWeight.Normal,
-            fontSize = 16.sp,
-            color = LocalContentColor.current
-        )
-    )
-    Divider(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 15.dp, end = 15.dp, top = 5.dp),
-        color = if (reviewTagsInteractionSource.collectIsFocusedAsState().value) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(
-            0.65f
-        )
+            .padding(15.dp), color = MaterialTheme.colorScheme.outline.copy(0.5f)
     )
     Row(
         Modifier
             .fillMaxWidth()
-            .padding(15.dp),
+            .padding(start = 15.dp, end = 15.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(imageVector = Icons.Default.Info, contentDescription = "")
         Spacer(modifier = Modifier.width(15.dp))
         Text(
             text = buildAnnotatedString {
-                append("Your review has already been auto-saved locally on your device. If you want to make improvements, always go back to ")
+                append("Your review is automatically saved on your device for editing in ")
                 withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
                     append("Drafts")
                 }
-                append(".\n\nOnce you post your review, it cannot be changed.")
+                append("; Once posted, it cannot be changed.")
             },
             style = MaterialTheme.typography.titleSmall
         )
     }
-    Button(
-        onClick = {
-            reviewScreenViewModel.postANewReview(
-                ReviewDTO(
-                    reviewContent = reviewScreenViewModel.reviewContent.value,
-                    itemUri = selectedAlbumData.itemUri,
-                    reviewRating = reviewScreenViewModel.albumRatingValue.value,
-                    reviewTitle = reviewScreenViewModel.reviewTitle.value
-                )
-            )
-        }, modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 15.dp, end = 15.dp, bottom = 15.dp)
-    ) {
-        Text(text = "Post Review", style = MaterialTheme.typography.titleMedium)
-    }
-}
-
-@Composable
-fun BooleanPreferenceGroup(
-    defaultValue: MutableState<Boolean> = mutableStateOf(false),
-    preference: (MutableState<Boolean?>) -> Unit
-) {
-    val firstBooleanPref = rememberSaveable {
-        mutableStateOf(false)
-    }
-    val secondBooleanPref = rememberSaveable {
-        mutableStateOf(false)
-    }
-    preference(rememberSaveable(firstBooleanPref.value, secondBooleanPref.value) {
-        mutableStateOf(if (!firstBooleanPref.value && !secondBooleanPref.value) null else firstBooleanPref.value)
-    })
-    val firstPrefColor =
-        if (firstBooleanPref.value) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
-    val secondPrefColor =
-        if (secondBooleanPref.value) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
-
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Spacer(modifier = Modifier.width(15.dp))
-        OutlinedButton(
-            shape = RoundedCornerShape(topStart = 15.dp, bottomStart = 15.dp),
-            onClick = {
-                firstBooleanPref.value = true
-                secondBooleanPref.value = false
-            },
-            colors = ButtonDefaults.outlinedButtonColors(containerColor = firstPrefColor)
-        ) {
-            Text(
-                text = "Yes",
-                style = MaterialTheme.typography.titleLarge,
-                color = if (firstBooleanPref.value) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
-            )
-        }
-        Spacer(modifier = Modifier.width(5.dp))
-        OutlinedButton(
-            shape = RoundedCornerShape(topEnd = 15.dp, bottomEnd = 15.dp),
-            onClick = {
-                firstBooleanPref.value = false
-                secondBooleanPref.value = true
-            },
-            colors = ButtonDefaults.outlinedButtonColors(containerColor = secondPrefColor)
-        ) {
-            Text(
-                text = "No",
-                style = MaterialTheme.typography.titleLarge,
-                color = if (secondBooleanPref.value) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
-            )
-        }
-    }
+    Spacer(modifier = Modifier.height(15.dp))
 }

@@ -3,12 +3,13 @@ package musicboxd.android.ui.lists
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,16 +22,25 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Cancel
-import androidx.compose.material.icons.filled.EditNote
+import androidx.compose.material.icons.filled.Numbers
+import androidx.compose.material.icons.filled.Public
+import androidx.compose.material.icons.filled.Reorder
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Numbers
 import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.Divider
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.FilledTonalIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -39,8 +49,8 @@ import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -51,9 +61,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -64,9 +73,9 @@ import androidx.navigation.NavController
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import musicboxd.android.ui.common.CoilImage
+import musicboxd.android.ui.common.fadedEdges
 import musicboxd.android.ui.details.DetailsViewModel
 import musicboxd.android.ui.navigation.NavigationRoutes
-import musicboxd.android.ui.review.BooleanPreferenceGroup
 import musicboxd.android.ui.search.SearchContent
 import musicboxd.android.ui.search.SearchScreenUiEvent
 import musicboxd.android.ui.theme.fonts
@@ -105,6 +114,9 @@ fun CreateANewListScreen(
             }
         }
     }
+    val isAPublicList = createANewListScreenViewModel.isAPublicList.collectAsStateWithLifecycle()
+    val isANumberedList =
+        createANewListScreenViewModel.isANumberedList.collectAsStateWithLifecycle()
     Scaffold(Modifier.fillMaxSize(), bottomBar = {
         BottomAppBar(modifier = Modifier.fillMaxWidth()) {
             FilledTonalButton(
@@ -209,31 +221,45 @@ fun CreateANewListScreen(
                 )
             })
         }
+    }, floatingActionButtonPosition = FabPosition.End, floatingActionButton = {
+        Column(horizontalAlignment = Alignment.End) {
+            ExtendedFloatingActionButton(
+                text = {
+                    Text(
+                        text = "Reorder",
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                },
+                icon = {
+                    Icon(imageVector = Icons.Default.Reorder, contentDescription = "")
+                },
+                onClick = { navController.navigate(NavigationRoutes.REORDER_MUSIC_CONTENT_SCREEN.name) })
+
+            Spacer(modifier = Modifier.height(5.dp))
+            ExtendedFloatingActionButton(
+                text = {
+                    Text(
+                        text = "Add Music to this list",
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                },
+                icon = { Icon(imageVector = Icons.Default.Add, contentDescription = "") },
+                onClick = { isSearchActive.value = true })
+        }
     }) {
         LazyVerticalGrid(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(it), columns = GridCells.Fixed(3),
+                .padding(it)
+                .padding(start = 15.dp, end = 15.dp),
+            columns = GridCells.Fixed(3),
             state = lazyGridState
         ) {
             item(span = {
                 GridItemSpan(this.maxLineSpan)
             }) {
-                Text(
-                    text = "Name of the List",
-                    modifier = Modifier.padding(15.dp),
-                    style = MaterialTheme.typography.titleMedium
-                )
-            }
-            item(span = {
-                GridItemSpan(this.maxLineSpan)
-            }) {
-                BasicTextField(
-                    interactionSource = newListTitleInteractionSource,
-                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 15.dp, end = 15.dp),
+                TextField(
+                    modifier = Modifier.fillMaxWidth(),
                     value = createANewListScreenViewModel.newListTitle.collectAsStateWithLifecycle().value,
                     onValueChange = { newValue ->
                         createANewListScreenViewModel.newListTitle.value = newValue
@@ -243,40 +269,26 @@ fun CreateANewListScreen(
                         fontWeight = FontWeight.Normal,
                         fontSize = 16.sp,
                         color = LocalContentColor.current
-                    )
+                    ),
+                    label = {
+                        Text(
+                            text = "Name of the List", style = MaterialTheme.typography.titleSmall
+                        )
+                    }
                 )
             }
             item(span = {
                 GridItemSpan(this.maxLineSpan)
             }) {
-                Divider(
+                Spacer(modifier = Modifier.height(15.dp))
+            }
+            item(span = {
+                GridItemSpan(this.maxLineSpan)
+            }) {
+                TextField(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 15.dp, end = 15.dp, top = 5.dp),
-                    color = if (newListTitleInteractionSource.collectIsFocusedAsState().value) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(
-                        0.65f
-                    )
-                )
-            }
-            item(span = {
-                GridItemSpan(this.maxLineSpan)
-            }) {
-                Text(
-                    text = "Description of the List",
-                    modifier = Modifier.padding(15.dp),
-                    style = MaterialTheme.typography.titleMedium
-                )
-            }
-            item(span = {
-                GridItemSpan(this.maxLineSpan)
-            }) {
-                BasicTextField(
-                    interactionSource = newListDescriptionInteractionSource,
-                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .defaultMinSize(minHeight = 75.dp)
-                        .padding(start = 15.dp, end = 15.dp),
+                        .defaultMinSize(minHeight = 75.dp),
                     value = createANewListScreenViewModel.newListDescription.collectAsStateWithLifecycle().value,
                     onValueChange = { newValue ->
                         createANewListScreenViewModel.newListDescription.value = newValue
@@ -286,19 +298,22 @@ fun CreateANewListScreen(
                         fontWeight = FontWeight.Normal,
                         fontSize = 16.sp,
                         color = LocalContentColor.current
-                    )
+                    ),
+                    label = {
+                        Text(
+                            text = "Description of the List",
+                            style = MaterialTheme.typography.titleSmall
+                        )
+                    }
                 )
             }
             item(span = {
                 GridItemSpan(this.maxLineSpan)
             }) {
-                Divider(
+                androidx.compose.material3.Divider(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 15.dp, end = 15.dp, top = 5.dp),
-                    color = if (newListDescriptionInteractionSource.collectIsFocusedAsState().value) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(
-                        0.65f
-                    )
+                        .padding(top = 15.dp, bottom = 15.dp)
                 )
             }
             item(span = {
@@ -309,83 +324,113 @@ fun CreateANewListScreen(
                         .fillMaxWidth()
                         .padding(15.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    Text(
-                        text = "Save as a Public List",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Switch(
-                        checked = createANewListScreenViewModel.isAPublicList.collectAsStateWithLifecycle().value,
-                        onCheckedChange = {
-                            createANewListScreenViewModel.isAPublicList.value = it
-                    })
-                }
-            }
-            item(span = {
-                GridItemSpan(this.maxLineSpan)
-            }) {
-                Text(
-                    text = "Is this a numbered List?",
-                    modifier = Modifier.padding(15.dp),
-                    style = MaterialTheme.typography.titleMedium
-                )
-            }
-            item(span = {
-                GridItemSpan(this.maxLineSpan)
-            }) {
-                BooleanPreferenceGroup {
-                    it.value?.let {
-                        createANewListScreenViewModel.isANumberedList.value = it
-                    }
-                }
-            }
-            item(span = {
-                GridItemSpan(this.maxLineSpan)
-            }) {
-                Row(
-                    Modifier
-                        .animateContentSize()
-                        .fillMaxWidth()
-                        .padding(15.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "Music Content",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    if (createANewListScreenViewModel.isANumberedList.collectAsStateWithLifecycle().value) {
-                        FilledTonalIconButton(onClick = { navController.navigate(NavigationRoutes.REORDER_MUSIC_CONTENT_SCREEN.name) }) {
-                            Icon(imageVector = Icons.Default.EditNote, contentDescription = "")
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        FilledTonalIconToggleButton(checked = isAPublicList.value,
+                            onCheckedChange = {
+                                createANewListScreenViewModel.isAPublicList.value = it
+                            }) {
+                            Icon(
+                                imageVector = if (isAPublicList.value) Icons.Default.Public else Icons.Outlined.Lock,
+                                ""
+                            )
                         }
+                        Text(
+                            text = if (isAPublicList.value) "Public" else "Private",
+                            style = MaterialTheme.typography.titleSmall
+                        )
+                    }
+                    Spacer(
+                        modifier = Modifier
+                            .width(1.5.dp)
+                            .height(50.dp)
+                            .background(MaterialTheme.colorScheme.onSurface.copy(0.65f))
+                    )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        FilledTonalIconToggleButton(checked = isANumberedList.value,
+                            onCheckedChange = {
+                                createANewListScreenViewModel.isANumberedList.value = it
+                            }) {
+                            Icon(
+                                imageVector = if (isANumberedList.value) Icons.Filled.Numbers else Icons.Outlined.Numbers,
+                                ""
+                            )
+                        }
+                        Text(
+                            text = if (isANumberedList.value) "Numbered List" else "Non-numbered list",
+                            style = MaterialTheme.typography.titleSmall
+                        )
                     }
                 }
+            }
+            item(span = {
+                GridItemSpan(this.maxLineSpan)
+            }) {
+                androidx.compose.material3.Divider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 15.dp, bottom = 15.dp)
+                )
+            }
+            item(span = {
+                GridItemSpan(this.maxLineSpan)
+            }) {
+                    Text(
+                        text = "Music",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontSize = 18.sp
+                    )
+                Spacer(modifier = Modifier.height(28.dp))
             }
             itemsIndexed(
                 createANewListScreenViewModel.currentMusicContentSelection,
                 key = { index, it -> it.itemUri }) { index, itemData ->
-                Column(Modifier.width(150.dp)) {
-                    CoilImage(
-                        imgUrl = itemData.albumImgUrl,
-                        modifier = Modifier
-                            .size(150.dp)
-                            .padding(start = 5.dp, end = 5.dp, top = 5.dp),
-                        contentDescription = ""
-                    )
-                    FilledTonalButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 5.dp, end = 5.dp, bottom = 5.dp),
-                        shape = RectangleShape,
-                        onClick = {
+                Column(Modifier.width(100.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Box(
+                        modifier =
+                        Modifier
+                            .size(100.dp)
+                            .padding(top = 5.dp)
+                    ) {
+                        CoilImage(
+                            imgUrl = itemData.albumImgUrl,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .then(
+                                    if (isANumberedList.value) Modifier.fadedEdges(
+                                        MaterialTheme.colorScheme
+                                    ) else Modifier
+                                ),
+                            contentDescription = ""
+                        )
+                        if (isANumberedList.value) {
+                            Box(
+                                modifier = Modifier
+                                    .padding(bottom = 5.dp)
+                                    .size(24.dp)
+                                    .background(
+                                        ButtonDefaults.filledTonalButtonColors().containerColor,
+                                        CircleShape
+                                    )
+                                    .align(Alignment.BottomCenter),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = (index + 1).toString(),
+                                    style = MaterialTheme.typography.titleLarge
+                                )
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(5.dp))
+                    FilledTonalIconButton(onClick = {
                             createANewListScreenViewModel.currentMusicContentSelection.removeAt(
                                 index
                             )
                         }) {
-                        Text(
-                            text = "Remove",
-                            style = MaterialTheme.typography.titleMedium
+                        Icon(
+                            imageVector = Icons.Default.Cancel, contentDescription = ""
                         )
                     }
                 }
@@ -393,18 +438,7 @@ fun CreateANewListScreen(
             item(span = {
                 GridItemSpan(this.maxLineSpan)
             }) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(100.dp), contentAlignment = Alignment.Center
-                ) {
-                    FilledTonalButton(onClick = { isSearchActive.value = true }) {
-                        Text(
-                            text = "Add Music to this list",
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                    }
-                }
+                Spacer(modifier = Modifier.height(150.dp))
             }
         }
     }
