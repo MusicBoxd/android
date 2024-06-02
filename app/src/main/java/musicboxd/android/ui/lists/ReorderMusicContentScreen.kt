@@ -78,7 +78,7 @@ fun ReorderMusicContentScreen(createANewListScreenViewModel: CreateANewListScree
                 .background(BottomAppBarDefaults.containerColor)
         ) {
             val tTile = try {
-                list.value[targetIndex.intValue]?.albumTitle
+                list[targetIndex.intValue].albumTitle
             } catch (_: Exception) {
                 "Start of the list"
             }
@@ -106,7 +106,7 @@ fun ReorderMusicContentScreen(createANewListScreenViewModel: CreateANewListScree
                                     .fillMaxWidth()
                                     .padding(start = 15.dp, top = 5.dp, end = 15.dp),
                                 style = MaterialTheme.typography.titleLarge,
-                                text = "${list.value[draggingIndex.intValue]?.albumTitle} in the position of $tTile"
+                                text = "${list[draggingIndex.intValue]?.albumTitle} in the position of $tTile"
                             )
                         }
                     }
@@ -134,7 +134,7 @@ fun ReorderMusicContentScreen(createANewListScreenViewModel: CreateANewListScree
             columns = GridCells.Fixed(4),
             state = lazyGridState
         ) {
-            itemsIndexed(list.value.filterNotNull()) { index, itemData ->
+            itemsIndexed(list) { index, itemData ->
                 val currentItemOffSet = remember {
                     Pair(mutableFloatStateOf(0f), mutableFloatStateOf(0f))
                 }
@@ -172,16 +172,15 @@ fun ReorderMusicContentScreen(createANewListScreenViewModel: CreateANewListScree
                             currentItemOffSet.first.floatValue = 0f
                             currentItemOffSet.second.floatValue = 0f
                             if (targetIndex.intValue != -1) {
-                                val newList =
-                                    createANewListScreenViewModel.currentMusicContentSelection.value.toMutableList()
-                                val currentDraggingItem = newList[draggingIndex.intValue]
-                                newList.removeAt(draggingIndex.intValue)
-                                newList.add(
+                                val currentDraggingItem =
+                                    createANewListScreenViewModel.currentMusicContentSelection[draggingIndex.intValue]
+                                createANewListScreenViewModel.currentMusicContentSelection.removeAt(
+                                    draggingIndex.intValue
+                                )
+                                createANewListScreenViewModel.currentMusicContentSelection.add(
                                     targetIndex.intValue,
                                     currentDraggingItem
                                 )
-                                createANewListScreenViewModel.currentMusicContentSelection.value =
-                                    newList
                             }
                             targetIndex.intValue = -1
                             draggingIndex.intValue = -1

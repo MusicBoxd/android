@@ -387,14 +387,17 @@ fun BooleanPreferenceGroup(
     defaultValue: MutableState<Boolean> = mutableStateOf(false),
     preference: (MutableState<Boolean?>) -> Unit
 ) {
-    val secondBooleanPref = rememberSaveable(defaultValue.value) {
-        mutableStateOf(!defaultValue.value)
+    val firstBooleanPref = rememberSaveable {
+        mutableStateOf(false)
     }
-    preference(rememberSaveable(defaultValue.value, secondBooleanPref.value) {
-        mutableStateOf(if (!defaultValue.value && !secondBooleanPref.value) null else defaultValue.value)
+    val secondBooleanPref = rememberSaveable {
+        mutableStateOf(false)
+    }
+    preference(rememberSaveable(firstBooleanPref.value, secondBooleanPref.value) {
+        mutableStateOf(if (!firstBooleanPref.value && !secondBooleanPref.value) null else firstBooleanPref.value)
     })
     val firstPrefColor =
-        if (defaultValue.value) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
+        if (firstBooleanPref.value) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
     val secondPrefColor =
         if (secondBooleanPref.value) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
 
@@ -403,7 +406,7 @@ fun BooleanPreferenceGroup(
         OutlinedButton(
             shape = RoundedCornerShape(topStart = 15.dp, bottomStart = 15.dp),
             onClick = {
-                defaultValue.value = true
+                firstBooleanPref.value = true
                 secondBooleanPref.value = false
             },
             colors = ButtonDefaults.outlinedButtonColors(containerColor = firstPrefColor)
@@ -411,14 +414,14 @@ fun BooleanPreferenceGroup(
             Text(
                 text = "Yes",
                 style = MaterialTheme.typography.titleLarge,
-                color = if (defaultValue.value) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+                color = if (firstBooleanPref.value) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
             )
         }
         Spacer(modifier = Modifier.width(5.dp))
         OutlinedButton(
             shape = RoundedCornerShape(topEnd = 15.dp, bottomEnd = 15.dp),
             onClick = {
-                defaultValue.value = false
+                firstBooleanPref.value = false
                 secondBooleanPref.value = true
             },
             colors = ButtonDefaults.outlinedButtonColors(containerColor = secondPrefColor)

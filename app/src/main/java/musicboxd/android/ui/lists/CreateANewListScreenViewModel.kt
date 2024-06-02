@@ -1,5 +1,7 @@
 package musicboxd.android.ui.lists
 
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -8,6 +10,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import musicboxd.android.TEMP_PASSWORD
@@ -27,7 +30,7 @@ class CreateANewListScreenViewModel @Inject constructor(
     private val musicBoxdAPIRepo: MusicBoxdAPIRepo,
     private val listRepo: ListRepo
 ) : ViewModel() {
-    val currentMusicContentSelection = MutableStateFlow(emptyList<AlbumDetailScreenState>())
+    val currentMusicContentSelection = mutableStateListOf<AlbumDetailScreenState>()
 
     private val _uiEvent = Channel<CreateANewListScreenUIEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
@@ -52,7 +55,7 @@ class CreateANewListScreenViewModel @Inject constructor(
     )
 
     fun setValuesToDefault() {
-        currentMusicContentSelection.value = emptyList()
+        currentMusicContentSelection.clear()
         currentModifyingList = List(
             localId = -1,
             remoteId = 0L,
@@ -80,10 +83,12 @@ class CreateANewListScreenViewModel @Inject constructor(
             var currentMusicSelection = emptyList<AlbumDetailScreenState>()
         }
         viewModelScope.launch() {
-            combine(currentMusicContentSelection) {
+            combine(snapshotFlow { currentMusicContentSelection.toList() }) {
                 it
             }.collectLatest {
-                if (currentMusicContentSelection.value.isNotEmpty() && currentModifyingList.localId == (-1).toLong()) {
+                if (currentMusicContentSelection.toList()
+                        .isNotEmpty() && currentModifyingList.localId == (-1).toLong()
+                ) {
                     createALocalDraftList()
                 }
             }
@@ -94,7 +99,7 @@ class CreateANewListScreenViewModel @Inject constructor(
                 newListDescription,
                 isAPublicList,
                 isANumberedList,
-                currentMusicContentSelection
+                snapshotFlow { currentMusicContentSelection.toList() }
             ) { title, desc, isAPublicList, isANumberedList, musicContent ->
                 listData.listTitle = title
                 listData.listDesc = desc
@@ -102,7 +107,9 @@ class CreateANewListScreenViewModel @Inject constructor(
                 listData.isAPublicList = isAPublicList
                 listData.currentMusicSelection = musicContent
             }.collectLatest {
-                if (currentModifyingList.localId != (-1).toLong() && currentMusicContentSelection.value.isNotEmpty()) {
+                if (currentModifyingList.localId != (-1).toLong() && currentMusicContentSelection.toList()
+                        .isNotEmpty()
+                ) {
                     listRepo.updateAnExistingLocalList(
                         currentModifyingList.copy(nameOfTheList = listData.listTitle,
                             descriptionOfTheList = listData.listDesc,
@@ -130,7 +137,7 @@ class CreateANewListScreenViewModel @Inject constructor(
                     descriptionOfTheList = newListDescription.value,
                     isAPublicList = isAPublicList.value,
                     isANumberedList = isANumberedList.value,
-                    musicContent = currentMusicContentSelection.value.map {
+                    musicContent = currentMusicContentSelection.toList().map {
                         MusicContent(
                             itemName = it.albumTitle,
                             itemImgUrl = it.albumImgUrl,
@@ -143,11 +150,37 @@ class CreateANewListScreenViewModel @Inject constructor(
                 )
             )
         }.invokeOnCompletion {
-            loadAnExistingLocalDraftList()
+            loadAnExistingLatestLocalDraftList()
         }
     }
 
-    private fun loadAnExistingLocalDraftList() {
+    fun loadASpecificExistingLocalListDraft(listId: Long, onCompletion: () -> Unit) {
+        viewModelScope.launch {
+            currentModifyingList = listRepo.getThisSpecificLocalList(listId)
+            newListTitle.value = currentModifyingList.nameOfTheList
+            newListDescription.value = currentModifyingList.descriptionOfTheList
+            isAPublicList.value = currentModifyingList.isAPublicList
+            isANumberedList.value = currentModifyingList.isANumberedList
+            currentMusicContentSelection.clear()
+            currentMusicContentSelection.addAll(currentModifyingList.musicContent.map {
+                AlbumDetailScreenState(
+                    covertArtImgUrl = emptyFlow(),
+                    albumImgUrl = it.itemImgUrl,
+                    albumTitle = it.itemName,
+                    artists = emptyList(),
+                    albumWiki = emptyFlow(),
+                    releaseDate = "",
+                    trackList = emptyFlow(),
+                    itemType = "",
+                    itemUri = it.itemSpotifyUri
+                )
+            })
+        }.invokeOnCompletion {
+            onCompletion()
+        }
+    }
+
+    private fun loadAnExistingLatestLocalDraftList() {
         viewModelScope.launch {
             this.launch {
                 listRepo.getLatestList().collectLatest {
@@ -170,7 +203,7 @@ class CreateANewListScreenViewModel @Inject constructor(
                         ListDTO(listName = listName,
                             lisDescription = listDescription,
                             isListPublic = isListPublic,
-                            spotifyURIs = currentMusicContentSelection.value
+                            spotifyURIs = currentMusicContentSelection.toList()
                                 .map { it.itemUri }),
                         tokenData.data.jwt
                     )) {

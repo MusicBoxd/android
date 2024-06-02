@@ -181,10 +181,10 @@ fun CreateANewListScreen(
                             detailsViewModel = detailsViewModel,
                             inSearchScreen = false,
                             onSelectingAnItem = {
-                                if (!createANewListScreenViewModel.currentMusicContentSelection.value.map { it.itemUri }
+                                if (!createANewListScreenViewModel.currentMusicContentSelection.map { it.itemUri }
                                         .contains(detailsViewModel.albumScreenState.itemUri)
                                 ) {
-                                    createANewListScreenViewModel.currentMusicContentSelection.value += detailsViewModel.albumScreenState
+                                    createANewListScreenViewModel.currentMusicContentSelection += detailsViewModel.albumScreenState
                                 }
                                 isSearchActive.value = false
                                 coroutineScope.launch {
@@ -363,7 +363,7 @@ fun CreateANewListScreen(
                 }
             }
             itemsIndexed(
-                createANewListScreenViewModel.currentMusicContentSelection.value,
+                createANewListScreenViewModel.currentMusicContentSelection,
                 key = { index, it -> it.itemUri }) { index, itemData ->
                 Column(Modifier.width(150.dp)) {
                     CoilImage(
@@ -379,11 +379,9 @@ fun CreateANewListScreen(
                             .padding(start = 5.dp, end = 5.dp, bottom = 5.dp),
                         shape = RectangleShape,
                         onClick = {
-                            val newList =
-                                createANewListScreenViewModel.currentMusicContentSelection.value.toMutableList()
-                            newList.removeAt(index)
-                            createANewListScreenViewModel.currentMusicContentSelection.value =
-                                newList
+                            createANewListScreenViewModel.currentMusicContentSelection.removeAt(
+                                index
+                            )
                         }) {
                         Text(
                             text = "Remove",
