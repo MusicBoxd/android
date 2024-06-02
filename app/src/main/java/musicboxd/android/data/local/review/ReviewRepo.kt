@@ -1,7 +1,7 @@
 package musicboxd.android.data.local.review
 
 import kotlinx.coroutines.flow.Flow
-import musicboxd.android.data.local.model.review.Review
+import musicboxd.android.data.local.review.model.Review
 
 interface ReviewRepo {
     suspend fun createANewLocalReview(review: Review)

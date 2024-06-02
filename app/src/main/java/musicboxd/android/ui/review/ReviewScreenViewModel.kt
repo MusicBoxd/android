@@ -12,8 +12,8 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import musicboxd.android.TEMP_PASSWORD
 import musicboxd.android.TEMP_USER_NAME
-import musicboxd.android.data.local.model.review.Review
 import musicboxd.android.data.local.review.ReviewRepo
+import musicboxd.android.data.local.review.model.Review
 import musicboxd.android.data.remote.api.APIResult
 import musicboxd.android.data.remote.api.musicboxd.MusicBoxdAPIRepo
 import musicboxd.android.data.remote.api.musicboxd.model.MusicBoxdLoginDTO

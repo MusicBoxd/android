@@ -31,7 +31,7 @@ fun MainNavigation(
 ) {
     NavHost(
         navController = navController,
-        startDestination = NavigationRoutes.CUES.name
+        startDestination = NavigationRoutes.ADD.name
     ) {
         composable(route = NavigationRoutes.HOME.name) {
             HomeScreen()
@@ -45,7 +45,8 @@ fun MainNavigation(
             AddScreen(
                 navController = navController,
                 detailsViewModel = detailsViewModel,
-                searchScreenViewModel = detailsViewModel
+                searchScreenViewModel = detailsViewModel,
+                createANewListScreenViewModel
             )
         }
         composable(route = NavigationRoutes.CUES.name) {

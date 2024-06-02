@@ -369,8 +369,9 @@ private fun ReviewUI(
             reviewScreenViewModel.postANewReview(
                 ReviewDTO(
                     reviewContent = reviewScreenViewModel.reviewContent.value,
-                    albumId = selectedAlbumData.itemUri,
-                    reviewRating = reviewScreenViewModel.albumRatingValue.value
+                    itemUri = selectedAlbumData.itemUri,
+                    reviewRating = reviewScreenViewModel.albumRatingValue.value,
+                    reviewTitle = reviewScreenViewModel.reviewTitle.value
                 )
             )
         }, modifier = Modifier

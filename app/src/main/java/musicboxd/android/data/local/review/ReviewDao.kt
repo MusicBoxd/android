@@ -5,7 +5,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
-import musicboxd.android.data.local.model.review.Review
+import musicboxd.android.data.local.review.model.Review
 
 @Dao
 interface ReviewDao {

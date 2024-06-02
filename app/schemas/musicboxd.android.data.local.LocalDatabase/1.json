@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "f20182a26a4cf6a9809c59ba45e41b44",
+    "identityHash": "6d82b9ee6562ab1c73b69349d71619b4",
     "entities": [
       {
         "tableName": "user",
@@ -333,12 +333,86 @@
         },
         "indices": [],
         "foreignKeys": []
+      },
+      {
+        "tableName": "list",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `remoteId` INTEGER NOT NULL, `nameOfTheList` TEXT NOT NULL, `descriptionOfTheList` TEXT NOT NULL, `isAPublicList` INTEGER NOT NULL, `isANumberedList` INTEGER NOT NULL, `musicContent` TEXT NOT NULL, `dateCreated` TEXT NOT NULL, `timeStamp` TEXT NOT NULL, `noOfLikes` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "localId",
+            "columnName": "localId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "remoteId",
+            "columnName": "remoteId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nameOfTheList",
+            "columnName": "nameOfTheList",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "descriptionOfTheList",
+            "columnName": "descriptionOfTheList",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isAPublicList",
+            "columnName": "isAPublicList",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isANumberedList",
+            "columnName": "isANumberedList",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "musicContent",
+            "columnName": "musicContent",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateCreated",
+            "columnName": "dateCreated",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timeStamp",
+            "columnName": "timeStamp",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "noOfLikes",
+            "columnName": "noOfLikes",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "localId"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f20182a26a4cf6a9809c59ba45e41b44')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6d82b9ee6562ab1c73b69349d71619b4')"
     ]
   }
 }

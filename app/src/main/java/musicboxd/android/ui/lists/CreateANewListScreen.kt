@@ -59,6 +59,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -77,15 +78,11 @@ fun CreateANewListScreen(
     navController: NavController,
     createANewListScreenViewModel: CreateANewListScreenViewModel
 ) {
-    val newListTile = rememberSaveable {
-        mutableStateOf("")
-    }
+
     val newListTitleInteractionSource = remember {
         MutableInteractionSource()
     }
-    val newListDescription = rememberSaveable {
-        mutableStateOf("")
-    }
+
     val newListDescriptionInteractionSource = remember {
         MutableInteractionSource()
     }
@@ -95,12 +92,6 @@ fun CreateANewListScreen(
     val searchQuery = detailsViewModel.searchQuery.collectAsState()
     val lazyGridState = rememberLazyGridState()
     val coroutineScope = rememberCoroutineScope()
-    val isAPublicList = rememberSaveable {
-        mutableStateOf(false)
-    }
-    val isANumberedList = rememberSaveable {
-        mutableStateOf(false)
-    }
     val uiChannel = createANewListScreenViewModel.uiEvent
     val localContext = LocalContext.current
     LaunchedEffect(key1 = Unit) {
@@ -119,9 +110,9 @@ fun CreateANewListScreen(
             FilledTonalButton(
                 onClick = {
                     createANewListScreenViewModel.publishANewList(
-                        listName = newListTile.value,
-                        listDescription = newListDescription.value,
-                        isListPublic = isAPublicList.value
+                        listName = createANewListScreenViewModel.newListTitle.value,
+                        listDescription = createANewListScreenViewModel.newListDescription.value,
+                        isListPublic = createANewListScreenViewModel.isAPublicList.value
                     )
                 },
                 modifier = Modifier
@@ -190,10 +181,10 @@ fun CreateANewListScreen(
                             detailsViewModel = detailsViewModel,
                             inSearchScreen = false,
                             onSelectingAnItem = {
-                                if (!createANewListScreenViewModel.currentSelection.value.map { it.itemUri }
+                                if (!createANewListScreenViewModel.currentMusicContentSelection.value.map { it.itemUri }
                                         .contains(detailsViewModel.albumScreenState.itemUri)
                                 ) {
-                                    createANewListScreenViewModel.currentSelection.value += detailsViewModel.albumScreenState
+                                    createANewListScreenViewModel.currentMusicContentSelection.value += detailsViewModel.albumScreenState
                                 }
                                 isSearchActive.value = false
                                 coroutineScope.launch {
@@ -243,9 +234,9 @@ fun CreateANewListScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 15.dp, end = 15.dp),
-                    value = newListTile.value,
+                    value = createANewListScreenViewModel.newListTitle.collectAsStateWithLifecycle().value,
                     onValueChange = { newValue ->
-                        newListTile.value = newValue
+                        createANewListScreenViewModel.newListTitle.value = newValue
                     },
                     textStyle = TextStyle(
                         fontFamily = fonts,
@@ -286,9 +277,9 @@ fun CreateANewListScreen(
                         .fillMaxWidth()
                         .defaultMinSize(minHeight = 75.dp)
                         .padding(start = 15.dp, end = 15.dp),
-                    value = newListDescription.value,
+                    value = createANewListScreenViewModel.newListDescription.collectAsStateWithLifecycle().value,
                     onValueChange = { newValue ->
-                        newListDescription.value = newValue
+                        createANewListScreenViewModel.newListDescription.value = newValue
                     },
                     textStyle = TextStyle(
                         fontFamily = fonts,
@@ -324,8 +315,10 @@ fun CreateANewListScreen(
                         text = "Save as a Public List",
                         style = MaterialTheme.typography.titleMedium
                     )
-                    Switch(checked = isAPublicList.value, onCheckedChange = {
-                        isAPublicList.value = it
+                    Switch(
+                        checked = createANewListScreenViewModel.isAPublicList.collectAsStateWithLifecycle().value,
+                        onCheckedChange = {
+                            createANewListScreenViewModel.isAPublicList.value = it
                     })
                 }
             }
@@ -343,7 +336,7 @@ fun CreateANewListScreen(
             }) {
                 BooleanPreferenceGroup {
                     it.value?.let {
-                        isANumberedList.value = it
+                        createANewListScreenViewModel.isANumberedList.value = it
                     }
                 }
             }
@@ -362,7 +355,7 @@ fun CreateANewListScreen(
                         text = "Music Content",
                         style = MaterialTheme.typography.titleMedium
                     )
-                    if (isANumberedList.value) {
+                    if (createANewListScreenViewModel.isANumberedList.collectAsStateWithLifecycle().value) {
                         FilledTonalIconButton(onClick = { navController.navigate(NavigationRoutes.REORDER_MUSIC_CONTENT_SCREEN.name) }) {
                             Icon(imageVector = Icons.Default.EditNote, contentDescription = "")
                         }
@@ -370,7 +363,7 @@ fun CreateANewListScreen(
                 }
             }
             itemsIndexed(
-                createANewListScreenViewModel.currentSelection.value.filterNotNull(),
+                createANewListScreenViewModel.currentMusicContentSelection.value,
                 key = { index, it -> it.itemUri }) { index, itemData ->
                 Column(Modifier.width(150.dp)) {
                     CoilImage(
@@ -387,9 +380,10 @@ fun CreateANewListScreen(
                         shape = RectangleShape,
                         onClick = {
                             val newList =
-                                createANewListScreenViewModel.currentSelection.value.toMutableList()
+                                createANewListScreenViewModel.currentMusicContentSelection.value.toMutableList()
                             newList.removeAt(index)
-                            createANewListScreenViewModel.currentSelection.value = newList
+                            createANewListScreenViewModel.currentMusicContentSelection.value =
+                                newList
                         }) {
                         Text(
                             text = "Remove",

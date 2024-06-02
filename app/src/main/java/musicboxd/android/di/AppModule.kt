@@ -9,6 +9,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
 import musicboxd.android.data.local.LocalDatabase
+import musicboxd.android.data.local.list.ListImpl
+import musicboxd.android.data.local.list.ListRepo
 import musicboxd.android.data.local.review.ReviewImpl
 import musicboxd.android.data.local.review.ReviewRepo
 import musicboxd.android.data.remote.api.lastfm.LastFMAPIImpl
@@ -170,6 +172,12 @@ object AppModule {
     @Singleton
     fun provideReviewRepo(localDatabase: LocalDatabase): ReviewRepo {
         return ReviewImpl(localDatabase)
+    }
+
+    @Provides
+    @Singleton
+    fun provideListRepo(localDatabase: LocalDatabase): ListRepo {
+        return ListImpl(localDatabase)
     }
 
     @Provides

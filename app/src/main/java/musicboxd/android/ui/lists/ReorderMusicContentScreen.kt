@@ -52,7 +52,7 @@ import kotlin.math.sqrt
 @Composable
 fun ReorderMusicContentScreen(createANewListScreenViewModel: CreateANewListScreenViewModel) {
     val lazyGridState = rememberLazyGridState()
-    val list = createANewListScreenViewModel.currentSelection
+    val list = createANewListScreenViewModel.currentMusicContentSelection
     val draggingIndex = remember { mutableIntStateOf(-1) }
     val targetIndex = remember { mutableIntStateOf(-1) }
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
@@ -173,14 +173,15 @@ fun ReorderMusicContentScreen(createANewListScreenViewModel: CreateANewListScree
                             currentItemOffSet.second.floatValue = 0f
                             if (targetIndex.intValue != -1) {
                                 val newList =
-                                    createANewListScreenViewModel.currentSelection.value.toMutableList()
+                                    createANewListScreenViewModel.currentMusicContentSelection.value.toMutableList()
                                 val currentDraggingItem = newList[draggingIndex.intValue]
                                 newList.removeAt(draggingIndex.intValue)
                                 newList.add(
                                     targetIndex.intValue,
                                     currentDraggingItem
                                 )
-                                createANewListScreenViewModel.currentSelection.value = newList
+                                createANewListScreenViewModel.currentMusicContentSelection.value =
+                                    newList
                             }
                             targetIndex.intValue = -1
                             draggingIndex.intValue = -1

@@ -1,7 +1,10 @@
 package musicboxd.android.ui.review
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.FeaturedPlayList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
@@ -30,9 +34,9 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,27 +55,30 @@ import musicboxd.android.data.remote.api.spotify.model.album.ExternalUrlsX
 import musicboxd.android.ui.common.CoilImage
 import musicboxd.android.ui.details.DetailsViewModel
 import musicboxd.android.ui.details.album.AlbumDetailScreenState
+import musicboxd.android.ui.lists.CreateANewListScreenViewModel
 import musicboxd.android.ui.navigation.NavigationRoutes
 import musicboxd.android.ui.search.SearchContent
 import musicboxd.android.ui.search.SearchScreenUiEvent
 import musicboxd.android.ui.search.SearchScreenViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun AddScreen(
     navController: NavController,
     detailsViewModel: DetailsViewModel,
-    searchScreenViewModel: SearchScreenViewModel
+    searchScreenViewModel: SearchScreenViewModel,
+    createANewListScreenViewModel: CreateANewListScreenViewModel
 ) {
     val isSearchActive = rememberSaveable {
         mutableStateOf(false)
     }
     val addScreenViewModel: AddScreenViewModel = hiltViewModel()
-    LaunchedEffect(key1 = Unit) {
-        addScreenViewModel.loadLocalReviews()
-    }
     val searchQuery = searchScreenViewModel.searchQuery.collectAsState()
     val localReviews = addScreenViewModel.localReviews.collectAsStateWithLifecycle()
+    val isListDraftsModeEnabled = rememberSaveable {
+        mutableStateOf(false)
+    }
+    val localLists = addScreenViewModel.localLists.collectAsStateWithLifecycle()
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
         ProvideTextStyle(value = MaterialTheme.typography.titleSmall) {
             SearchBar(colors = SearchBarDefaults.colors(dividerColor = Color.Transparent),
@@ -162,7 +169,10 @@ fun AddScreen(
             }
             item {
                 FilledTonalButton(
-                    onClick = { navController.navigate(NavigationRoutes.CREATE_A_NEW_LIST.name) },
+                    onClick = {
+                        createANewListScreenViewModel.setValuesToDefault()
+                        navController.navigate(NavigationRoutes.CREATE_A_NEW_LIST.name)
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 30.dp, end = 30.dp)
@@ -186,72 +196,168 @@ fun AddScreen(
                     style = MaterialTheme.typography.titleMedium
                 )
             }
-
-            items(localReviews.value) {
+            stickyHeader {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 15.dp, end = 15.dp)
-                        .clickable {
-                            detailsViewModel.albumScreenState = AlbumDetailScreenState(
-                                covertArtImgUrl = flow { },
-                                albumImgUrl = it.releaseImgUrl,
-                                albumTitle = it.releaseName,
-                                artists = it.artists.map {
-                                    Artist(
-                                        external_urls = ExternalUrlsX(spotify = ""),
-                                        href = "",
-                                        id = it.id,
-                                        name = it.name,
-                                        type = "",
-                                        uri = it.uri
-                                    )
-                                },
-                                albumWiki = flow { },
-                                releaseDate = "",
-                                trackList = flow { },
-                                itemType = it.releaseType,
-                                itemUri = it.spotifyUri
-                            )
-                            navController.navigate(NavigationRoutes.CREATE_A_NEW_REVIEW.name)
-                        },
-                    verticalAlignment = Alignment.CenterVertically
+                        .background(MaterialTheme.colorScheme.surface)
                 ) {
-                    CoilImage(
-                        imgUrl = it.releaseImgUrl,
+                    Column(
                         modifier = Modifier
-                            .size(65.dp)
-                            .clip(RoundedCornerShape(15.dp)),
-                        contentDescription = ""
-                    )
-                    Spacer(modifier = Modifier.width(15.dp))
-                    Column {
+                            .clickable(indication = null, interactionSource = remember {
+                                MutableInteractionSource()
+                            }, onClick = {
+                                isListDraftsModeEnabled.value = false
+                            })
+                            .padding(start = 10.dp, end = 15.dp)
+                            .width(75.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
                         Text(
-                            text = it.reviewTitle,
-                            fontSize = 18.sp,
-                            style = MaterialTheme.typography.titleLarge,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(end = 20.dp),
-                            fontWeight = FontWeight.Black,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            text = "Review",
+                            fontSize = 16.sp,
+                            fontWeight = if (!isListDraftsModeEnabled.value) FontWeight.Bold else FontWeight.SemiBold,
+                            color = if (!isListDraftsModeEnabled.value) LocalContentColor.current else LocalContentColor.current.copy(
+                                0.8f
+                            ),
+                            style = MaterialTheme.typography.titleLarge
                         )
-                        Spacer(modifier = Modifier.height(5.dp))
+                        if (!isListDraftsModeEnabled.value) {
+                            Spacer(
+                                modifier = Modifier
+                                    .padding(top = 5.dp)
+                                    .width(75.dp)
+                                    .height(3.dp)
+                                    .background(MaterialTheme.colorScheme.primary)
+                            )
+                        }
+                    }
+                    Column(
+                        modifier = Modifier
+                            .clickable(indication = null, interactionSource = remember {
+                                MutableInteractionSource()
+                            }, onClick = {
+                                isListDraftsModeEnabled.value = true
+                            })
+                            .padding(end = 15.dp)
+                            .width(75.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
                         Text(
-                            text = it.reviewContent,
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(end = 20.dp),
-                            color = LocalContentColor.current.copy(0.8f),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            text = "Lists",
+                            fontSize = 16.sp,
+                            color = if (isListDraftsModeEnabled.value) LocalContentColor.current else LocalContentColor.current.copy(
+                                0.8f
+                            ),
+                            fontWeight = if (isListDraftsModeEnabled.value) FontWeight.Bold else FontWeight.SemiBold,
+                            style = MaterialTheme.typography.titleLarge
                         )
+                        if (isListDraftsModeEnabled.value) {
+                            Spacer(
+                                modifier = Modifier
+                                    .padding(top = 5.dp)
+                                    .width(75.dp)
+                                    .height(3.dp)
+                                    .background(MaterialTheme.colorScheme.primary)
+                            )
+                        }
                     }
                 }
-                Spacer(modifier = Modifier.height(15.dp))
             }
+            when (isListDraftsModeEnabled.value) {
+                false -> {
+                    items(localReviews.value) {
+                        Spacer(
+                            modifier = Modifier
+                                .height(15.dp)
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surface)
+                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 15.dp, end = 15.dp)
+                                .clickable {
+                                    detailsViewModel.albumScreenState = AlbumDetailScreenState(
+                                        covertArtImgUrl = flow { },
+                                        albumImgUrl = it.releaseImgUrl,
+                                        albumTitle = it.releaseName,
+                                        artists = it.artists.map {
+                                            Artist(
+                                                external_urls = ExternalUrlsX(spotify = ""),
+                                                href = "",
+                                                id = it.id,
+                                                name = it.name,
+                                                type = "",
+                                                uri = it.uri
+                                            )
+                                        },
+                                        albumWiki = flow { },
+                                        releaseDate = "",
+                                        trackList = flow { },
+                                        itemType = it.releaseType,
+                                        itemUri = it.spotifyUri
+                                    )
+                                    navController.navigate(NavigationRoutes.CREATE_A_NEW_REVIEW.name)
+                                },
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            CoilImage(
+                                imgUrl = it.releaseImgUrl,
+                                modifier = Modifier
+                                    .size(65.dp)
+                                    .clip(RoundedCornerShape(15.dp)),
+                                contentDescription = ""
+                            )
+                            Spacer(modifier = Modifier.width(15.dp))
+                            Column {
+                                Text(
+                                    text = it.reviewTitle,
+                                    fontSize = 18.sp,
+                                    style = MaterialTheme.typography.titleLarge,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(end = 20.dp),
+                                    fontWeight = FontWeight.Black,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Spacer(modifier = Modifier.height(5.dp))
+                                Text(
+                                    text = it.reviewContent,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(end = 20.dp),
+                                    color = LocalContentColor.current.copy(0.8f),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+                    }
+                }
+
+                else -> {
+                    items(localLists.value) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 15.dp, top = 15.dp, end = 15.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.FeaturedPlayList,
+                                modifier = Modifier.size(32.dp),
+                                contentDescription = null
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text(text = it.nameOfTheList)
+                        }
+                    }
+                }
+            }
+
             item { Spacer(modifier = Modifier.height(100.dp)) }
         }
     }

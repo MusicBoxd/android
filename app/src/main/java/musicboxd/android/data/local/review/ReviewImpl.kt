@@ -2,7 +2,7 @@ package musicboxd.android.data.local.review
 
 import kotlinx.coroutines.flow.Flow
 import musicboxd.android.data.local.LocalDatabase
-import musicboxd.android.data.local.model.review.Review
+import musicboxd.android.data.local.review.model.Review
 import javax.inject.Inject
 
 class ReviewImpl @Inject constructor(private val localDatabase: LocalDatabase) : ReviewRepo {
