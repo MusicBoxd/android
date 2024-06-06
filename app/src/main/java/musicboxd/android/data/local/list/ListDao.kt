@@ -33,4 +33,6 @@ interface ListDao {
     @Query("SELECT * FROM list ORDER BY localId DESC LIMIT 1")
     fun getLatestList(): Flow<List>
 
+    @Query("DELETE FROM list WHERE localId = :localId")
+    suspend fun deleteAnExistingLocalList(localId: Long)
 }

@@ -110,7 +110,8 @@ fun CreateANewListScreen(
                     Toast.makeText(localContext, it.msg, Toast.LENGTH_SHORT).show()
                 }
 
-                is CreateANewListScreenUIEvent.Nothing -> TODO()
+                is CreateANewListScreenUIEvent.NavigateBack -> navController.popBackStack()
+                CreateANewListScreenUIEvent.Nothing -> TODO()
             }
         }
     }
@@ -376,11 +377,11 @@ fun CreateANewListScreen(
             item(span = {
                 GridItemSpan(this.maxLineSpan)
             }) {
-                    Text(
-                        text = "Music",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontSize = 18.sp
-                    )
+                Text(
+                    text = "Music",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontSize = 18.sp
+                )
                 Spacer(modifier = Modifier.height(28.dp))
             }
             itemsIndexed(
@@ -425,10 +426,10 @@ fun CreateANewListScreen(
                     }
                     Spacer(modifier = Modifier.height(5.dp))
                     FilledTonalIconButton(onClick = {
-                            createANewListScreenViewModel.currentMusicContentSelection.removeAt(
-                                index
-                            )
-                        }) {
+                        createANewListScreenViewModel.currentMusicContentSelection.removeAt(
+                            index
+                        )
+                    }) {
                         Icon(
                             imageVector = Icons.Default.Cancel, contentDescription = ""
                         )

@@ -11,5 +11,6 @@ interface ListRepo {
     fun getThisSpecificLocalListAsFlow(localId: Long): Flow<List>
     fun doesThisListExists(localId: Long): Boolean
     fun getLatestList(): Flow<List>
+    suspend fun deleteAnExistingLocalList(localId: Long)
 
 }

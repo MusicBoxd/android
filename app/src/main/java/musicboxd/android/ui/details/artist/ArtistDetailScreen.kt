@@ -512,356 +512,369 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                         }
                     }
                 }
-        item {
-            Divider(
-                modifier = Modifier.padding(start = 15.dp, bottom = 15.dp, end = 15.dp),
-                color = MaterialTheme.colorScheme.outline.copy(0.25f)
-            )
-        }
-        item {
-            Text(
-                text = "Latest Release",
-                style = MaterialTheme.typography.titleMedium,
-                color = LocalContentColor.current,
-                modifier = Modifier.padding(start = 10.dp)
-            )
-        }
-        if (albums.isNotEmpty()) {
-            item {
-                Row(Modifier
-                    .clickable {
-                        onDiscographyItemClick(albums.first())
-                    }
-                    .fillMaxWidth()
-                    .padding(start = 10.dp, bottom = 15.dp, end = 15.dp, top = 15.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    CoilImage(
-                        imgUrl = albums[0].images.first().url,
-                        modifier = Modifier
-                            .size(100.dp)
-                            .clip(RoundedCornerShape(5.dp)),
-                        contentDescription = ""
+                item {
+                    Divider(
+                        modifier = Modifier.padding(start = 15.dp, bottom = 15.dp, end = 15.dp),
+                        color = MaterialTheme.colorScheme.outline.copy(0.25f)
                     )
-                    Spacer(modifier = Modifier.width(15.dp))
-                    Column(modifier = Modifier.fillMaxWidth(if (albums.first().album_type.contains("single")) 0.75f else 1f)) {
-                        Text(
-                            text = albums[0].name,
-                            style = MaterialTheme.typography.titleLarge,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Black
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = albums[0].album_type.capitalize(),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = LocalContentColor.current.copy(0.85f)
-                        )
-                        if (albums[0].artists.joinToString { it.name } != specificArtistFromSpotifyDTO.value.name) {
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                color = LocalContentColor.current.copy(0.85f),
-                                text = albums[0].artists.joinToString { it.name },
-                                style = MaterialTheme.typography.titleSmall,
-                            )
-                        }
-                    }
-                    if (latestReleases.isNotEmpty() && albums.first().album_type.contains("single")) {
-                        Box(
-                            modifier = Modifier.fillMaxWidth(),
-                            contentAlignment = Alignment.Center
+                }
+                item {
+                    Text(
+                        text = "Latest Release",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = LocalContentColor.current,
+                        modifier = Modifier.padding(start = 10.dp)
+                    )
+                }
+                if (albums.isNotEmpty()) {
+                    item {
+                        Row(Modifier
+                            .clickable {
+                                onDiscographyItemClick(albums.first())
+                            }
+                            .fillMaxWidth()
+                            .padding(start = 10.dp, bottom = 15.dp, end = 15.dp, top = 15.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            if (selectedTrackId.value == currentTrackID.value && (isAnyTrackIsPlayingState.value || isAnyTrackInLoadingState.value)) {
-                                if (isAnyTrackIsPlayingState.value) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(30.dp),
-                                        strokeWidth = 2.5.dp,
-                                        progress = currentPlayingTrackDurationAsFloat.floatValue
-                                    )
-                                } else {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(30.dp),
-                                        strokeWidth = 2.5.dp
+                            CoilImage(
+                                imgUrl = albums[0].images.first().url,
+                                modifier = Modifier
+                                    .size(100.dp)
+                                    .clip(RoundedCornerShape(5.dp)),
+                                contentDescription = ""
+                            )
+                            Spacer(modifier = Modifier.width(15.dp))
+                            Column(
+                                modifier = Modifier.fillMaxWidth(
+                                    if (albums.first().album_type.contains(
+                                            "single"
+                                        )
+                                    ) 0.75f else 1f
+                                )
+                            ) {
+                                Text(
+                                    text = albums[0].name,
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Black
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = albums[0].album_type.capitalize(),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = LocalContentColor.current.copy(0.85f)
+                                )
+                                if (albums[0].artists.joinToString { it.name } != specificArtistFromSpotifyDTO.value.name) {
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        color = LocalContentColor.current.copy(0.85f),
+                                        text = albums[0].artists.joinToString { it.name },
+                                        style = MaterialTheme.typography.titleSmall,
                                     )
                                 }
                             }
-                            IconButton(onClick = {
-                                onPlayClick(latestReleases.first())
-                            }) {
-                                Icon(
-                                    imageVector = if (isAnyTrackInLoadingState.value && selectedTrackId.value == currentTrackID.value) Icons.Default.Audiotrack else if (isAnyTrackIsPlayingState.value && selectedTrackId.value == currentTrackID.value) Icons.Default.Stop else Icons.Default.PlayArrow,
-                                    contentDescription = null
+                            if (latestReleases.isNotEmpty() && albums.first().album_type.contains("single")) {
+                                Box(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (selectedTrackId.value == currentTrackID.value && (isAnyTrackIsPlayingState.value || isAnyTrackInLoadingState.value)) {
+                                        if (isAnyTrackIsPlayingState.value) {
+                                            CircularProgressIndicator(
+                                                modifier = Modifier.size(30.dp),
+                                                strokeWidth = 2.5.dp,
+                                                progress = currentPlayingTrackDurationAsFloat.floatValue
+                                            )
+                                        } else {
+                                            CircularProgressIndicator(
+                                                modifier = Modifier.size(30.dp),
+                                                strokeWidth = 2.5.dp
+                                            )
+                                        }
+                                    }
+                                    IconButton(onClick = {
+                                        onPlayClick(latestReleases.first())
+                                    }) {
+                                        Icon(
+                                            imageVector = if (isAnyTrackInLoadingState.value && selectedTrackId.value == currentTrackID.value) Icons.Default.Audiotrack else if (isAnyTrackIsPlayingState.value && selectedTrackId.value == currentTrackID.value) Icons.Default.Stop else Icons.Default.PlayArrow,
+                                            contentDescription = null
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        Text(
+                            modifier = Modifier.padding(start = 10.dp, bottom = 15.dp),
+                            color = LocalContentColor.current.copy(0.85f),
+                            text = "Released on " + albums[0].release_date,
+                            style = MaterialTheme.typography.titleSmall,
+                        )
+                    }
+                }
+                item {
+                    Divider(
+                        modifier = Modifier.padding(start = 15.dp, bottom = 15.dp, end = 15.dp),
+                        color = MaterialTheme.colorScheme.outline.copy(0.25f)
+                    )
+                }
+                item {
+                    Text(
+                        text = "Top Tracks",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = LocalContentColor.current,
+                        modifier = Modifier.padding(start = 10.dp, bottom = 5.dp)
+                    )
+                }
+                items(topTracks.value.tracks, key = {
+                    it.id
+                }) {
+                    HorizontalTrackPreview(
+                        trackNumber = it.track_number.toString(),
+                        trackName = it.name,
+                        isExplicit = it.explicit,
+                        artists = it.artists.map { it.name },
+                        currentTrackID = it.id,
+                        selectedTrackId = selectedTrackId.value,
+                        isAnyTrackIsPlayingState = isAnyTrackIsPlayingState,
+                        isAnyTrackInLoadingState = isAnyTrackInLoadingState,
+                        onPlayClick = {
+                            onPlayClick(
+                                musicboxd.android.data.remote.api.spotify.model.tracklist.Item(
+                                    artists = it.artists.map {
+                                        Artist(
+                                            id = it.id,
+                                            name = it.name,
+                                            uri = it.uri
+                                        )
+                                    },
+                                    explicit = it.explicit,
+                                    id = it.id,
+                                    name = it.name,
+                                    preview_url = it.preview_url,
+                                    track_number = it.track_number,
+                                    type = it.type,
+                                    uri = it.uri
+                                )
+                            )
+                        },
+                        currentPlayingTrackDurationAsFloat = currentPlayingTrackDurationAsFloat,
+                        trackImgUrl = it.album.images.first().url
+                    )
+                }
+                item {
+                    Text(
+                        text = "Discography",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = LocalContentColor.current,
+                        modifier = Modifier.padding(10.dp)
+                    )
+                }
+                item {
+                    Spacer(modifier = Modifier.height(5.dp))
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(15.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        item {
+                            Spacer(modifier = Modifier.width(0.dp))
+                        }
+                        items(albums, key = {
+                            it.id
+                        }) {
+                            Column(
+                                Modifier
+                                    .width(200.dp)
+                                    .height(275.dp)
+                                    .clickable(indication = null, interactionSource = remember {
+                                        MutableInteractionSource()
+                                    }, onClick = {
+                                        onDiscographyItemClick(it)
+                                    })
+                            ) {
+                                CoilImage(
+                                    imgUrl = it.images.first().url,
+                                    modifier = Modifier
+                                        .size(200.dp)
+                                        .clip(RoundedCornerShape(5.dp)),
+                                    contentDescription = "${it.name} cover art"
+                                )
+                                Spacer(modifier = Modifier.height(5.dp))
+                                Text(
+                                    text = it.name,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = LocalContentColor.current,
+                                    fontSize = 18.sp,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Spacer(modifier = Modifier.height(5.dp))
+                                Text(
+                                    text = it.album_type.capitalize(),
+                                    style = MaterialTheme.typography.titleSmall,
+                                    color = LocalContentColor.current.copy(0.85f),
                                 )
                             }
                         }
-                    }
-                }
-                Text(
-                    modifier = Modifier.padding(start = 10.dp, bottom = 15.dp),
-                    color = LocalContentColor.current.copy(0.85f),
-                    text = "Released on " + albums[0].release_date,
-                    style = MaterialTheme.typography.titleSmall,
-                )
-            }
-        }
-        item {
-            Divider(
-                modifier = Modifier.padding(start = 15.dp, bottom = 15.dp, end = 15.dp),
-                color = MaterialTheme.colorScheme.outline.copy(0.25f)
-            )
-        }
-        item {
-            Text(
-                text = "Top Tracks",
-                style = MaterialTheme.typography.titleMedium,
-                color = LocalContentColor.current,
-                modifier = Modifier.padding(start = 10.dp, bottom = 5.dp)
-            )
-        }
-        items(topTracks.value.tracks, key = {
-            it.id
-        }) {
-            HorizontalTrackPreview(
-                trackNumber = it.track_number.toString(),
-                trackName = it.name,
-                isExplicit = it.explicit,
-                artists = it.artists.map { it.name },
-                currentTrackID = it.id,
-                selectedTrackId = selectedTrackId.value,
-                isAnyTrackIsPlayingState = isAnyTrackIsPlayingState,
-                isAnyTrackInLoadingState = isAnyTrackInLoadingState,
-                onPlayClick = {
-                    onPlayClick(
-                        musicboxd.android.data.remote.api.spotify.model.tracklist.Item(
-                            artists = it.artists.map {
-                                Artist(
-                                    id = it.id,
-                                    name = it.name,
-                                    uri = it.uri
-                                )
-                            },
-                            explicit = it.explicit,
-                            id = it.id,
-                            name = it.name,
-                            preview_url = it.preview_url,
-                            track_number = it.track_number,
-                            type = it.type,
-                            uri = it.uri
-                        )
-                    )
-                },
-                currentPlayingTrackDurationAsFloat = currentPlayingTrackDurationAsFloat,
-                trackImgUrl = it.album.images.first().url
-            )
-        }
-        item {
-            Text(
-                text = "Discography",
-                style = MaterialTheme.typography.titleMedium,
-                color = LocalContentColor.current,
-                modifier = Modifier.padding(10.dp)
-            )
-        }
-        item {
-            Spacer(modifier = Modifier.height(5.dp))
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(15.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                item {
-                    Spacer(modifier = Modifier.width(0.dp))
-                }
-                items(albums, key = {
-                    it.id
-                }) {
-                    Column(
-                        Modifier
-                            .width(200.dp)
-                            .height(275.dp)
-                            .clickable(indication = null, interactionSource = remember {
-                                MutableInteractionSource()
-                            }, onClick = {
-                                onDiscographyItemClick(it)
-                            })
-                    ) {
-                        CoilImage(
-                            imgUrl = it.images.first().url,
-                            modifier = Modifier
-                                .size(200.dp)
-                                .clip(RoundedCornerShape(5.dp)),
-                            contentDescription = "${it.name} cover art"
-                        )
-                        Spacer(modifier = Modifier.height(5.dp))
-                        Text(
-                            text = it.name,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = LocalContentColor.current,
-                            fontSize = 18.sp,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Spacer(modifier = Modifier.height(5.dp))
-                        Text(
-                            text = it.album_type.capitalize(),
-                            style = MaterialTheme.typography.titleSmall,
-                            color = LocalContentColor.current.copy(0.85f),
-                        )
+                        item {
+                            Spacer(modifier = Modifier.width(0.dp))
+                        }
                     }
                 }
                 item {
-                    Spacer(modifier = Modifier.width(0.dp))
-                }
-            }
-        }
-        item {
-            FilledTonalButton(modifier = Modifier
-                .fillMaxWidth()
-                .padding(15.dp), onClick = {
-                isBtmSheetVisible.value = true
-                bottomSheetType.value = ArtistScreenBtmSheetType.DISCOGRAPHY.name
-                coroutineScope.launch {
-                    bottomModalSheetState.expand()
-                }
-            }) {
-                Text(
-                    text = "See discography",
-                    color = LocalContentColor.current,
-                    style = MaterialTheme.typography.titleSmall
-                )
-            }
-        }
-        item {
-            Text(
-                text = "About",
-                style = MaterialTheme.typography.titleMedium,
-                color = LocalContentColor.current,
-                modifier = Modifier.padding(10.dp)
-            )
-        }
-        item {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(10.dp)
-                    .clip(RoundedCornerShape(10.dp))
-            ) {
-                CoilImage(
-                    imgUrl = alternativeImageOfAnArtist.value,
-                    modifier = Modifier
+                    FilledTonalButton(modifier = Modifier
                         .fillMaxWidth()
-                        .wrapContentHeight()
-                        .fadedEdges(colorScheme)
-                        .fadedEdges(colorScheme),
-                    contentDescription = "${specificArtistFromSpotifyDTO.value.name} Wiki"
-                )
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.BottomStart)
-                        .clickable(interactionSource = remember {
-                            MutableInteractionSource()
-                        }, indication = null, onClick = {
-                            isBtmSheetVisible.value = true
-                            bottomSheetType.value = ArtistScreenBtmSheetType.BIO.name
-                            coroutineScope.launch {
-                                bottomModalSheetState.expand()
-                            }
-                        }),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = artistBio.value.trim()
-                            .replace("\n", "\n\n") + if (artistBio.value.endsWith(".")) "" else ".",
-                        style = MaterialTheme.typography.titleSmall,
-                        color = LocalContentColor.current,
-                        maxLines = 5,
-                        fontSize = 16.sp,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .fillMaxWidth(0.85f)
-                            .padding(10.dp)
-                    )
-                    IconButton(onClick = {
+                        .padding(15.dp), onClick = {
                         isBtmSheetVisible.value = true
-                        bottomSheetType.value = ArtistScreenBtmSheetType.BIO.name
+                        bottomSheetType.value = ArtistScreenBtmSheetType.DISCOGRAPHY.name
                         coroutineScope.launch {
                             bottomModalSheetState.expand()
                         }
                     }) {
-                        Icon(imageVector = Icons.Default.ChevronRight, contentDescription = "")
-                    }
-                }
-            }
-        }
-
-        item {
-            Text(
-                text = "Socials",
-                style = MaterialTheme.typography.titleMedium,
-                color = LocalContentColor.current,
-                modifier = Modifier.padding(10.dp)
-            )
-        }
-        item {
-            detailsViewModel.artistSocials.value.forEach {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            localUriHandler.openUri(it)
-                        }) {
-                    IconButton(onClick = {
-                        localUriHandler.openUri(it)
-                    }) {
-                        CoilImage(
-                            imgUrl = when {
-                                it.lowercase()
-                                    .contains("facebook") -> "https://store-images.s-microsoft.com/image/apps.37935.9007199266245907.b029bd80-381a-4869-854f-bac6f359c5c9.91f8693c-c75b-4050-a796-63e1314d18c9?h=210"
-
-                                it.lowercase()
-                                    .contains("instagram") -> "https://lookaside.fbsbx.com/elementpath/media/?media_id=676073767417807&version=1711727173"
-
-                                it.lowercase()
-                                    .contains("twitter") -> "https://store-images.s-microsoft.com/image/apps.60673.9007199266244427.4d45042b-d7a5-4a83-be66-97779553b24d.5d82b7eb-9734-4b51-b65d-a0383348ab1b?h=210"
-
-                                it.lowercase()
-                                    .contains("wikipedia") -> "https://store-images.s-microsoft.com/image/apps.65178.9007199266246789.dfb1c4fb-983f-4ce1-82c2-212765396aff.e4c94818-3916-474c-ac14-3be893975101?h=210"
-
-                                else -> ""
-                            }, modifier = Modifier
-                                .size(32.dp)
-                                .then(
-                                    if (!it
-                                            .lowercase()
-                                            .contains("instagram")
-                                    ) Modifier.clip(CircleShape) else Modifier
-                                ), contentDescription = ""
+                        Text(
+                            text = "See discography",
+                            color = LocalContentColor.current,
+                            style = MaterialTheme.typography.titleSmall
                         )
                     }
+                }
+                item {
                     Text(
-                        style = MaterialTheme.typography.titleSmall,
-                        text = when {
-                            it.lowercase()
-                                .contains("facebook") -> "Facebook"
-
-                            it.lowercase()
-                                .contains("instagram") -> "Instagram"
-
-                            it.lowercase()
-                                .contains("twitter") -> "Twitter"
-
-                            it.lowercase()
-                                .contains("wikipedia") -> "Wikipedia"
-
-                            else -> ""
-                        }
+                        text = "About",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = LocalContentColor.current,
+                        modifier = Modifier.padding(10.dp)
                     )
                 }
-                Spacer(modifier = Modifier.height(5.dp))
-            }
-        }
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                    ) {
+                        CoilImage(
+                            imgUrl = alternativeImageOfAnArtist.value,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight()
+                                .fadedEdges(colorScheme)
+                                .fadedEdges(colorScheme),
+                            contentDescription = "${specificArtistFromSpotifyDTO.value.name} Wiki"
+                        )
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .align(Alignment.BottomStart)
+                                .clickable(interactionSource = remember {
+                                    MutableInteractionSource()
+                                }, indication = null, onClick = {
+                                    isBtmSheetVisible.value = true
+                                    bottomSheetType.value = ArtistScreenBtmSheetType.BIO.name
+                                    coroutineScope.launch {
+                                        bottomModalSheetState.expand()
+                                    }
+                                }),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = artistBio.value.trim()
+                                    .replace(
+                                        "\n",
+                                        "\n\n"
+                                    ) + if (artistBio.value.endsWith(".")) "" else ".",
+                                style = MaterialTheme.typography.titleSmall,
+                                color = LocalContentColor.current,
+                                maxLines = 5,
+                                fontSize = 16.sp,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier
+                                    .fillMaxWidth(0.85f)
+                                    .padding(10.dp)
+                            )
+                            IconButton(onClick = {
+                                isBtmSheetVisible.value = true
+                                bottomSheetType.value = ArtistScreenBtmSheetType.BIO.name
+                                coroutineScope.launch {
+                                    bottomModalSheetState.expand()
+                                }
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.ChevronRight,
+                                    contentDescription = ""
+                                )
+                            }
+                        }
+                    }
+                }
+
+                item {
+                    Text(
+                        text = "Socials",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = LocalContentColor.current,
+                        modifier = Modifier.padding(10.dp)
+                    )
+                }
+                item {
+                    detailsViewModel.artistSocials.value.forEach {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    localUriHandler.openUri(it)
+                                }) {
+                            IconButton(onClick = {
+                                localUriHandler.openUri(it)
+                            }) {
+                                CoilImage(
+                                    imgUrl = when {
+                                        it.lowercase()
+                                            .contains("facebook") -> "https://store-images.s-microsoft.com/image/apps.37935.9007199266245907.b029bd80-381a-4869-854f-bac6f359c5c9.91f8693c-c75b-4050-a796-63e1314d18c9?h=210"
+
+                                        it.lowercase()
+                                            .contains("instagram") -> "https://lookaside.fbsbx.com/elementpath/media/?media_id=676073767417807&version=1711727173"
+
+                                        it.lowercase()
+                                            .contains("twitter") -> "https://store-images.s-microsoft.com/image/apps.60673.9007199266244427.4d45042b-d7a5-4a83-be66-97779553b24d.5d82b7eb-9734-4b51-b65d-a0383348ab1b?h=210"
+
+                                        it.lowercase()
+                                            .contains("wikipedia") -> "https://store-images.s-microsoft.com/image/apps.65178.9007199266246789.dfb1c4fb-983f-4ce1-82c2-212765396aff.e4c94818-3916-474c-ac14-3be893975101?h=210"
+
+                                        else -> ""
+                                    }, modifier = Modifier
+                                        .size(32.dp)
+                                        .then(
+                                            if (!it
+                                                    .lowercase()
+                                                    .contains("instagram")
+                                            ) Modifier.clip(CircleShape) else Modifier
+                                        ), contentDescription = ""
+                                )
+                            }
+                            Text(
+                                style = MaterialTheme.typography.titleSmall,
+                                text = when {
+                                    it.lowercase()
+                                        .contains("facebook") -> "Facebook"
+
+                                    it.lowercase()
+                                        .contains("instagram") -> "Instagram"
+
+                                    it.lowercase()
+                                        .contains("twitter") -> "Twitter"
+
+                                    it.lowercase()
+                                        .contains("wikipedia") -> "Wikipedia"
+
+                                    else -> ""
+                                }
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(5.dp))
+                    }
+                }
             }
         }
     }

@@ -40,8 +40,8 @@ class AddScreenViewModel @Inject constructor(
     }
 
     private suspend fun loadLocalReviews() {
-            reviewRepo.getAllExistingLocalReviews().collectLatest {
-                _localReviews.emit(it)
+        reviewRepo.getAllExistingLocalReviews().collectLatest {
+            _localReviews.emit(it)
         }
     }
 }

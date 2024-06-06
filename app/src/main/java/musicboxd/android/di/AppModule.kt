@@ -158,8 +158,11 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideMusicBoxdAPIRepo(musicBoxdAPIService: MusicBoxdAPIService): MusicBoxdAPIRepo {
-        return MusicBoxdAPIImpl(musicBoxdAPIService)
+    fun provideMusicBoxdAPIRepo(
+        musicBoxdAPIService: MusicBoxdAPIService,
+        listImpl: ListImpl
+    ): MusicBoxdAPIRepo {
+        return MusicBoxdAPIImpl(musicBoxdAPIService, listImpl)
     }
 
     @Provides

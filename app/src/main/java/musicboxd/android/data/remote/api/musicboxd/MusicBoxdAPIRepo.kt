@@ -11,6 +11,7 @@ import retrofit2.http.Body
 interface MusicBoxdAPIRepo {
     suspend fun postANewReview(@Body reviewDTO: ReviewDTO, authorization: String): APIResult<String>
     suspend fun postANewList(
+        localListId: Long,
         listDTO: ListDTO,
         authorization: String
     ): APIResult<String>

@@ -1,5 +1,6 @@
 package musicboxd.android.data.remote.api.musicboxd
 
+import musicboxd.android.data.local.list.ListImpl
 import musicboxd.android.data.remote.api.APIResult
 import musicboxd.android.data.remote.api.musicboxd.model.MusicBoxdLoginDTO
 import musicboxd.android.data.remote.api.musicboxd.model.MusicBoxdTokenDTO
@@ -8,7 +9,10 @@ import musicboxd.android.data.remote.api.musicboxd.model.list.ListDTO
 import musicboxd.android.data.remote.api.musicboxd.model.review.MusicBoxdPublicReviews
 import javax.inject.Inject
 
-class MusicBoxdAPIImpl @Inject constructor(private val musicBoxdAPIService: MusicBoxdAPIService) :
+class MusicBoxdAPIImpl @Inject constructor(
+    private val musicBoxdAPIService: MusicBoxdAPIService,
+    private val listImpl: ListImpl
+) :
     MusicBoxdAPIRepo {
     override suspend fun postANewReview(
         reviewDTO: ReviewDTO,
@@ -22,9 +26,14 @@ class MusicBoxdAPIImpl @Inject constructor(private val musicBoxdAPIService: Musi
         }
     }
 
-    override suspend fun postANewList(listDTO: ListDTO, authorization: String): APIResult<String> {
+    override suspend fun postANewList(
+        localListId: Long,
+        listDTO: ListDTO,
+        authorization: String
+    ): APIResult<String> {
         return try {
             musicBoxdAPIService.postANewList(listDTO, "Bearer ".plus(authorization))
+            listImpl.deleteAnExistingLocalList(localListId)
             APIResult.Success("Success")
         } catch (e: Exception) {
             e.printStackTrace()

@@ -124,6 +124,7 @@ class ReviewScreenViewModel @Inject constructor(
             }
         }
     }
+
     fun createANewLocalReview(albumDetailScreenState: AlbumDetailScreenState) {
         viewModelScope.launch {
             if (!reviewRepo.doesThisReviewExistsOnLocalDevice(albumDetailScreenState.itemUri)) {
@@ -200,6 +201,7 @@ class ReviewScreenViewModel @Inject constructor(
             }
         }
     }
+
     fun updateAnExistingLocalReview(review: Review) {
         viewModelScope.launch {
             reviewRepo.updateAnExistingLocalReview(review)

@@ -33,4 +33,8 @@ class ListImpl @Inject constructor(private val localDatabase: LocalDatabase) : L
     override fun getLatestList(): Flow<List> {
         return localDatabase.localListDao().getLatestList()
     }
+
+    override suspend fun deleteAnExistingLocalList(localId: Long) {
+        localDatabase.localListDao().deleteAnExistingLocalList(localId)
+    }
 }

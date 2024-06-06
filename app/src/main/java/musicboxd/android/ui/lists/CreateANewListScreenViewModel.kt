@@ -200,6 +200,7 @@ class CreateANewListScreenViewModel @Inject constructor(
                 is APIResult.Failure -> TODO()
                 is APIResult.Success -> {
                     when (musicBoxdAPIRepo.postANewList(
+                        localListId = currentModifyingList.localId,
                         ListDTO(listName = listName,
                             lisDescription = listDescription,
                             isListPublic = isListPublic,
@@ -213,6 +214,7 @@ class CreateANewListScreenViewModel @Inject constructor(
 
                         is APIResult.Success -> {
                             pushUiEvent(CreateANewListScreenUIEvent.ShowToast("Success"))
+                            pushUiEvent(CreateANewListScreenUIEvent.NavigateBack)
                         }
                     }
                 }
