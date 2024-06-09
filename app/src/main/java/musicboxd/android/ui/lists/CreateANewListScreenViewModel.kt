@@ -13,14 +13,12 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import musicboxd.android.TEMP_PASSWORD
-import musicboxd.android.TEMP_USER_NAME
 import musicboxd.android.data.local.list.ListRepo
 import musicboxd.android.data.local.list.model.List
 import musicboxd.android.data.local.list.model.MusicContent
+import musicboxd.android.data.local.user.UserRepo
 import musicboxd.android.data.remote.api.APIResult
 import musicboxd.android.data.remote.api.musicboxd.MusicBoxdAPIRepo
-import musicboxd.android.data.remote.api.musicboxd.model.MusicBoxdLoginDTO
 import musicboxd.android.data.remote.api.musicboxd.model.list.ListDTO
 import musicboxd.android.ui.details.album.AlbumDetailScreenState
 import javax.inject.Inject
@@ -28,7 +26,8 @@ import javax.inject.Inject
 @HiltViewModel
 class CreateANewListScreenViewModel @Inject constructor(
     private val musicBoxdAPIRepo: MusicBoxdAPIRepo,
-    private val listRepo: ListRepo
+    private val listRepo: ListRepo,
+    private val userRepo: UserRepo
 ) : ViewModel() {
     val currentMusicContentSelection = mutableStateListOf<AlbumDetailScreenState>()
 
@@ -192,38 +191,30 @@ class CreateANewListScreenViewModel @Inject constructor(
 
     fun publishANewList(listName: String, listDescription: String, isListPublic: Boolean) {
         viewModelScope.launch(Dispatchers.Default) {
-            when (val tokenData = musicBoxdAPIRepo.getUserToken(
-                MusicBoxdLoginDTO(
-                    userName = TEMP_USER_NAME, password = TEMP_PASSWORD
-                )
+            val userToken = userRepo.getUserData().userToken
+            when (musicBoxdAPIRepo.postANewList(
+                localListId = currentModifyingList.localId,
+                ListDTO(listName = listName,
+                    lisDescription = listDescription,
+                    isListPublic = isListPublic,
+                    spotifyURIs = currentMusicContentSelection.toList()
+                        .map { it.itemUri }),
+                userToken
             )) {
-                is APIResult.Failure -> TODO()
-                is APIResult.Success -> {
-                    when (musicBoxdAPIRepo.postANewList(
-                        localListId = currentModifyingList.localId,
-                        ListDTO(listName = listName,
-                            lisDescription = listDescription,
-                            isListPublic = isListPublic,
-                            spotifyURIs = currentMusicContentSelection.toList()
-                                .map { it.itemUri }),
-                        tokenData.data.jwt
-                    )) {
-                        is APIResult.Failure -> {
-                            pushUiEvent(CreateANewListScreenUIEvent.ShowToast("Failure"))
-                        }
+                is APIResult.Failure -> {
+                    pushUiEvent(CreateANewListScreenUIEvent.ShowToast("Failure"))
+                }
 
-                        is APIResult.Success -> {
-                            pushUiEvent(CreateANewListScreenUIEvent.ShowToast("Success"))
-                            pushUiEvent(CreateANewListScreenUIEvent.NavigateBack)
-                        }
-                    }
+                is APIResult.Success -> {
+                    pushUiEvent(CreateANewListScreenUIEvent.ShowToast("Success"))
+                    pushUiEvent(CreateANewListScreenUIEvent.NavigateBack)
                 }
             }
         }
-
     }
 
     private suspend fun pushUiEvent(createANewListScreenUIEvent: CreateANewListScreenUIEvent) {
         _uiEvent.send(createANewListScreenUIEvent)
     }
 }
+

@@ -1,12 +1,15 @@
-package musicboxd.android.data.local.model.user
+package musicboxd.android.data.local.user
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "user")
 data class User(
-    @PrimaryKey(autoGenerate = true) val userId: Long = 0,
+    @PrimaryKey(autoGenerate = true) val userRemoteId: Long,
     val userProfileName: String,
+    val password: String,
+    val userToken: String,
+    val refreshToken: String,
     val userName: String,
     val userBio: String,
     val userWebsite: String,

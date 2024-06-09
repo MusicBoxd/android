@@ -18,6 +18,8 @@ import musicboxd.android.ui.review.AddANewReviewScreen
 import musicboxd.android.ui.review.AddScreen
 import musicboxd.android.ui.search.SearchScreen
 import musicboxd.android.ui.search.charts.ChartsScreen
+import musicboxd.android.ui.startup.StartUpScreen
+import musicboxd.android.ui.startup.login.SignInScreen
 import musicboxd.android.ui.user.profile.UserProfile
 import musicboxd.android.ui.user.profile.editProfile.EditProfile
 import musicboxd.android.ui.user.profile.editProfile.EditProfileViewModel
@@ -31,7 +33,7 @@ fun MainNavigation(
 ) {
     NavHost(
         navController = navController,
-        startDestination = NavigationRoutes.ADD.name
+        startDestination = NavigationRoutes.START_UP.name
     ) {
         composable(route = NavigationRoutes.HOME.name) {
             HomeScreen()
@@ -86,6 +88,12 @@ fun MainNavigation(
         }
         composable(route = NavigationRoutes.REORDER_MUSIC_CONTENT_SCREEN.name) {
             ReorderMusicContentScreen(createANewListScreenViewModel)
+        }
+        composable(route = NavigationRoutes.START_UP.name) {
+            StartUpScreen(navController = navController)
+        }
+        composable(route = NavigationRoutes.SIGN_IN.name) {
+            SignInScreen(navController = navController)
         }
     }
 }

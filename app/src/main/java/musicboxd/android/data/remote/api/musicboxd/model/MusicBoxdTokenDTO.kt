@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 data class MusicBoxdTokenDTO(
     val jwt: String,
     val refreshJwt: String,
-    val userId: Int,
+    val userId: Long,
     val userRole: String,
     val username: String
 )

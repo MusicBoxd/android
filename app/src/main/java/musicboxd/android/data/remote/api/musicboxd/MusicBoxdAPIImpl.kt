@@ -7,6 +7,8 @@ import musicboxd.android.data.remote.api.musicboxd.model.MusicBoxdTokenDTO
 import musicboxd.android.data.remote.api.musicboxd.model.ReviewDTO
 import musicboxd.android.data.remote.api.musicboxd.model.list.ListDTO
 import musicboxd.android.data.remote.api.musicboxd.model.review.MusicBoxdPublicReviews
+import musicboxd.android.data.remote.api.musicboxd.model.user.SignUpDTO
+import musicboxd.android.data.remote.api.musicboxd.model.user.User
 import javax.inject.Inject
 
 class MusicBoxdAPIImpl @Inject constructor(
@@ -54,6 +56,15 @@ class MusicBoxdAPIImpl @Inject constructor(
             APIResult.Success(musicBoxdAPIService.getReviews())
         } catch (e: Exception) {
             APIResult.Failure("Failed at getReviews")
+        }
+    }
+
+    override suspend fun createANewUser(signUpDTO: SignUpDTO): APIResult<User> {
+        return try {
+            APIResult.Success(musicBoxdAPIService.createANewUser(signUpDTO))
+        } catch (e: Exception) {
+            e.printStackTrace()
+            APIResult.Failure("Failed at createANewUser")
         }
     }
 

@@ -50,6 +50,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
@@ -65,10 +67,11 @@ import musicboxd.android.utils.Spacing
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun UserProfile(navController: NavController) {
+fun UserProfile(navController: NavController, userProfileVM: UserProfileVM = hiltViewModel()) {
     val pagerState = rememberPagerState()
     val coroutineScope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
+    val userData = userProfileVM.userData.collectAsStateWithLifecycle()
     MusicBoxdTheme {
         BoxWithConstraints {
             val screenHeight = maxHeight
@@ -188,7 +191,7 @@ fun UserProfile(navController: NavController) {
                     ) {
                         Column(modifier = Modifier.width(screenWidth - 130.dp)) {
                             Text(
-                                text = "Nasty Nas",
+                                text = userData.value.userProfileName,
                                 fontSize = 18.sp,
                                 modifier = Modifier.padding(start = 15.dp, top = 15.dp),
                                 style = MaterialTheme.typography.titleLarge,
@@ -197,7 +200,7 @@ fun UserProfile(navController: NavController) {
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "@nas",
+                                text = "@${userData.value.userName}",
                                 fontSize = 16.sp,
                                 modifier = Modifier.padding(start = 15.dp),
                                 style = MaterialTheme.typography.titleSmall,

@@ -13,6 +13,8 @@ import musicboxd.android.data.local.list.ListImpl
 import musicboxd.android.data.local.list.ListRepo
 import musicboxd.android.data.local.review.ReviewImpl
 import musicboxd.android.data.local.review.ReviewRepo
+import musicboxd.android.data.local.user.UserImpl
+import musicboxd.android.data.local.user.UserRepo
 import musicboxd.android.data.remote.api.lastfm.LastFMAPIImpl
 import musicboxd.android.data.remote.api.lastfm.LastFMAPIRepo
 import musicboxd.android.data.remote.api.lastfm.LastFMAPIService
@@ -181,6 +183,12 @@ object AppModule {
     @Singleton
     fun provideListRepo(localDatabase: LocalDatabase): ListRepo {
         return ListImpl(localDatabase)
+    }
+
+    @Provides
+    @Singleton
+    fun provideUserRepo(localDatabase: LocalDatabase): UserRepo {
+        return UserImpl(localDatabase)
     }
 
     @Provides

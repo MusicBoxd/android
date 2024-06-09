@@ -2,21 +2,39 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "6d82b9ee6562ab1c73b69349d71619b4",
+    "identityHash": "7961c4b573b104372c9116fdeed25bfc",
     "entities": [
       {
         "tableName": "user",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `userProfileName` TEXT NOT NULL, `userName` TEXT NOT NULL, `userBio` TEXT NOT NULL, `userWebsite` TEXT NOT NULL, `profilePicBase64Data` TEXT NOT NULL, `profileHeaderBase64Data` TEXT NOT NULL, `userLocation` TEXT NOT NULL, `userJoinedDate` TEXT NOT NULL, `followingCount` INTEGER NOT NULL, `followersCount` INTEGER NOT NULL, `reviewsCount` INTEGER NOT NULL, `reviews` TEXT NOT NULL, `recommendations` TEXT NOT NULL, `likedReleases` TEXT NOT NULL, `listenedReleases` TEXT NOT NULL, `optedInNotifications` TEXT NOT NULL, `accountStatus` TEXT NOT NULL, `lastActive` TEXT NOT NULL, `savedEvents` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`userRemoteId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `userProfileName` TEXT NOT NULL, `password` TEXT NOT NULL, `userToken` TEXT NOT NULL, `refreshToken` TEXT NOT NULL, `userName` TEXT NOT NULL, `userBio` TEXT NOT NULL, `userWebsite` TEXT NOT NULL, `profilePicBase64Data` TEXT NOT NULL, `profileHeaderBase64Data` TEXT NOT NULL, `userLocation` TEXT NOT NULL, `userJoinedDate` TEXT NOT NULL, `followingCount` INTEGER NOT NULL, `followersCount` INTEGER NOT NULL, `reviewsCount` INTEGER NOT NULL, `reviews` TEXT NOT NULL, `recommendations` TEXT NOT NULL, `likedReleases` TEXT NOT NULL, `listenedReleases` TEXT NOT NULL, `optedInNotifications` TEXT NOT NULL, `accountStatus` TEXT NOT NULL, `lastActive` TEXT NOT NULL, `savedEvents` TEXT NOT NULL)",
         "fields": [
           {
-            "fieldPath": "userId",
-            "columnName": "userId",
+            "fieldPath": "userRemoteId",
+            "columnName": "userRemoteId",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
             "fieldPath": "userProfileName",
             "columnName": "userProfileName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "password",
+            "columnName": "password",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userToken",
+            "columnName": "userToken",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "refreshToken",
+            "columnName": "refreshToken",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -132,7 +150,7 @@
         "primaryKey": {
           "autoGenerate": true,
           "columnNames": [
-            "userId"
+            "userRemoteId"
           ]
         },
         "indices": [],
@@ -412,7 +430,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6d82b9ee6562ab1c73b69349d71619b4')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7961c4b573b104372c9116fdeed25bfc')"
     ]
   }
 }

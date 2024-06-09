@@ -5,6 +5,8 @@ import musicboxd.android.data.remote.api.musicboxd.model.MusicBoxdTokenDTO
 import musicboxd.android.data.remote.api.musicboxd.model.ReviewDTO
 import musicboxd.android.data.remote.api.musicboxd.model.list.ListDTO
 import musicboxd.android.data.remote.api.musicboxd.model.review.MusicBoxdPublicReviews
+import musicboxd.android.data.remote.api.musicboxd.model.user.SignUpDTO
+import musicboxd.android.data.remote.api.musicboxd.model.user.User
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -32,4 +34,7 @@ interface MusicBoxdAPIService {
 
     @GET("api/user/playlist/public")
     suspend fun getPublicLists(@Header("Authorization") authorization: String): List<ListDTO>
+
+    @POST("/api/auth/user/signup")
+    suspend fun createANewUser(@Body signUpDTO: SignUpDTO): User
 }

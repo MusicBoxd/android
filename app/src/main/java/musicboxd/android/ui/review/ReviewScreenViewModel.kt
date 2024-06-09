@@ -10,13 +10,11 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import musicboxd.android.TEMP_PASSWORD
-import musicboxd.android.TEMP_USER_NAME
 import musicboxd.android.data.local.review.ReviewRepo
 import musicboxd.android.data.local.review.model.Review
+import musicboxd.android.data.local.user.UserRepo
 import musicboxd.android.data.remote.api.APIResult
 import musicboxd.android.data.remote.api.musicboxd.MusicBoxdAPIRepo
-import musicboxd.android.data.remote.api.musicboxd.model.MusicBoxdLoginDTO
 import musicboxd.android.data.remote.api.musicboxd.model.ReviewDTO
 import musicboxd.android.data.remote.api.spotify.model.tracklist.Artist
 import musicboxd.android.ui.details.album.AlbumDetailScreenState
@@ -25,7 +23,8 @@ import javax.inject.Inject
 @HiltViewModel
 class ReviewScreenViewModel @Inject constructor(
     private val musicBoxdAPIRepo: MusicBoxdAPIRepo,
-    private val reviewRepo: ReviewRepo
+    private val reviewRepo: ReviewRepo,
+    private val userRepo: UserRepo
 ) :
     ViewModel() {
 
@@ -100,25 +99,16 @@ class ReviewScreenViewModel @Inject constructor(
 
     fun postANewReview(reviewDTO: ReviewDTO) {
         viewModelScope.launch(Dispatchers.Default) {
-            when (val tokenData = musicBoxdAPIRepo.getUserToken(
-                MusicBoxdLoginDTO(
-                    userName = TEMP_USER_NAME,
-                    password = TEMP_PASSWORD
-                )
-            )) {
-                is APIResult.Failure -> TODO()
-                is APIResult.Success -> {
-                    when (val postedReview =
-                        musicBoxdAPIRepo.postANewReview(reviewDTO, tokenData.data.jwt)) {
-                        is APIResult.Failure -> {
-                            sendAnEvent(ReviewScreenUIEvent.ShowToast(postedReview.message))
-                        }
+            val userToken = userRepo.getUserData().userToken
+            when (val postedReview =
+                musicBoxdAPIRepo.postANewReview(reviewDTO, userToken)) {
+                is APIResult.Failure -> {
+                    sendAnEvent(ReviewScreenUIEvent.ShowToast(postedReview.message))
+                }
 
-                        is APIResult.Success -> {
-                            viewModelScope.launch {
-                                sendAnEvent(ReviewScreenUIEvent.ShowToast(postedReview.data))
-                            }
-                        }
+                is APIResult.Success -> {
+                    viewModelScope.launch {
+                        sendAnEvent(ReviewScreenUIEvent.ShowToast(postedReview.data))
                     }
                 }
             }
