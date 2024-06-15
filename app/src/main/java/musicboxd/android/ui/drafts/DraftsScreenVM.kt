@@ -1,4 +1,4 @@
-package musicboxd.android.ui.review
+package musicboxd.android.ui.drafts
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,7 +14,7 @@ import musicboxd.android.data.local.review.model.Review
 import javax.inject.Inject
 
 @HiltViewModel
-class AddScreenViewModel @Inject constructor(
+class DraftsScreenVM @Inject constructor(
     private val reviewRepo: ReviewRepo,
     private val listRepo: ListRepo
 ) : ViewModel() {

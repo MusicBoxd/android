@@ -9,6 +9,8 @@ import musicboxd.android.ui.details.DetailsViewModel
 import musicboxd.android.ui.details.album.AlbumDetailScreen
 import musicboxd.android.ui.details.artist.ArtistDetailScreen
 import musicboxd.android.ui.details.canvas.VideoCanvas
+import musicboxd.android.ui.drafts.DraftsScreen
+import musicboxd.android.ui.events.SavedEventsScreen
 import musicboxd.android.ui.home.HomeScreen
 import musicboxd.android.ui.lists.CreateANewListScreen
 import musicboxd.android.ui.lists.CreateANewListScreenViewModel
@@ -94,6 +96,12 @@ fun MainNavigation(
         }
         composable(route = NavigationRoutes.SIGN_IN.name) {
             SignInScreen(navController = navController)
+        }
+        composable(route = NavigationRoutes.SAVED_EVENTS.name) {
+            SavedEventsScreen()
+        }
+        composable(route = NavigationRoutes.DRAFTS.name) {
+            DraftsScreen(detailsViewModel, navController, createANewListScreenViewModel)
         }
     }
 }

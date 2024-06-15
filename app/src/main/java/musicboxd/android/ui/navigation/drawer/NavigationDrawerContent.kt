@@ -57,12 +57,14 @@ fun NavigationDrawerContent(navController: NavController, navigationDrawerState:
             name = "Saved Events",
             imgVector = Icons.Default.Event,
             onClick = {
+                navController.navigate(NavigationRoutes.SAVED_EVENTS.name)
 
             }),
         NavigationDrawerModel(
             name = "Drafts",
             imgVector = Icons.Default.Drafts,
             onClick = {
+                navController.navigate(NavigationRoutes.DRAFTS.name)
 
             }),
         NavigationDrawerModel(
