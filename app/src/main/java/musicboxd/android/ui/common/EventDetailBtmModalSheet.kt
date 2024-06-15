@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import musicboxd.android.data.remote.scrape.artist.tour.model.ArtistTourDTO
+import musicboxd.android.data.remote.scrape.artist.tour.model.event.EventDetailsDTO
 import musicboxd.android.ui.details.DetailsViewModel
 import musicboxd.android.ui.notifications.common.OnTourInfoComposable
 
@@ -44,7 +45,9 @@ fun EventDetailBtmModalSheet(
     isVisible: MutableState<Boolean>,
     eventID: MutableState<String>,
     detailsViewModel: DetailsViewModel,
-    artistTourDTO: ArtistTourDTO
+    artistTourDTO: ArtistTourDTO,
+    onEventSaveOrDeleteButtonClick: (EventDetailsDTO) -> Unit,
+    alreadyExists: MutableState<Boolean>
 ) {
     val coroutineScope = rememberCoroutineScope()
     val bottomModalSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -132,12 +135,13 @@ fun EventDetailBtmModalSheet(
                     }
                 }
                 FilledTonalButton(
-                    onClick = { /*TODO*/ }, modifier = Modifier
+                    onClick = { onEventSaveOrDeleteButtonClick(eventData.value) },
+                    modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 15.dp, end = 15.dp)
                 ) {
                     Text(
-                        text = "Save this event",
+                        text = if (alreadyExists.value) "Delete this event" else "Save this event",
                         style = MaterialTheme.typography.titleLarge
                     )
                 }

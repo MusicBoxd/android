@@ -3,6 +3,7 @@ package musicboxd.android.ui.search
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
@@ -26,7 +27,6 @@ import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -78,10 +78,11 @@ fun SearchScreen(
     detailsViewModel: DetailsViewModel,
     chartsScreenViewModel: ChartsScreenViewModel
 ) {
-    val searchQuery = searchScreenViewModel.searchQuery.collectAsStateWithLifecycle()
     val isSearchActive = rememberSaveable {
         mutableStateOf(false)
     }
+    val searchQuery = searchScreenViewModel.searchQuery.collectAsStateWithLifecycle()
+
     val billBoardMetaData = searchScreenViewModel.billBoardChartsMetaData
     val spotifyChartsData =
         searchScreenViewModel.spotifyChartsMetaData.collectAsStateWithLifecycle()
@@ -108,66 +109,92 @@ fun SearchScreen(
     }
     MusicBoxdTheme {
         Column {
-            ProvideTextStyle(value = MaterialTheme.typography.titleSmall) {
-                SearchBar(
-                    colors = SearchBarDefaults.colors(dividerColor = Color.Transparent),
-                    leadingIcon = {
-                        IconButton(onClick = {
-                            isSearchActive.value = false;searchScreenViewModel.onUiEvent(
-                            SearchScreenUiEvent.OnQueryChange("")
-                        )
-                        }) {
-                            Icon(
-                                imageVector = if (isSearchActive.value) Icons.Default.ArrowBack else Icons.Default.Search,
-                                contentDescription = if (isSearchActive.value) "Arrow Back Icon" else "Search Icon"
-                            )
-                        }
-                    },
-                    trailingIcon = {
-                        if (isSearchActive.value) {
-                            IconButton(onClick = {
-                                if (searchQuery.value.isNotBlank()) searchScreenViewModel.onUiEvent(
-                                    SearchScreenUiEvent.OnQueryChange("")
-                                ) else isSearchActive.value = false
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Default.Cancel,
-                                    contentDescription = "Cancel Icon"
-                                )
-                            }
-                        }
-                    },
-                    placeholder = {
-                        Text(
-                            text = "Search MusicBoxd",
-                            style = MaterialTheme.typography.titleSmall
-                        )
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(if (isSearchActive.value) 0.dp else 15.dp)
-                        .animateContentSize(),
-                    query = searchQuery.value,
-                    onQueryChange = {
-                        searchScreenViewModel.onUiEvent(SearchScreenUiEvent.OnQueryChange(it))
-                    },
-                    onSearch = {
-
-                    },
-                    active = isSearchActive.value,
-                    onActiveChange = {
-                        isSearchActive.value = it
-                    },
-                    content = {
-                        SearchContent(
-                            searchScreenViewModel = searchScreenViewModel,
-                            navController,
-                            detailsViewModel
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (!isSearchActive.value) {
+                    Spacer(modifier = Modifier.width(15.dp))
+                    IconButton(onClick = { }) {
+                        CoilImage(
+                            imgUrl = "https://pbs.twimg.com/profile_images/1801650747291090944/F9sc3CDc_400x400.jpg",
+                            modifier = Modifier
+                                .size(35.dp)
+                                .clip(CircleShape),
+                            contentDescription = ""
                         )
                     }
-                )
-            }
+                    Spacer(modifier = Modifier.width(15.dp))
+                }
+                ProvideTextStyle(value = MaterialTheme.typography.titleSmall) {
+                    SearchBar(
+                        colors = SearchBarDefaults.colors(dividerColor = Color.Transparent),
+                        leadingIcon = {
+                            IconButton(onClick = {
+                                isSearchActive.value =
+                                    false;detailsViewModel.onUiEvent(
+                                SearchScreenUiEvent.OnQueryChange("")
+                            )
+                            }) {
+                                androidx.compose.material3.Icon(
+                                    imageVector = if (isSearchActive.value) Icons.Default.ArrowBack else Icons.Default.Search,
+                                    contentDescription = if (isSearchActive.value) "Arrow Back Icon" else "Search Icon"
+                                )
+                            }
+                        },
+                        trailingIcon = {
+                            if (isSearchActive.value) {
+                                IconButton(onClick = {
+                                    if (searchQuery.value.isNotBlank()) detailsViewModel.onUiEvent(
+                                        SearchScreenUiEvent.OnQueryChange(
+                                            ""
+                                        )
+                                    ) else isSearchActive.value = false
+                                }) {
+                                    androidx.compose.material3.Icon(
+                                        imageVector = Icons.Default.Cancel,
+                                        contentDescription = "Cancel Icon"
+                                    )
+                                }
+                            }
+                        },
+                        placeholder = {
+                            androidx.compose.material3.Text(
+                                text = "Search MusicBoxd",
+                                style = MaterialTheme.typography.titleSmall,
+                                maxLines = 1,
+                                modifier = Modifier.basicMarquee()
+                            )
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(if (isSearchActive.value) 0.dp else 15.dp)
+                            .animateContentSize(),
+                        query = searchQuery.value,
+                        onQueryChange = {
+                            detailsViewModel.onUiEvent(
+                                SearchScreenUiEvent.OnQueryChange(
+                                    it
+                                )
+                            )
+                        },
+                        onSearch = {
 
+                        },
+                        active = isSearchActive.value,
+                        onActiveChange = {
+                            isSearchActive.value = it
+                        },
+                        content = {
+                            SearchContent(
+                                searchScreenViewModel = detailsViewModel,
+                                navController,
+                                detailsViewModel
+                            )
+                        }
+                    )
+                }
+            }
             LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier.fillMaxSize()) {
                 item(span = {
                     GridItemSpan(maxLineSpan)
@@ -276,7 +303,11 @@ fun SearchScreen(
                                             text = spotifyChartsData.value.chartEntryViewResponses[it].highlights[randomInt].text,
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .padding(start = 15.dp, end = 15.dp, bottom = 35.dp)
+                                                .padding(
+                                                    start = 15.dp,
+                                                    end = 15.dp,
+                                                    bottom = 35.dp
+                                                )
                                                 .align(Alignment.BottomStart),
                                             style = MaterialTheme.typography.titleMedium,
                                             fontSize = 18.sp,
@@ -284,11 +315,15 @@ fun SearchScreen(
                                         )
                                     }
                                 }
-                                Slider(steps = 1, modifier = Modifier
-                                    .align(Alignment.BottomCenter)
-                                    .fillMaxWidth()
-                                    .padding(start = 75.dp, end = 75.dp),
-                                    thumb = {}, value = sliderValue.floatValue, onValueChange = {
+                                Slider(
+                                    steps = 1,
+                                    modifier = Modifier
+                                        .align(Alignment.BottomCenter)
+                                        .fillMaxWidth()
+                                        .padding(start = 75.dp, end = 75.dp),
+                                    thumb = {},
+                                    value = sliderValue.floatValue,
+                                    onValueChange = {
                                         sliderValue.floatValue = it
                                         when (sliderValue.floatValue) {
                                             0.0f -> coroutineScope.launch {

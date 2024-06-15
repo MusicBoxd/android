@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -80,64 +81,81 @@ fun AddScreen(
     }
     val localLists = addScreenViewModel.localLists.collectAsStateWithLifecycle()
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
-        ProvideTextStyle(value = MaterialTheme.typography.titleSmall) {
-            SearchBar(colors = SearchBarDefaults.colors(dividerColor = Color.Transparent),
-                leadingIcon = {
-                    IconButton(onClick = {
-                        isSearchActive.value = false;
-                        searchScreenViewModel.onUiEvent(
-                            SearchScreenUiEvent.OnQueryChange("")
-                        )
-                    }) {
-                        Icon(
-                            imageVector = if (isSearchActive.value) Icons.Default.ArrowBack else Icons.Default.Search,
-                            contentDescription = if (isSearchActive.value) "Arrow Back Icon" else "Search Icon"
-                        )
-                    }
-                },
-                trailingIcon = {
-                    if (isSearchActive.value) {
+        Row(
+            Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (!isSearchActive.value) {
+                Spacer(modifier = Modifier.width(15.dp))
+                CoilImage(
+                    imgUrl = "https://pbs.twimg.com/profile_images/1801650747291090944/F9sc3CDc_400x400.jpg",
+                    modifier = Modifier
+                        .size(35.dp)
+                        .clip(CircleShape),
+                    contentDescription = ""
+                )
+                Spacer(modifier = Modifier.width(15.dp))
+            }
+            ProvideTextStyle(value = MaterialTheme.typography.titleSmall) {
+                SearchBar(colors = SearchBarDefaults.colors(dividerColor = Color.Transparent),
+                    leadingIcon = {
                         IconButton(onClick = {
-                            if (searchQuery.value.isNotBlank()) searchScreenViewModel.onUiEvent(
+                            isSearchActive.value = false;
+                            searchScreenViewModel.onUiEvent(
                                 SearchScreenUiEvent.OnQueryChange("")
-                            ) else isSearchActive.value = false
+                            )
                         }) {
                             Icon(
-                                imageVector = Icons.Default.Cancel,
-                                contentDescription = "Cancel Icon"
+                                imageVector = if (isSearchActive.value) Icons.Default.ArrowBack else Icons.Default.Search,
+                                contentDescription = if (isSearchActive.value) "Arrow Back Icon" else "Search Icon"
                             )
                         }
-                    }
-                },
-                placeholder = {
-                    Text(
-                        text = "Search MusicBoxd", style = MaterialTheme.typography.titleSmall
-                    )
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(if (isSearchActive.value) 0.dp else 15.dp)
-                    .animateContentSize(),
-                query = searchQuery.value,
-                onQueryChange = {
-                    searchScreenViewModel.onUiEvent(SearchScreenUiEvent.OnQueryChange(it))
-                },
-                onSearch = {
+                    },
+                    trailingIcon = {
+                        if (isSearchActive.value) {
+                            IconButton(onClick = {
+                                if (searchQuery.value.isNotBlank()) searchScreenViewModel.onUiEvent(
+                                    SearchScreenUiEvent.OnQueryChange("")
+                                ) else isSearchActive.value = false
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.Cancel,
+                                    contentDescription = "Cancel Icon"
+                                )
+                            }
+                        }
+                    },
+                    placeholder = {
+                        Text(
+                            text = "Search MusicBoxd",
+                            style = MaterialTheme.typography.titleSmall
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(if (isSearchActive.value) 0.dp else 15.dp)
+                        .animateContentSize(),
+                    query = searchQuery.value,
+                    onQueryChange = {
+                        searchScreenViewModel.onUiEvent(SearchScreenUiEvent.OnQueryChange(it))
+                    },
+                    onSearch = {
 
-                },
-                active = isSearchActive.value,
-                onActiveChange = {
-                    isSearchActive.value = it
-                },
-                content = {
-                    SearchContent(searchScreenViewModel = searchScreenViewModel,
-                        navController = navController,
-                        detailsViewModel = detailsViewModel,
-                        inSearchScreen = false,
-                        onSelectingAnItem = {
-                            navController.navigate(NavigationRoutes.CREATE_A_NEW_REVIEW.name)
-                        })
-                })
+                    },
+                    active = isSearchActive.value,
+                    onActiveChange = {
+                        isSearchActive.value = it
+                    },
+                    content = {
+                        SearchContent(searchScreenViewModel = searchScreenViewModel,
+                            navController = navController,
+                            detailsViewModel = detailsViewModel,
+                            inSearchScreen = false,
+                            onSelectingAnItem = {
+                                navController.navigate(NavigationRoutes.CREATE_A_NEW_REVIEW.name)
+                            })
+                    })
+            }
         }
     }) {
         LazyColumn(
@@ -369,5 +387,3 @@ fun AddScreen(
         }
     }
 }
-
-

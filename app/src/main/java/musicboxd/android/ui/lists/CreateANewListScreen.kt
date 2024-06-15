@@ -110,7 +110,7 @@ fun CreateANewListScreen(
                     Toast.makeText(localContext, it.msg, Toast.LENGTH_SHORT).show()
                 }
 
-                is CreateANewListScreenUIEvent.NavigateBack -> navController.popBackStack()
+                is CreateANewListScreenUIEvent.NavigateBack -> navController.navigateUp()
                 CreateANewListScreenUIEvent.Nothing -> TODO()
             }
         }

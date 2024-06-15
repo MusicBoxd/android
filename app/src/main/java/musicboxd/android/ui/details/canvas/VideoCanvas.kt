@@ -287,7 +287,7 @@ fun VideoCanvas(
                 mediaPlayer.stop()
                 mediaPlayer.reset()
             }, async {
-                navController.popBackStack()
+                navController.navigateUp()
             })
         }
     }

@@ -9,6 +9,9 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
 import musicboxd.android.data.local.LocalDatabase
+import musicboxd.android.data.local.events.EventDao
+import musicboxd.android.data.local.events.EventImpl
+import musicboxd.android.data.local.events.EventRepo
 import musicboxd.android.data.local.list.ListImpl
 import musicboxd.android.data.local.list.ListRepo
 import musicboxd.android.data.local.review.ReviewImpl
@@ -189,6 +192,18 @@ object AppModule {
     @Singleton
     fun provideUserRepo(localDatabase: LocalDatabase): UserRepo {
         return UserImpl(localDatabase)
+    }
+
+    @Provides
+    @Singleton
+    fun provideEventDao(localDatabase: LocalDatabase): EventDao {
+        return localDatabase.eventDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideEventsRepo(eventDao: EventDao): EventRepo {
+        return EventImpl(eventDao)
     }
 
     @Provides

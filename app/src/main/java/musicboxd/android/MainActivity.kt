@@ -4,10 +4,12 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.rememberBottomSheetScaffoldState
 import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.surfaceColorAtElevation
@@ -30,6 +32,7 @@ import musicboxd.android.ui.lists.CreateANewListScreenViewModel
 import musicboxd.android.ui.navigation.BottomNavigationBar
 import musicboxd.android.ui.navigation.MainNavigation
 import musicboxd.android.ui.navigation.NavigationRoutes
+import musicboxd.android.ui.navigation.drawer.NavigationDrawerContent
 import musicboxd.android.ui.theme.MusicBoxdTheme
 import musicboxd.android.ui.user.profile.editProfile.EditProfileViewModel
 import java.util.concurrent.TimeUnit
@@ -54,7 +57,6 @@ class MainActivity : ComponentActivity() {
                     NavigationRoutes.HOME.name,
                     NavigationRoutes.SEARCH.name,
                     NavigationRoutes.CUES.name,
-                    NavigationRoutes.PROFILE.name,
                     NavigationRoutes.ADD.name
                 )
             }
@@ -68,6 +70,8 @@ class MainActivity : ComponentActivity() {
             val detailsViewModel: DetailsViewModel = hiltViewModel()
             val editProfileViewModel: EditProfileViewModel = viewModel()
             val createANewListScreenViewModel: CreateANewListScreenViewModel = hiltViewModel()
+            val navigationDrawerState =
+                androidx.compose.material3.rememberDrawerState(androidx.compose.material3.DrawerValue.Open)
             MusicBoxdTheme {
                 val systemUiController = rememberSystemUiController()
                 systemUiController.setStatusBarColor(colorScheme.surface)
@@ -77,18 +81,28 @@ class MainActivity : ComponentActivity() {
                     )
                 )
                 Scaffold(Modifier.fillMaxSize()) {
-                    androidx.compose.material.BottomSheetScaffold(sheetPeekHeight = 0.dp,
-                        scaffoldState = scaffoldState,
-                        sheetContent = {
-                            BottomNavigationBar(navController = navController)
-                        }) {
-                        Scaffold {
-                            MainNavigation(
+                    ModalNavigationDrawer(
+                        modifier = Modifier.fillMaxHeight(),
+                        drawerState = navigationDrawerState,
+                        drawerContent = {
+                            NavigationDrawerContent(
                                 navController = navController,
-                                detailsViewModel,
-                                editProfileViewModel,
-                                createANewListScreenViewModel,
+                                navigationDrawerState
                             )
+                        }) {
+                        androidx.compose.material.BottomSheetScaffold(sheetPeekHeight = 0.dp,
+                            scaffoldState = scaffoldState,
+                            sheetContent = {
+                                BottomNavigationBar(navController = navController)
+                            }) {
+                            Scaffold {
+                                MainNavigation(
+                                    navController = navController,
+                                    detailsViewModel,
+                                    editProfileViewModel,
+                                    createANewListScreenViewModel,
+                                )
+                            }
                         }
                     }
                 }

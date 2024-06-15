@@ -644,7 +644,7 @@ fun AlbumDetailScreen(
                 mediaPlayer.stop()
                 mediaPlayer.reset()
             }, async {
-                navController.popBackStack()
+                navController.navigateUp()
             })
         }
     }

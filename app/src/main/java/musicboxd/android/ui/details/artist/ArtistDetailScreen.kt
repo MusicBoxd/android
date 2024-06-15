@@ -81,6 +81,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -93,6 +94,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import musicboxd.android.R
+import musicboxd.android.data.local.events.model.Event
 import musicboxd.android.data.remote.api.spotify.model.album.Albums
 import musicboxd.android.data.remote.api.spotify.model.album.Item
 import musicboxd.android.data.remote.api.spotify.model.topTracks.TopTracksDTO
@@ -121,6 +123,8 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
             emptyList()
         )
     )
+    val artistScreenViewModel: ArtistScreenViewModel = hiltViewModel()
+    val doesEventExists = artistScreenViewModel.doesEventExists.collectAsStateWithLifecycle()
     val albums = detailsViewModel.artistAlbums.collectAsStateWithLifecycle(
         initialValue = Albums(
             items = listOf(),
@@ -453,6 +457,11 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                                     .split("/")
                                     .last()
                                 detailsViewModel.loadASpecificConcertDetails(selectedEventID.value)
+                                artistScreenViewModel.onUIEvent(
+                                    ArtistDetailsScreenUiEvent.DoesEventExist(
+                                        selectedEventID.value
+                                    )
+                                )
                                 isConcertDetailsModalBtmSheetVisible.value = true
                             }
                     )
@@ -885,7 +894,28 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
             detailsViewModel,
             artistTourDTO = artistEventsData.value.first {
                 it.href.split("/").last() == selectedEventID.value
-            }
+            },
+            onEventSaveOrDeleteButtonClick = { eventData ->
+                if (doesEventExists.value == true) {
+                    artistScreenViewModel.onUIEvent(
+                        ArtistDetailsScreenUiEvent.DeleteAnEvent(selectedEventID.value)
+                    )
+                } else {
+                    artistScreenViewModel.onUIEvent(
+                        ArtistDetailsScreenUiEvent.SaveAnEvent(
+                            Event(
+                                eventId = selectedEventID.value,
+                                artistUri = detailsViewModel.artistInfo.value.uri,
+                                artistTourDTO = artistEventsData.value.first {
+                                    it.href.split("/").last() == selectedEventID.value
+                                },
+                                eventsDetailsDTO = eventData
+                            )
+                        )
+                    )
+                }
+            },
+            alreadyExists = mutableStateOf(doesEventExists.value ?: false)
         )
     }
     if (isBtmSheetVisible.value) {
@@ -1087,7 +1117,7 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                 mediaPlayer.stop()
                 mediaPlayer.reset()
             }, async {
-                navController.popBackStack()
+                navController.navigateUp()
             })
         }
     }

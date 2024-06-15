@@ -1,12 +1,10 @@
 package musicboxd.android.ui.navigation
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Notifications
@@ -48,12 +46,6 @@ class NavigationVM : ViewModel() {
             selectedIcon = Icons.Filled.Notifications,
             nonSelectedIcon = Icons.Outlined.Notifications,
             navigationRoute = NavigationRoutes.CUES
-        ),
-        BtmNavigationItem(
-            itemName = "You",
-            selectedIcon = Icons.Filled.AccountCircle,
-            nonSelectedIcon = Icons.Outlined.AccountCircle,
-            navigationRoute = NavigationRoutes.PROFILE
         ),
     )
 
