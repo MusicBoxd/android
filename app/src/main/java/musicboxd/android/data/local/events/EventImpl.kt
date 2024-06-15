@@ -16,4 +16,8 @@ class EventImpl @Inject constructor(private val eventDao: EventDao) : EventRepo 
     override fun doesEventExist(eventUri: String): Flow<Boolean> {
         return eventDao.doesEventExist(eventUri)
     }
+
+    override fun getAllSavedEvents(): Flow<List<Event>> {
+        return eventDao.getAllSavedEvents()
+    }
 }

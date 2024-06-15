@@ -10,6 +10,8 @@ data class Event(
     @PrimaryKey
     val eventId: String,
     val artistUri: String,
+    val artistName: String,
+    val artistImg: String,
     val artistTourDTO: ArtistTourDTO,
     val eventsDetailsDTO: EventDetailsDTO
 )

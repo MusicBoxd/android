@@ -909,7 +909,9 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                                 artistTourDTO = artistEventsData.value.first {
                                     it.href.split("/").last() == selectedEventID.value
                                 },
-                                eventsDetailsDTO = eventData
+                                eventsDetailsDTO = eventData,
+                                artistName = detailsViewModel.artistInfo.value.name,
+                                artistImg = detailsViewModel.artistInfo.value.images.first().url
                             )
                         )
                     )
@@ -1081,6 +1083,7 @@ fun ArtistDetailScreen(detailsViewModel: DetailsViewModel, navController: NavCon
                         localContext,
                         if (notificationPermissionState.status.isGranted) "1" else null
                     )
+                    isPermissionDeniedDialogBoxVisible.value = false
                 }, modifier = Modifier.fillMaxWidth()) {
                     Text(
                         text = "Enable it",

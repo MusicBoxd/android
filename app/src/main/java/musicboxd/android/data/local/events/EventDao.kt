@@ -16,4 +16,7 @@ interface EventDao {
 
     @Query("SELECT EXISTS(SELECT * FROM event WHERE eventId = :eventUri)")
     fun doesEventExist(eventUri: String): Flow<Boolean>
+
+    @Query("SELECT * FROM event")
+    fun getAllSavedEvents(): Flow<List<Event>>
 }

@@ -7,4 +7,5 @@ interface EventRepo {
     suspend fun saveANewEvent(event: Event)
     suspend fun deleteAnExistingEvent(eventUri: String)
     fun doesEventExist(eventUri: String): Flow<Boolean>
+    fun getAllSavedEvents(): Flow<List<Event>>
 }
