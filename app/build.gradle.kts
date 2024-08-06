@@ -114,7 +114,7 @@ dependencies {
     kapt("androidx.hilt:hilt-compiler:1.2.0")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
 
     implementation("androidx.palette:palette-ktx:1.0.0")
 
@@ -123,7 +123,9 @@ dependencies {
     implementation("org.jsoup:jsoup:1.14.3")
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("com.google.accompanist:accompanist-permissions:0.35.0-alpha")
-
+    implementation("io.nerdythings:okhttp-profiler:1.1.1")
     implementation("io.github.a914-gowtham:compose-ratingbar:1.2.3")
     implementation("com.vanniktech:android-image-cropper:4.5.0")
+    implementation ("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation ("com.squareup.okhttp3:logging-interceptor:4.12.0")
 }

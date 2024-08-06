@@ -45,7 +45,9 @@ class StartUpVM @Inject constructor(
                         )
                     }.await()
                     when (signupData) {
-                        is APIResult.Failure -> TODO()
+                        is APIResult.Failure -> {
+                            println(signupData.message)
+                        }
                         is APIResult.Success -> {
                             val userToken = musicBoxdAPIRepo.getUserToken(
                                 MusicBoxdLoginDTO(

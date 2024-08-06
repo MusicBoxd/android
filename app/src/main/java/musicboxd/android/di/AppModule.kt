@@ -7,6 +7,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import io.nerdythings.okhttp.profiler.OkHttpProfilerInterceptor
 import kotlinx.serialization.json.Json
 import musicboxd.android.data.local.LocalDatabase
 import musicboxd.android.data.local.events.EventDao
@@ -41,6 +42,8 @@ import musicboxd.android.data.remote.scrape.artist.tour.ArtistTourRepo
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
+import retrofit2.http.Body
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @Module
@@ -126,16 +129,22 @@ object AppModule {
     @Provides
     @Singleton
     fun provideMusicBoxdAPIInstance(): MusicBoxdAPIService {
+
+        val okHttpClient = OkHttpClient.Builder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(10, TimeUnit.SECONDS)
+            .writeTimeout(10, TimeUnit.SECONDS).addInterceptor(OkHttpProfilerInterceptor())
+
         return Retrofit.Builder()
-            .baseUrl("https://handsome-unity-production.up.railway.app/")
+            .baseUrl("http://musicbodx.eu-north-1.elasticbeanstalk.com/")
             .addConverterFactory(
                 json.asConverterFactory(
                     "application/json".toMediaType()
                 )
             )
+            .client(okHttpClient.build())
             .build().create(MusicBoxdAPIService::class.java)
     }
-
 
     @Provides
     @Singleton

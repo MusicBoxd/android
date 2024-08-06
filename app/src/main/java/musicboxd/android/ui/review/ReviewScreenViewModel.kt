@@ -15,6 +15,7 @@ import musicboxd.android.data.local.review.model.Review
 import musicboxd.android.data.local.user.UserRepo
 import musicboxd.android.data.remote.api.APIResult
 import musicboxd.android.data.remote.api.musicboxd.MusicBoxdAPIRepo
+import musicboxd.android.data.remote.api.musicboxd.model.MusicBoxdLoginDTO
 import musicboxd.android.data.remote.api.musicboxd.model.ReviewDTO
 import musicboxd.android.data.remote.api.spotify.model.tracklist.Artist
 import musicboxd.android.ui.details.album.AlbumDetailScreenState
@@ -99,19 +100,29 @@ class ReviewScreenViewModel @Inject constructor(
 
     fun postANewReview(reviewDTO: ReviewDTO) {
         viewModelScope.launch(Dispatchers.Default) {
-            val userToken = userRepo.getUserData().userToken
-            when (val postedReview =
-                musicBoxdAPIRepo.postANewReview(reviewDTO, userToken)) {
-                is APIResult.Failure -> {
-                    sendAnEvent(ReviewScreenUIEvent.ShowToast(postedReview.message))
-                }
-
+            when (val userToken = musicBoxdAPIRepo.getUserToken(
+                MusicBoxdLoginDTO(
+                    userName = userRepo.getUserData().userName,
+                    password = userRepo.getUserData().password
+                )
+            )) {
+                is APIResult.Failure -> TODO()
                 is APIResult.Success -> {
-                    viewModelScope.launch {
-                        sendAnEvent(ReviewScreenUIEvent.ShowToast(postedReview.data))
+                    when (val postedReview =
+                        musicBoxdAPIRepo.postANewReview(reviewDTO, userToken.data.jwt)) {
+                        is APIResult.Failure -> {
+                            sendAnEvent(ReviewScreenUIEvent.ShowToast(postedReview.message))
+                        }
+
+                        is APIResult.Success -> {
+                            viewModelScope.launch {
+                                sendAnEvent(ReviewScreenUIEvent.ShowToast(postedReview.data))
+                            }
+                        }
                     }
                 }
             }
+
         }
     }
 

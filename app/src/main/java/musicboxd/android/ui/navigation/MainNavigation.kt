@@ -35,7 +35,7 @@ fun MainNavigation(
 ) {
     NavHost(
         navController = navController,
-        startDestination = NavigationRoutes.SEARCH.name
+        startDestination = NavigationRoutes.START_UP.name
     ) {
         composable(route = NavigationRoutes.HOME.name) {
             HomeScreen()

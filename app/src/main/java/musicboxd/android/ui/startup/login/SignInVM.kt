@@ -34,7 +34,9 @@ class SignInVM @Inject constructor(
             _showProgressBarInBottomBar.emit(true)
             val userLoginData = musicBoxdAPIRepo.getUserToken(MusicBoxdLoginDTO(username, password))
             when (userLoginData) {
-                is APIResult.Failure -> TODO()
+                is APIResult.Failure -> {
+                    println(userLoginData.message)
+                }
                 is APIResult.Success -> {
                     userRepo.signup(
                         User(

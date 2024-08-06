@@ -35,6 +35,6 @@ interface MusicBoxdAPIService {
     @GET("api/user/playlist/public")
     suspend fun getPublicLists(@Header("Authorization") authorization: String): List<ListDTO>
 
-    @POST("/api/auth/user/signup")
+    @POST("api/auth/user/signup")
     suspend fun createANewUser(@Body signUpDTO: SignUpDTO): User
 }

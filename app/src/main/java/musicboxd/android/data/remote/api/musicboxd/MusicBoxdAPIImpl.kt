@@ -21,6 +21,7 @@ class MusicBoxdAPIImpl @Inject constructor(
         authorization: String
     ): APIResult<String> {
         return try {
+            println(reviewDTO)
             musicBoxdAPIService.postANewReview(reviewDTO, "Bearer ".plus(authorization))
             APIResult.Success("Successful")
         } catch (_: Exception) {
@@ -72,7 +73,8 @@ class MusicBoxdAPIImpl @Inject constructor(
         return try {
             val tokenData = musicBoxdAPIService.getUserToken(musicBoxdLoginDTO)
             APIResult.Success(tokenData)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            e.printStackTrace()
             APIResult.Failure("Failed at getUserToken")
         }
     }
