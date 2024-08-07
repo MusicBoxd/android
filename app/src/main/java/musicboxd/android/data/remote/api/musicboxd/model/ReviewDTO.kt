@@ -7,6 +7,7 @@ import kotlinx.serialization.Serializable
 data class ReviewDTO(
     @SerialName("reviewText")
     val reviewContent: String,
+    @SerialName("uris")
     val itemUri: String,
     @SerialName("rating")
     val reviewRating: Float,

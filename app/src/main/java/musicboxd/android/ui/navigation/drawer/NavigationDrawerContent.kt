@@ -83,7 +83,7 @@ fun NavigationDrawerContent(navController: NavController, navigationDrawerState:
         ) {
             Spacer(modifier = Modifier.height(25.dp))
             CoilImage(
-                imgUrl = "https://pbs.twimg.com/profile_images/1801650747291090944/F9sc3CDc_400x400.jpg",
+                imgUrl = "",
                 modifier = Modifier
                     .padding(start = 25.dp)
                     .size(50.dp)

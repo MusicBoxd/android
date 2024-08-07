@@ -19,6 +19,7 @@ import musicboxd.android.data.local.list.model.MusicContent
 import musicboxd.android.data.local.user.UserRepo
 import musicboxd.android.data.remote.api.APIResult
 import musicboxd.android.data.remote.api.musicboxd.MusicBoxdAPIRepo
+import musicboxd.android.data.remote.api.musicboxd.model.MusicBoxdLoginDTO
 import musicboxd.android.data.remote.api.musicboxd.model.list.ListDTO
 import musicboxd.android.ui.details.album.AlbumDetailScreenState
 import javax.inject.Inject
@@ -191,25 +192,37 @@ class CreateANewListScreenViewModel @Inject constructor(
 
     fun publishANewList(listName: String, listDescription: String, isListPublic: Boolean) {
         viewModelScope.launch(Dispatchers.Default) {
-            val userToken = userRepo.getUserData().userToken
-            when (musicBoxdAPIRepo.postANewList(
-                localListId = currentModifyingList.localId,
-                ListDTO(listName = listName,
-                    lisDescription = listDescription,
-                    isListPublic = isListPublic,
-                    spotifyURIs = currentMusicContentSelection.toList()
-                        .map { it.itemUri }),
-                userToken
-            )) {
-                is APIResult.Failure -> {
-                    pushUiEvent(CreateANewListScreenUIEvent.ShowToast("Failure"))
-                }
+            viewModelScope.launch(Dispatchers.Default) {
+                when (val userToken = musicBoxdAPIRepo.getUserToken(
+                    MusicBoxdLoginDTO(
+                        userName = userRepo.getUserData().userName,
+                        password = userRepo.getUserData().password
+                    )
+                )) {
+                    is APIResult.Failure -> TODO()
+                    is APIResult.Success -> {
+                        when (musicBoxdAPIRepo.postANewList(
+                            localListId = currentModifyingList.localId,
+                            ListDTO(listName = listName,
+                                lisDescription = listDescription,
+                                isListPublic = isListPublic,
+                                spotifyURIs = currentMusicContentSelection.toList()
+                                    .map { it.itemUri }),
+                            userToken.data.jwt
+                        )) {
+                            is APIResult.Failure -> {
+                                pushUiEvent(CreateANewListScreenUIEvent.ShowToast("Failure"))
+                            }
 
-                is APIResult.Success -> {
-                    pushUiEvent(CreateANewListScreenUIEvent.ShowToast("Success"))
-                    pushUiEvent(CreateANewListScreenUIEvent.NavigateBack)
+                            is APIResult.Success -> {
+                                pushUiEvent(CreateANewListScreenUIEvent.ShowToast("Success"))
+                                pushUiEvent(CreateANewListScreenUIEvent.NavigateBack)
+                            }
+                        }
+                    }
                 }
             }
+
         }
     }
 

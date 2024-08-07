@@ -61,6 +61,7 @@ import musicboxd.android.data.remote.api.musicboxd.model.ReviewDTO
 import musicboxd.android.ui.common.CoilImage
 import musicboxd.android.ui.details.DetailsViewModel
 import musicboxd.android.ui.theme.fonts
+import musicboxd.android.utils.musicBoxdLog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,7 +78,9 @@ fun AddANewReviewScreen(
         }
     }
     LaunchedEffect(key1 = Unit) {
-        reviewScreenViewModel.loadExistingLocalReview(detailsViewModel.albumScreenState.itemUri)
+        reviewScreenViewModel.loadExistingLocalReview(
+            detailsViewModel.albumScreenState.itemUri
+        )
     }
     LaunchedEffect(key1 = Unit) {
         uiChannel.collectLatest {
@@ -110,10 +113,11 @@ fun AddANewReviewScreen(
         BottomAppBar {
             Button(
                 onClick = {
+                    musicBoxdLog(reviewScreenViewModel.currentLocalReview.spotifyUri)
                     reviewScreenViewModel.postANewReview(
                         ReviewDTO(
                             reviewContent = reviewScreenViewModel.reviewContent.value,
-                            itemUri = detailsViewModel.albumScreenState.itemUri,
+                            itemUri = reviewScreenViewModel.currentLocalReview.spotifyUri,
                             reviewRating = reviewScreenViewModel.albumRatingValue.value,
                             reviewTitle = reviewScreenViewModel.reviewTitle.value
                         )

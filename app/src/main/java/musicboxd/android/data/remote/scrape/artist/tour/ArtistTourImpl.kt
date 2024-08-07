@@ -6,6 +6,7 @@ import musicboxd.android.data.remote.scrape.artist.tour.model.ArtistTourDTO
 import musicboxd.android.data.remote.scrape.artist.tour.model.event.EventDetailsDTO
 import musicboxd.android.data.remote.scrape.artist.tour.model.event.TicketDetails
 import musicboxd.android.utils.customConfig
+import musicboxd.android.utils.musicBoxdLog
 import org.jsoup.Jsoup
 
 class ArtistTourImpl : ArtistTourRepo {
@@ -57,13 +58,16 @@ class ArtistTourImpl : ArtistTourRepo {
         val rawString = withContext(Dispatchers.IO) {
             Jsoup.connect("https://open.spotify.com/concert/$eventId").customConfig().get()
         }.toString()
+        rawString.let {
+            musicBoxdLog(it)
+        }
         val title = rawString.substringAfter("<meta name=\"twitter:description")
             .substringAfter("content=\"").substringBefore("\">").trim()
-        val ticketUrl = rawString.substringAfter("<div class=\"muv9sEjLTV7JPw7bx6CD\">")
-            .substringAfter("<div class=\"YA0OdjctuKd3c25S65Fj\">").substringAfter("href=\"")
-            .substringBefore("\"").trim()
-        val ticketSellerImgURL = rawString.substringAfter("<div class=\"ja39xsoXRNA9NP8D6jVU\">")
-            .substringAfter("<div class=\"kpx9YWtZUjvrVLG921WO\">").substringAfter("src=\"")
+        val ticketUrl = rawString.substringAfter("<div class=\"AXLhOsSjT3bowfjf42kK\">")
+            .substringAfter("<div class=\"GAOw5C83TxIvQixcgHaf\">").substringAfter("href=\"")
+            .substringBefore("?").trim()
+        val ticketSellerImgURL = rawString.substringAfter("<div class=\"Ghfp1A1T_2hwVuwIwQxs\">")
+            .substringAfter("<div class=\"rfROb9KBW8Mke0Dkgged\">").substringAfter("src=\"")
             .substringBefore("\"").trim()
         val ticketSellerName = rawString.substringAfter("<div class=\"ja39xsoXRNA9NP8D6jVU\">")
             .substringAfter("<div class=\"kpx9YWtZUjvrVLG921WO\">").trim()
@@ -73,8 +77,8 @@ class ArtistTourImpl : ArtistTourRepo {
             "https://maps.google.com" + rawString.substringAfter("https://maps.google.com")
                 .substringBefore("\"").trim()
         val dateAndTime =
-            rawString.substringAfter("class=\"Type__TypeElement-sc-goli3j-0 cylFhp\">")
-                .substringBefore("</div>").trim()
+            rawString.substringAfter("<meta property=\"og:description\"").substringAfter("content")
+                .substringAfter(" in ").substringAfter(" on ").substringBefore("\">").trim()
         return EventDetailsDTO(
             eventTitle = title,
             eventTime = dateAndTime,
