@@ -2,7 +2,7 @@ buildscript {
     //noinspection UseTomlInstead
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-serialization:1.9.0")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.21")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.21")
         classpath("com.google.dagger:hilt-android-gradle-plugin:2.48.1")
     }
     repositories {
