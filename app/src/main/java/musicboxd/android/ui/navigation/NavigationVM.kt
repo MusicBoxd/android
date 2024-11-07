@@ -2,11 +2,9 @@ package musicboxd.android.ui.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -23,12 +21,6 @@ data class BtmNavigationItem(
 class NavigationVM : ViewModel() {
 
     val btmBarList = listOf(
-        BtmNavigationItem(
-            itemName = "Home",
-            selectedIcon = Icons.Filled.Home,
-            nonSelectedIcon = Icons.Outlined.Home,
-            navigationRoute = NavigationRoutes.HOME
-        ),
         BtmNavigationItem(
             itemName = "Search",
             selectedIcon = Icons.Filled.Search,

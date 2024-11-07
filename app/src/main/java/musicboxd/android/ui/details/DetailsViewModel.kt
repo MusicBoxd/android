@@ -221,7 +221,8 @@ class DetailsViewModel @Inject constructor(
     private suspend fun loadMonthlyListeners(artistID: String) {
         _artistMonthlyListeners.emit("")
         withContext(Dispatchers.IO) {
-            Jsoup.connect("https://open.spotify.com/artist/$artistID").customConfig().get()
+            Jsoup.connect("https://open.spotify.com/artist/$artistID").customConfig()
+                .ignoreHttpErrors(true).get()
                 .toString().substringAfter("<meta property=\"og:description\" content=\"Artist · ")
                 .substringBefore(".\">").trim().let {
                     _artistMonthlyListeners.emit(it)
@@ -238,7 +239,7 @@ class DetailsViewModel @Inject constructor(
                         "+"
                     )
                 }/+images"
-            ).customConfig().get()
+            ).customConfig().ignoreHttpErrors(true).get()
         }.toString().substringAfter("<a href=\"/music/").substringAfter("+images/")
             .substringBefore("\" class")
         val imgURL = "https://lastfm.freetls.fastly.net" + withContext(Dispatchers.IO) {
